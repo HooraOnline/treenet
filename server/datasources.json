@@ -1,0 +1,14 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "treenetds": {
+    "host": "localhost",
+    "port": 27017,
+    "url": "",
+    "database": "treenet",
+    "name": "treenetds",
+    "connector": "mongodb"
+  }
+}

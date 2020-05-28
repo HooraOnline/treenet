@@ -1,0 +1,78 @@
+{
+  "APAMAN": {
+    "dbConfig": {
+      "user": "ApartmentApp",
+      "password": "12983476",
+      "server": "10.1.1.80",
+      "port": 2575,
+      "database": "Apartment-New",
+      "pool": {
+        "max": 10000,
+        "min": 1,
+        "idleTimeoutMillis": 30000
+      },
+      "options": {
+        "encrypt": true
+      },
+      "stream": false,
+      "parseJSON": true
+    },
+    "dbConfigTest": {
+      "user": "ApartmentApp",
+      "password": "12983476",
+      "server": "10.1.1.80",
+      "port": 2575,
+      "database": "Apartment-New-Test",
+      "pool": {
+        "max": 10000,
+        "min": 1,
+        "idleTimeoutMillis": 30000
+      },
+      "options": {
+        "encrypt": true
+      },
+      "stream": false,
+      "parseJSON": true
+    },
+    "serverConfig": {
+      "testPort": 5000,
+      "productPort": 4000,
+      "SN": "/apaman198"
+    },
+    "fileConfig": {
+      "uploadPath": "/views/images",
+      "downloadAppPath": "/views/files",
+      "downloadTestAppPath": "/views/files/test",
+      "downloadNasimAppPath": "/views/files/nasim"
+    },
+    "fcmConfig": {
+      "host": "fcm.googleapis.com",
+      "path": "/fcm/send",
+      "authorization": "key=AAAA8gtMlhk:APA91bF1ZaUzz64ew5Oo__Rdc2zV6an1PkuUf0lXOqauB8VTHnEkgjqIVM4XhM4gVsYO3axxSXsG19_w710TTWoHIUJhXzi8du5tQ0IFS3ad8c_Efh7B9-cbPkRF-v-DX7B_ZSOyNeXD"
+    },
+    "asanPardakhtConfig" : {
+      "URL_SERVICE": "https://services.asanpardakht.net/paygate/merchantservices.asmx?wsdl",
+      "URL_HOST_INFO": "https://services.asanpardakht.net/utils/hostinfo.asmx?wsdl",
+      "URL_SERVER_TIME": "https://services.asanpardakht.net/paygate/servertime.asmx?wsdl",
+      "URL_PAYMENT": "https://asan.shaparak.ir",
+      "URL_STATUS": "https://services.asanpardakht.net/paygate/statuswatch.asmx?wsdl",
+      "MERCHANT_ID": 3589237,
+      "MERCHANT_CONFIG_ID": 2178,
+      "USERNAME": "DANESH3589237",
+      "PASSWORD": "G4F5D6",
+      "EncryptionKey": "OZ3e7h1T+JvyDX6iqQuCSuot9Um5fI95HtzOJrxy/ts=",
+      "EncryptionVector": "T0ZuAVsdD6iUFhCuZeB2g5SsDq3LRzhb3FkFJ55vQ40="
+    },
+    "payPecConfig" : {
+      "URL_SERVICE": "https://pec.shaparak.ir/NewIPGServices/Sale/SaleService.asmx?wsdl",
+      "URL_MULTIPLEX": "https://pec.shaparak.ir/NewIPGServices/MultiplexedSale/OnlineMultiplexedSalePaymentService.asmx?wsdl",
+      "URL_REVERS": "https://pec.shaparak.ir/NewIPGServices/Reverse/ReversalService.asmx?wsdl",
+      "URL_PAYMENT": "https://pec.shaparak.ir/NewIPG/?Token=",
+      "URL_CONFIRM": "https://pec.shaparak.ir/NewIPGServices/Confirm/ConfirmService.asmx?wsdl",
+      "URL_MULTI_SERVICE": "https://pec.shaparak.ir/NewIPGServices/MultiplexedSale/OnlineMultiplexedSalePaymentService.asmx?wsdl",
+      "LOGIN_ACCOUNT": "q438IX62h5hjSU6112g7",
+      "TERMINAL_CODE": 44692590
+    }
+  }
+}
+

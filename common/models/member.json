@@ -1,0 +1,63 @@
+{
+  "name": "Member",
+  "base": "User",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "username": {
+      "type": "string",
+      "required": true
+    },
+    "password": {
+      "type": "string",
+      "required": true
+    },
+    "permissionList": {
+      "type":"array",
+      "default": ["register","me"]
+    },
+    "roleList": {
+      "type": [
+        "array"
+      ],
+      "default": ["normal_member"]
+    },
+    "invitationCode": {
+      "type": "string"
+    },
+    "regentId": {
+      "type": "string"
+    },
+    "phoneNumber": {
+      "type": "string"
+    },
+    "phoneNumberVerify": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string",
+      "default": "lastName"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "gender": {
+      "type": "string"
+    },
+    "birthDate": {
+      "type": "date"
+    },
+    "location": {
+      "type": "geopoint"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

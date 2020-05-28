@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../common/mixins",
+      "./mixins"
+    ]
+  },
+  "AccessToken": {
+    "dataSource": "treenetds",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "treenetds",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "treenetds",
+    "public": false,
+    "options": {
+      "strictObjectIDCoercion": true
+    }
+  },
+  "Role": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "Member": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "Personalpage": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "Post": {
+    "dataSource": "treenetds",
+    "public": false
+  }
+}
