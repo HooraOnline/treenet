@@ -43,5 +43,9 @@
   "Post": {
     "dataSource": "treenetds",
     "public": false
+  },
+  "bug": {
+    "dataSource": "treenetds",
+    "public": false
   }
 }

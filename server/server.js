@@ -8,11 +8,15 @@
 const loopback = require('loopback');
 const boot = require('loopback-boot');
 const verifyToken = require('../utils/VerifyToken');
-
-
+const mongoose=require('mongoose')
+const MongoClient = require('mongodb').MongoClient;
 
 
 const app = module.exports = loopback();
+
+
+
+
 app.use('/', verifyToken);
 app.start = function() {
   // start the web server
@@ -24,8 +28,29 @@ app.start = function() {
       const explorerPath = app.get('loopback-component-explorer').mountPath;
       console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
     }
+
+    //connetctDb();
+
   });
 };
+
+const connetctDb=async ()=>{
+  //mongoose.connect('mongodb+srv://root:hoora434343@cluster0-hlfun.mongodb.net/dbTarget?retryWrites=true&w=majority',{ useUnifiedTopology: true });
+  //mongoose.connection.on('connected',()=>console.log('running...'));
+
+  const uri = "mongodb+srv://root:hoora434343@cluster0-hlfun.mongodb.net/dbTarget?retryWrites=true&w=majority";
+  MongoClient.connect(uri, { useUnifiedTopology: true })
+    .then(client => {
+      console.log('Connected to mongo Database')
+      logger.info('*** mongo Server Connection Success ***');
+      const db=client.db('dbTarget');
+      console.log('db is init for use');
+    })
+    .catch(err => {
+      console.log("!!! mongo Server Connection Failed !!! %j", err);
+      //setTimeout(connetctDb, 3000);
+    });
+}
 
 // Bootstrap the application, configure models, datasources and middleware.
 // Sub-apps like REST API are mounted via boot scripts.

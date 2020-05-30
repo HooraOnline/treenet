@@ -15,26 +15,37 @@
       "required": true
     },
     "permissionList": {
-      "type":"array",
-      "default": ["register","me"]
+      "type": "array",
+      "default": [
+        "register",
+        "me"
+      ]
     },
     "roleList": {
       "type": [
         "array"
       ],
-      "default": ["normal_member"]
+      "default": [
+        "normal_member"
+      ]
     },
     "invitationCode": {
+      "type": "string"
+    },
+    "tempRegentCode": {
+      "type": "string"
+    },
+    "regentCode": {
       "type": "string"
     },
     "regentId": {
       "type": "string"
     },
-    "phoneNumber": {
+    "mobile": {
       "type": "string"
     },
-    "phoneNumberVerify": {
-      "type": "string"
+    "mobileVerified": {
+      "type": "boolean"
     },
     "firstName": {
       "type": "string",
