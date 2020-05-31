@@ -38,7 +38,7 @@ module.exports = function(Model) {
   // Adds email uniqueness validation
   Model.validatesUniquenessOf('email', {message: 'Email already exists'});
 
-  const getUniqid =()=> {
+  const getUniqid =(mask)=> {
     return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
   }
   const checkMobileExist =async (mobile)=> {
@@ -56,7 +56,7 @@ module.exports = function(Model) {
     if(!regentCode){
       return 'no_regentCode';
     }
-    const res= await Model.find({where: {regentCode: regentCode}});
+    const res= await Model.find({where: {invitationCode: regentCode}});
     if(!res[0]){
       return 'invalid_regentcode';
     }
@@ -98,12 +98,12 @@ module.exports = function(Model) {
   };
 
 
-  const sendSmsCode =async (mobile,confirmCode)=> {
-
+  const sendSmsCode =async (mobile,confirmCode,callback)=> {
+    return
   };
   Model.registerMe = async (data, callback)=> {
-   /* if(helper.isXssScripts(data))
-      return  callback(new Error("not secure"));*/
+    /* if(helper.isXssScripts(data))
+       return  callback(new Error("not secure"));*/
 
     if(!data.mobile){
       return callback(new Error('شماره موبایل وارد نشده'));
@@ -112,31 +112,34 @@ module.exports = function(Model) {
     let entity={};
     let regentStatue;
     const userList=await checkMobileExist(data.mobile);
+    console.log('&&&&&&&&&&&&&&&&&&&&=',userList);
     if(userList.length>0 ){
       entity=userList[0];
       regentStatue=await setTempRegentCode(data.regentCode,entity);
       entity=initUpdateUserEntity(entity,data);
     }else{
       regentStatue=await setTempRegentCode(data.regentCode,entity);
-      entity=initAddUserEntity(data);
+      entity=initAddUserEntity(entity,data);
     }
 
-    console.log(entity);
-    return Model.updateOrCreate(entity, function (err, res) {
-      if (err) {
-        app.models.Bug.create({err:err}); callback(err);
-        return;
-      }
-      if(regentStatue=='no_regentCode'){
-        return callback(new Error('ثبت نام بدون کد دعوت امکانپذیر نیست'));
-      }
-      if(regentStatue=='invalid_regentcode'){
-        return callback(new Error('این لینک دعوت معتبر نیست'));
-      }
-      sendSmsCode(entity.mobile,entity.smsCode);
-      callback(err, res);
 
-    });
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        if(regentStatue=='no_regentCode'){
+          //return callback(new Error('ثبت نام بدون کد دعوت امکانپذیر نیست'));
+          return callback({code:122,key:'required_regentCode',message:'required regent Code',pmessage:'ثبت نام بدون کد دعوت امکانپذیر نیست'});
+        }
+        if(regentStatue=='invalid_regentcode'){
+          return callback({code:122,key:'invalid_regentCode',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
+        }
+
+        callback(null,entity)
+        //sendSmsCode(entity.mobile,entity.smsCode,callback);
+      }).then(err=>{
+        app.models.Bug.create({err:err});
+        return err;
+      })
+
   };
   Model.remoteMethod(
     'registerMe',
@@ -163,14 +166,7 @@ module.exports = function(Model) {
 
     }
     let entity={};
-    let regent;
-    const userList=await checkMobileExist(data.mobile);
-    if(userList.length>0 ){
-      entity.id=userList[0];
-      entity=initUpdateUserEntity(entity,data);
-    }else{
-      entity=initAddUserEntity(data);
-    }
+
 
     console.log(entity);
     return Model.updateOrCreate(entity, function (err, res) {
@@ -199,35 +195,13 @@ module.exports = function(Model) {
   );
 
 
- //برای لینکهای دعوتی که بدون اجازه صاحب موبایل توسط دوست او در ترینت ثبت شده
+  //برای لینکهای دعوتی که بدون اجازه صاحب موبایل توسط دوست او در ترینت ثبت شده
   //این لینک به موبایل کاربر ارسال می شود و کاربر با کلیک آن وارد پنل خود می شود
   Model.confirmMeByLink = async (data, callback)=> {
     /* if(helper.isXssScripts(data))
        return  callback(new Error("not secure"));*/
 
-    if(!data.link){
-      return callback(new Error('link is require'));
 
-    }
-    let entity={};
-    let regent;
-    const userList=await checkMobileExist(data.mobile);
-    if(userList.length>0 ){
-      entity.id=userList[0];
-      entity=initUpdateUserEntity(entity,data);
-    }else{
-      entity=initAddUserEntity(data);
-    }
-
-    console.log(entity);
-    return Model.updateOrCreate(entity, function (err, res) {
-      if (err) {
-        app.models.Bug.create({err:err}); callback(err);
-      } else {
-        callback(err, res);
-        sendSmsCode(entity.mobile,entity.smsCode);
-      }
-    });
   };
   Model.remoteMethod(
     'registerMe',

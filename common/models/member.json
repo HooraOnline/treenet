@@ -48,8 +48,7 @@
       "type": "boolean"
     },
     "firstName": {
-      "type": "string",
-      "default": "lastName"
+      "type": "string"
     },
     "lastName": {
       "type": "string"
