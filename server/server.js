@@ -27,6 +27,7 @@ app.start = function() {
     if (app.get('loopback-component-explorer')) {
       const explorerPath = app.get('loopback-component-explorer').mountPath;
       console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
+      console.log('success run treenet api')
     }
 
     //connetctDb();
