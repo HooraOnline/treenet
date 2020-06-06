@@ -47,7 +47,7 @@ module.exports = function(Model) {
   };
 
   let regentStatus;
-  const setTempRegentCode =async (regentCode,entity)=> {
+  const checkRegentCode =async (regentCode,entity)=> {
 
     if(entity.mobileVerified){
       return 'regentcode_setbefore';
@@ -67,9 +67,9 @@ module.exports = function(Model) {
 
   const initAddUserEntity =  (entity,data)=> {
     entity.mobile=data.mobile;
-    let smsCode = Math.floor((Math.random() * 100000) + 1).toString();
-    entity.smsCode = smsCode;
-    entity.password = smsCode;
+    let mobileConfirmCode =Math.random().toString().substring(2,6);
+    entity.mobileConfirmCode = mobileConfirmCode;
+    entity.password = mobileConfirmCode;
     let username=entity.mobile.replace('+','');
     entity.username=username;
     entity.username =username.toLowerCase();
@@ -82,7 +82,7 @@ module.exports = function(Model) {
     entity.logOutDate="";
     entity.beforloginDate="";
     entity.permissions=[];
-    entity.phoneNumberVerify=false;
+    entity.emailVerify=false;
     entity.role='normalUser'
     entity.cdate = new Date().toJSON();
     entity.udate = new Date().toJSON();
@@ -90,8 +90,8 @@ module.exports = function(Model) {
   };
 
   const initUpdateUserEntity = (entity,data)=> {
-    let smsCode = Math.floor((Math.random() * 100000) + 1).toString();
-    entity.smsCode = smsCode;
+    let mobileConfirmCode = Math.random().toString().substring(2,6);
+    entity.mobileConfirmCode = mobileConfirmCode;
     entity.numberOfMobileRegister = entity.numberOfMobileRegister+1 ;
     entity.udate = [new Date().toJSON()];
     return entity;
@@ -99,15 +99,14 @@ module.exports = function(Model) {
 
 
   const sendSmsCode =async (mobile,confirmCode,callback)=> {
-    return
+    console.log('smscode was  sended=',confirmCode)
   };
   Model.registerMe = async (data, callback)=> {
     /* if(helper.isXssScripts(data))
        return  callback(new Error("not secure"));*/
 
     if(!data.mobile){
-      return callback(new Error('شماره موبایل وارد نشده'));
-
+      return callback({code:122,key:'enter_your_phone_number',message:'required regent Code',pmessage:'شماره موبایل وارد نشده است.'});
     }
     let entity={};
     let regentStatue;
@@ -115,10 +114,10 @@ module.exports = function(Model) {
     console.log('&&&&&&&&&&&&&&&&&&&&=',userList);
     if(userList.length>0 ){
       entity=userList[0];
-      regentStatue=await setTempRegentCode(data.regentCode,entity);
+      regentStatue=await checkRegentCode(data.regentCode,entity);
       entity=initUpdateUserEntity(entity,data);
     }else{
-      regentStatue=await setTempRegentCode(data.regentCode,entity);
+      regentStatue=await checkRegentCode(data.regentCode,entity);
       entity=initAddUserEntity(entity,data);
     }
 
@@ -126,15 +125,15 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(res=>{
         if(regentStatue=='no_regentCode'){
-          //return callback(new Error('ثبت نام بدون کد دعوت امکانپذیر نیست'));
-          return callback({code:122,key:'required_regentCode',message:'required regent Code',pmessage:'ثبت نام بدون کد دعوت امکانپذیر نیست'});
+          return callback({code:122,key:'required_invitationLink',message:'required regent Code',pmessage:'ثبت نام بدون کد دعوت امکانپذیر نیست'});
         }
         if(regentStatue=='invalid_regentcode'){
-          return callback({code:122,key:'invalid_regentCode',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
+          return callback({code:122,key:'invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
         }
 
         callback(null,entity)
-        //sendSmsCode(entity.mobile,entity.smsCode,callback);
+        sendSmsCode(entity.mobile,entity.mobileConfirmCode);
+        setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
       }).then(err=>{
         app.models.Bug.create({err:err});
         return err;
@@ -151,35 +150,60 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/registerMe',
+        path: '/me/register',
         verb: 'POST',
       },
     }
   );
 
-  Model.confirmMe = async (data, callback)=> {
+
+  Model.confirmMobile = async (data, callback)=> {
     /* if(helper.isXssScripts(data))
        return  callback(new Error("not secure"));*/
 
     if(!data.mobile){
-      return callback(new Error('mobile is require'));
-
+      callback(new Error('mobile is require'));
+      return
     }
-    let entity={};
+    if(!data.mobileConfirmCode){
+       callback(new Error('confirmCode is require'));
+       return
+    }
+    if(!data.regentCode){
+      callback(new Error('regentCode  is require'));
+      return
+    }
+    const userList= await Model.find({where: {mobile:data.mobile}});
+    if(!userList || !userList[0]){
+      callback(new Error('invalid mobile.'));
+      return;
+    }
+    const user=userList[0];
 
-
-    console.log(entity);
-    return Model.updateOrCreate(entity, function (err, res) {
-      if (err) {
-        app.models.Bug.create({err:err}); callback(err);
-      } else {
-        callback(err, res);
-        sendSmsCode(entity.mobile,entity.smsCode);
-      }
-    });
+    if(user.mobileVerified){
+      callback(new Error('mobile was verified before.'));
+      return;
+    }
+    if(user.mobileConfirmCode=='expired'){
+      callback({code:127,key:'expired_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید منقضی شده است'});
+      return;
+    }
+    if(user.mobileConfirmCode!==data.mobileConfirmCode){
+      callback({code:443,key:'invalid_mobile_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
+      return;
+    }
+    const regentList= await Model.find({where: {invitationCode: data.regentCode}});
+    if(!regentList || !regentList[0]){
+      callback(new Error('regentCode code is invalid'));
+      return
+    }
+    const regent=regentList[0];
+    let entity={id:user.id, regentCode:regent.invitationCode,regentId:regent.id ,  mobileVerified:true,state:'confirmRegistration'};
+    callback(null, {mobileVerified:true});
+    return Model.updateOrCreate(entity);
   };
   Model.remoteMethod(
-    'registerMe',
+    'confirmMobile',
     {
       accepts: [{
         arg: 'data',
@@ -188,7 +212,49 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/registerMe',
+        path: '/me/confirmMobile',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.initMyProfile = async (data, callback)=> {
+    /* if(helper.isXssScripts(data))
+       return  callback(new Error("not secure"));*/
+    if(!data.mobile){
+      callback(new Error('mobile is require'));
+      return
+    }
+    const userList= await Model.find({where: {mobile:data.mobile}});
+    if(!userList || !userList[0]){
+      callback(new Error('invalid mobile.'));
+      return;
+    }
+    const user=userList[0];
+    const currentDate=new Date();
+    let entity={
+      id:user.id,
+      firstName:data.firstName,
+      lastName:data.lastName,
+      gender:data.gender,
+      age:data.gender,
+      biarthdate: currentDate.setYear(currentDate.getFullYear()-Number(data.age)),
+      state:'confirmRegistrationStep2'
+    };
+    callback(null, {invitationCode:user.invitationCode});
+    return Model.updateOrCreate(entity);
+  };
+  Model.remoteMethod(
+    'initMyProfile',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/initProfile',
         verb: 'POST',
       },
     }
@@ -252,9 +318,9 @@ module.exports = function(Model) {
             return callback(new Error("ورود ناموفق2"));
 
           delete member.password;
-          delete member.smsCode;
+          delete member.mobileConfirmCode;
           delete member.oldPassword;
-          member.smsCode="";
+          member.mobileConfirmCode="";
           member.beforloginDate = member.loginDate;
           member.loginDate = new Date().toJSON();
           member.state = 'login';
