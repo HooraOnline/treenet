@@ -3,17 +3,17 @@ var app = require('../../server/server');
 const jwtRun = require('../../utils/jwtRun');
 const uuidV4 = require('uuid/v4')
 module.exports = function(Model) {
-  Model.disableRemoteMethod("create", true);
+  //Model.disableRemoteMethod("create", true);
   Model.disableRemoteMethod("upsert", true);
   Model.disableRemoteMethod("replaceOrCreate", true);
   Model.disableRemoteMethod("upsertWithWhere", true);
   Model.disableRemoteMethod("exists", true);
   Model.disableRemoteMethod("findById", true);
-  Model.disableRemoteMethod("find", true);
+  //Model.disableRemoteMethod("find", true);
   Model.disableRemoteMethod("findOne", true);
   Model.disableRemoteMethod("updateAll", true);
   Model.disableRemoteMethod("deleteById", true);
-  Model.disableRemoteMethod("count", true);
+  //Model.disableRemoteMethod("count", true);
   Model.disableRemoteMethod("updateAttributes", true);
   Model.disableRemoteMethod("createChangeStream", true);
   Model.disableRemoteMethod("confirm", true);
