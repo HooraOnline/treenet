@@ -2,6 +2,7 @@
 var app = require('../../server/server');
 const jwtRun = require('../../utils/jwtRun');
 const uuidV4 = require('uuid/v4')
+const request = require('request');
 module.exports = function(Model) {
   //Model.disableRemoteMethod("create", true);
   Model.disableRemoteMethod("upsert", true);
@@ -99,8 +100,59 @@ module.exports = function(Model) {
 
 
   const sendSmsCode =async (mobile,confirmCode,callback)=> {
-    console.log('smscode was  sended=',confirmCode)
+    SmsTools.autoSendCode(mobile, "treenetgram.com")
+      .then((messageId) => {
+        console.log(`Sent to ${mobile} Message ID: ` + messageId);
+      })
+      .catch(error => console.log(error));
+
+
+
+    request.post({
+      url: 'http://ippanel.com/api/select',
+      body: {
+        "op" : "send",
+        "uname" : "YOUR_USERNAME",
+        "pass":  "YOUR_PASSWORD",
+        "message" : "salam",
+        "from": "1000XXX",
+        "to" : ["936xxxxx","912xxxx"],
+
+      },
+      json: true,
+    }, function (error, response, body) {
+      if (!error && response.statusCode === 200) {
+        console.log(response.body);
+      } else {
+        console.log("whatever you want====",error, response);
+      }
+    });
+
   };
+  Model.sendConfirmCode = async (data, callback)=> {
+    SmsTools.autoSendCode(data.mobile, "treenetgram.com")
+      .then((messageId) => {
+        console.log(`Sent to ${data.mobile} Message ID: ` + messageId);
+      })
+      .catch(error => console.log(error));
+  };
+  Model.remoteMethod(
+    'sendConfirmCode',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/sendConfirmCode',
+        verb: 'POST',
+      },
+    }
+  );
+
+
   Model.registerMe = async (data, callback)=> {
     /* if(helper.isXssScripts(data))
        return  callback(new Error("not secure"));*/
@@ -113,6 +165,10 @@ module.exports = function(Model) {
     const userList=await checkMobileExist(data.mobile);
     console.log('&&&&&&&&&&&&&&&&&&&&=',userList);
     if(userList.length>0 ){
+      if(userList[0].mobileVerified){
+        return callback({code:142,key:'mobile_was_verified_before',message:'mobile was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
+        return;
+      }
       entity=userList[0];
       regentStatue=await checkRegentCode(data.regentCode,entity);
       entity=initUpdateUserEntity(entity,data);
@@ -120,8 +176,6 @@ module.exports = function(Model) {
       regentStatue=await checkRegentCode(data.regentCode,entity);
       entity=initAddUserEntity(entity,data);
     }
-
-
     return Model.updateOrCreate(entity)
       .then(res=>{
         if(regentStatue=='no_regentCode'){
@@ -132,7 +186,7 @@ module.exports = function(Model) {
         }
 
         callback(null,entity)
-        sendSmsCode(entity.mobile,entity.mobileConfirmCode);
+        //sendSmsCode(entity.mobile,entity.mobileConfirmCode);
         setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
       }).then(err=>{
         app.models.Bug.create({err:err});
