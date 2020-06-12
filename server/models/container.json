@@ -1,0 +1,51 @@
+{
+  "name": "container",
+  "base": "Model",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {},
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW",
+      "property": ["uploadSmallFile","deleteProfileImage","download"]
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": ["upload","uploadSmallFile","uploadBiglFile","deleteProfileImage","getContainers","createContainer","destroyContainer","getContainer","getFiles","removeFile","download"]
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "superadmin",
+      "permission": "ALLOW",
+      "property": ["uploadBiglFile","deleteProfileImage","getContainers","createContainer","destroyContainer","getContainer","getFiles","removeFile","upload","download","uploadSmallFile"]
+    }
+
+
+  ],
+  "methods": {}
+}

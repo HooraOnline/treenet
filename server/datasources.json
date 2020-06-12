@@ -12,6 +12,14 @@
     "database": "treenetdb",
     "name": "treenetds",
     "connector": "mongodb"
+  },
+  "storage": {
+    "name": "storage",
+    "connector": "loopback-component-storage",
+    "provider": "filesystem",
+    "maxFileSize":  "1048576000",
+    "root": "./server/storage",
+    "allowedContentTypes": ["image/png","image/jpeg","image/jpg","video/mp4","video/mkv"]
   }
 }
 

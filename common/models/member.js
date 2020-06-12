@@ -50,7 +50,7 @@ module.exports = function(Model) {
   let regentStatus;
   const checkRegentCode =async (regentCode,entity)=> {
 
-    if(entity.mobileVerified){
+    if(entity.userVerified){
       return 'regentcode_setbefore';
     }
 
@@ -67,17 +67,24 @@ module.exports = function(Model) {
 
 
   const initAddUserEntity =  (entity,data)=> {
-    entity.mobile=data.mobile;
+    if(data.mobile){
+      entity.tempMobile=data.mobile;
+    }
+    if(data.email){
+      entity.tempEmail=data.email;
+    }
     let mobileConfirmCode =Math.random().toString().substring(2,6);
     entity.mobileConfirmCode = mobileConfirmCode;
-    entity.password = mobileConfirmCode;
-    let username=entity.mobile.replace('+','');
+    entity.password = getUniqid('xxxxxxxx');
+    entity.tempPassword = entity.password;
+    let username=getUniqid('xxxxxxxxxxxxxxxxxxxxxxxx');
+    console.log('rrrrrrrrrrrr======',username);
     entity.username=username;
     entity.username =username.toLowerCase();
     entity.state = 'registermobile';
-    entity.mobileVerified=false;
+    entity.userVerified=false;
     entity.numberOfMobileRegister=0;
-    entity.profileImage = data.profileImage || 'no-image.png';
+    entity.profileImage = data.profileImage || 'defaultProfileImage.png';
     entity.invitationCode=getUniqid('xxxxxxxxxxxxxxxxxxxxxxxx');
     entity.loginDate="";
     entity.logOutDate="";
@@ -92,6 +99,12 @@ module.exports = function(Model) {
 
   const initUpdateUserEntity = (entity,data)=> {
     let mobileConfirmCode = Math.random().toString().substring(2,6);
+    if(data.mobile){
+      entity.tempMobile=data.mobile;
+    }
+    if(data.email){
+      entity.tempEmail=data.email;
+    }
     entity.mobileConfirmCode = mobileConfirmCode;
     entity.numberOfMobileRegister = entity.numberOfMobileRegister+1 ;
     entity.udate = [new Date().toJSON()];
@@ -156,38 +169,47 @@ module.exports = function(Model) {
   Model.registerMe = async (data, callback)=> {
     /* if(helper.isXssScripts(data))
        return  callback(new Error("not secure"));*/
-
-    if(!data.mobile){
-      return callback({code:122,key:'enter_your_phone_number',message:'required regent Code',pmessage:'شماره موبایل وارد نشده است.'});
+    console.log(data);
+    if(!data.mobile && !data.email){
+      return callback({code:1,key:'enter_your_phone_number_or_email',message:'required regent Code',pmessage:'شماره موبایل یا ایمیل وارد نشده است.'});
     }
+    let filter={or: []};
+    if(data.mobile){
+      filter.or.push({mobile: data.mobile})
+    }
+    if(data.email){
+      filter.or.push({email: data.email})
+    }
+    console.log(filter);
     let entity={};
     let regentStatue;
-    const userList=await checkMobileExist(data.mobile);
-    console.log('&&&&&&&&&&&&&&&&&&&&=',userList);
-    if(userList.length>0 ){
-      if(userList[0].mobileVerified){
-        return callback({code:142,key:'mobile_was_verified_before',message:'mobile was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
-        return;
+    if(filter.or.length>0){
+      const userList= await Model.find({where:filter});
+      console.log('&&&&&&&&&&&&&&&&&&&&=',userList);
+      if(userList && userList.length>0 ){
+        if(userList[0].userVerified){
+          return callback({code:2,key:'user_was_verified_before',message:'user was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
+          return;
+        }
+        entity=userList[0];
+        regentStatue=await checkRegentCode(data.regentCode,entity);
+        entity=initUpdateUserEntity(entity,data);
+      }else{
+        regentStatue=await checkRegentCode(data.regentCode,entity);
+        entity=initAddUserEntity(entity,data);
       }
-      entity=userList[0];
-      regentStatue=await checkRegentCode(data.regentCode,entity);
-      entity=initUpdateUserEntity(entity,data);
-    }else{
-      regentStatue=await checkRegentCode(data.regentCode,entity);
-      entity=initAddUserEntity(entity,data);
     }
     return Model.updateOrCreate(entity)
       .then(res=>{
         if(regentStatue=='no_regentCode'){
-          return callback({code:122,key:'required_invitationLink',message:'required regent Code',pmessage:'ثبت نام بدون کد دعوت امکانپذیر نیست'});
+          return callback({code:2,key:'required_invitationLink',message:'required regent Code',pmessage:'ثبت نام بدون کد دعوت امکانپذیر نیست'});
         }
         if(regentStatue=='invalid_regentcode'){
-          return callback({code:122,key:'invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
+          return callback({code:3,key:'invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
         }
-
-        callback(null,entity)
+        callback(null,res);
         //sendSmsCode(entity.mobile,entity.mobileConfirmCode);
-        setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
+        //setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
       }).then(err=>{
         app.models.Bug.create({err:err});
         return err;
@@ -210,18 +232,180 @@ module.exports = function(Model) {
     }
   );
 
+  Model.checkUserNameExist = async (data, callback)=> {
+    if(!data.userName){
+      callback(new Error('userName is require'));
+      return
+    }
+    return Model.find({where: {username:data.userName}})
+      .then(res=>{
+        console.log('ppppppp===',res);
+        if(res && res[0])
+         callback(null,true);
+        else
+          callback(null,false);
+      }).then(err=>{
+        callback({code:7, lbError:error, key:'error_tryAgain',message:'Error,Pleas try again.',pmessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'checkUserNameExist',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/checkUserNameExist',
+        verb: 'POST',
+      },
+    }
+  );
 
-  Model.confirmMobile = async (data, callback)=> {
+  Model.updateUsernameAndPassword = async (data, callback)=> {
+    console.log('updateUsernameAndPassword',data);
+    if(!data.id){
+      callback(new Error('id is require'));
+      return
+    }
+    const userId=data.id;
+    if(!data.userName){
+      callback(new Error('userName is require'));
+      return
+    }
+    if(!data.password){
+      callback(new Error('password is require'));
+      return
+    }
+    //ObjectId("5444349871af283b92c440cc")
+   /* const userList= await Model.findOne({where: {id:data.id}});
+    console.log('findOne===========',userList);
+    if(userList && userList[0]){
+      const user=userList[0];
+      if(user.userVerified){
+        callback({code:6,key:'this_username_already_exist_chose_another',message:'This username already exist chose another',pmessage:'این نام کاربری وجود دارد. نام کاربری دیگری انتخاب کنید'});
+        return;
+      }
+    }*/
+
+    let entity={id:userId,username:data.userName,password:data.password,state:'updateUsernameAndPassword'};
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        callback(null,entity)
+      }).then(err=>{
+        app.models.Bug.create({err:err});
+        callback({code:7, lbError:error, key:'error_updateUsernameAndPassword',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'updateUsernameAndPassword',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/updateUsernameAndPassword',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.setProfileImage = async (data, callback)=> {
+    console.log('setProfileImage',data);
+    if(!data.profileImage){
+      callback(new Error('image is require'));
+      return
+    }
+    if(!data.id){
+      callback(new Error('id is require'));
+      return
+    }
+    const userId=data.id;
+
+
+
+    let entity={id:userId,profileImage:data.profileImage};
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        callback(null,entity);
+      }).then(err=>{
+        app.models.Bug.create({err:err});
+        callback({code:7, lbError:error, key:'error_update_profileImage',message:'Error update profileImage',pmessage:'خطا در ذخیره تصویر پروفایل'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'setProfileImage',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/setProfileImage',
+        verb: 'POST',
+      },
+    }
+  );
+  Model.initMyProfile = async (data, callback)=> {
     /* if(helper.isXssScripts(data))
        return  callback(new Error("not secure"));*/
 
+    const currentDate=new Date();
+    const userId=data.id;
+    let entity={
+      id:userId,
+      firstName:data.firstName,
+      lastName:data.lastName,
+      gender:data.gender,
+      biarthDate: currentDate.setYear(currentDate.getFullYear()-Number(data.age)),
+      state:'initMyProfile'
+    };
+
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        console.log('initMyProfile_res=====',res);
+        callback(null,res)
+      }).then(err=>{
+        app.models.Bug.create({err:err});
+        callback({code:7, lbError:error, key:'error_on_send_ivitation_code',message:'Error on send ivitation code',pmessage:'خطا در ارسال کد دعوت'});
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'initMyProfile',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/initProfile',
+        verb: 'POST',
+      },
+    }
+  );
+  Model.confirmMobile = async (data, callback)=> {
+    /* if(helper.isXssScripts(data))
+       return  callback(new Error("not secure"));*/
     if(!data.mobile){
       callback(new Error('mobile is require'));
       return
     }
     if(!data.mobileConfirmCode){
-       callback(new Error('confirmCode is require'));
-       return
+      callback(new Error('confirmCode is require'));
+      return
     }
     if(!data.regentCode){
       callback(new Error('regentCode  is require'));
@@ -234,16 +418,16 @@ module.exports = function(Model) {
     }
     const user=userList[0];
 
-    if(user.mobileVerified){
+    if(user.userVerified){
       callback(new Error('mobile was verified before.'));
       return;
     }
     if(user.mobileConfirmCode=='expired'){
-      callback({code:127,key:'expired_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید منقضی شده است'});
+      callback({code:4,key:'expired_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید منقضی شده است'});
       return;
     }
     if(user.mobileConfirmCode!==data.mobileConfirmCode){
-      callback({code:443,key:'invalid_mobile_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
+      callback({code:5,key:'invalid_mobile_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
       return;
     }
     const regentList= await Model.find({where: {invitationCode: data.regentCode}});
@@ -252,8 +436,8 @@ module.exports = function(Model) {
       return
     }
     const regent=regentList[0];
-    let entity={id:user.id, regentCode:regent.invitationCode,regentId:regent.id ,  mobileVerified:true,state:'confirmRegistration'};
-    callback(null, {mobileVerified:true});
+    let entity={id:user.id, regentCode:regent.invitationCode,regentId:regent.id ,  userVerified:true,state:'confirmRegistration'};
+    callback(null, {userVerified:true});
     return Model.updateOrCreate(entity);
   };
   Model.remoteMethod(
@@ -271,49 +455,6 @@ module.exports = function(Model) {
       },
     }
   );
-
-  Model.initMyProfile = async (data, callback)=> {
-    /* if(helper.isXssScripts(data))
-       return  callback(new Error("not secure"));*/
-    if(!data.mobile){
-      callback(new Error('mobile is require'));
-      return
-    }
-    const userList= await Model.find({where: {mobile:data.mobile}});
-    if(!userList || !userList[0]){
-      callback(new Error('invalid mobile.'));
-      return;
-    }
-    const user=userList[0];
-    const currentDate=new Date();
-    let entity={
-      id:user.id,
-      firstName:data.firstName,
-      lastName:data.lastName,
-      gender:data.gender,
-      age:data.gender,
-      biarthdate: currentDate.setYear(currentDate.getFullYear()-Number(data.age)),
-      state:'confirmRegistrationStep2'
-    };
-    callback(null, {invitationCode:user.invitationCode});
-    return Model.updateOrCreate(entity);
-  };
-  Model.remoteMethod(
-    'initMyProfile',
-    {
-      accepts: [{
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      }],
-      returns: {arg: 'result', type: 'object',root:true },
-      http: {
-        path: '/me/initProfile',
-        verb: 'POST',
-      },
-    }
-  );
-
 
   //برای لینکهای دعوتی که بدون اجازه صاحب موبایل توسط دوست او در ترینت ثبت شده
   //این لینک به موبایل کاربر ارسال می شود و کاربر با کلیک آن وارد پنل خود می شود

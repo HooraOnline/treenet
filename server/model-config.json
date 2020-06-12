@@ -47,5 +47,9 @@
   "bug": {
     "dataSource": "treenetds",
     "public": false
+  },
+  "container": {
+    "dataSource": "storage",
+    "public": true
   }
 }
