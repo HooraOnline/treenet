@@ -171,7 +171,7 @@ module.exports = function(Model) {
        return  callback(new Error("not secure"));*/
     console.log(data);
     if(!data.mobile && !data.email){
-      return callback({code:1,key:'enter_your_phone_number_or_email',message:'required regent Code',pmessage:'شماره موبایل یا ایمیل وارد نشده است.'});
+      return callback({code:1,key:'server_member_enter_your_phone_number_or_email',message:'required regent Code',pmessage:'شماره موبایل یا ایمیل وارد نشده است.'});
     }
     let filter={or: []};
     if(data.mobile){
@@ -188,7 +188,7 @@ module.exports = function(Model) {
       console.log('&&&&&&&&&&&&&&&&&&&&=',userList);
       if(userList && userList.length>0 ){
         if(userList[0].userVerified){
-          return callback({code:2,key:'user_was_verified_before',message:'user was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
+          return callback({code:2,key:'server_member_user_was_verified_before',message:'user was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
           return;
         }
         entity=userList[0];
@@ -202,10 +202,10 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(res=>{
         if(regentStatue=='no_regentCode'){
-          return callback({code:2,key:'required_invitationLink',message:'required regent Code',pmessage:'ثبت نام بدون کد دعوت امکانپذیر نیست'});
+          return callback({code:2,key:'server_member_required_invitationLink',message:'required regent Code',pmessage:'برای شبکه سازی، باید از طریق لینک دعوت وارد سایت شوید.'});
         }
         if(regentStatue=='invalid_regentcode'){
-          return callback({code:3,key:'invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
+          return callback({code:3,key:'server_member_invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
         }
         callback(null,res);
         //sendSmsCode(entity.mobile,entity.mobileConfirmCode);
@@ -245,7 +245,7 @@ module.exports = function(Model) {
         else
           callback(null,false);
       }).then(err=>{
-        callback({code:7, lbError:error, key:'error_tryAgain',message:'Error,Pleas try again.',pmessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        callback({code:7, lbError:error, key:'server_member_error_tryAgain',message:'Error,Pleas try again.',pmessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })
   };
@@ -286,7 +286,7 @@ module.exports = function(Model) {
     if(userList && userList[0]){
       const user=userList[0];
       if(user.userVerified){
-        callback({code:6,key:'this_username_already_exist_chose_another',message:'This username already exist chose another',pmessage:'این نام کاربری وجود دارد. نام کاربری دیگری انتخاب کنید'});
+        callback({code:6,key:'server_member_this_username_already_exist_chose_another',message:'This username already exist chose another',pmessage:'این نام کاربری وجود دارد. نام کاربری دیگری انتخاب کنید'});
         return;
       }
     }*/
@@ -297,7 +297,7 @@ module.exports = function(Model) {
         callback(null,entity)
       }).then(err=>{
         app.models.Bug.create({err:err});
-        callback({code:7, lbError:error, key:'error_updateUsernameAndPassword',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
+        callback({code:7, lbError:error, key:'server_member_error_updateUsernameAndPassword',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
         return err;
       })
   };
@@ -337,7 +337,7 @@ module.exports = function(Model) {
         callback(null,entity);
       }).then(err=>{
         app.models.Bug.create({err:err});
-        callback({code:7, lbError:error, key:'error_update_profileImage',message:'Error update profileImage',pmessage:'خطا در ذخیره تصویر پروفایل'});
+        callback({code:7, lbError:error, key:'server_member_error_update_profileImage',message:'Error update profileImage',pmessage:'خطا در ذخیره تصویر پروفایل'});
         return err;
       })
   };
@@ -377,7 +377,7 @@ module.exports = function(Model) {
         callback(null,res)
       }).then(err=>{
         app.models.Bug.create({err:err});
-        callback({code:7, lbError:error, key:'error_on_send_ivitation_code',message:'Error on send ivitation code',pmessage:'خطا در ارسال کد دعوت'});
+        callback({code:7, lbError:error, key:'server_member_error_on_send_ivitation_code',message:'Error on send ivitation code',pmessage:'خطا در ارسال کد دعوت'});
         return err;
       });
   };
@@ -423,11 +423,11 @@ module.exports = function(Model) {
       return;
     }
     if(user.mobileConfirmCode=='expired'){
-      callback({code:4,key:'expired_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید منقضی شده است'});
+      callback({code:4,key:'fa_server_member_expired_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید منقضی شده است'});
       return;
     }
     if(user.mobileConfirmCode!==data.mobileConfirmCode){
-      callback({code:5,key:'invalid_mobile_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
+      callback({code:5,key:'server_member_invalid_mobile_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
       return;
     }
     const regentList= await Model.find({where: {invitationCode: data.regentCode}});
