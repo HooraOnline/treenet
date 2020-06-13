@@ -49,11 +49,9 @@ module.exports = function(Model) {
 
   let regentStatus;
   const checkRegentCode =async (regentCode,entity)=> {
-
     if(entity.userVerified){
       return 'regentcode_setbefore';
     }
-
     if(!regentCode){
       return 'no_regentCode';
     }
@@ -61,17 +59,18 @@ module.exports = function(Model) {
     if(!res[0]){
       return 'invalid_regentcode';
     }
-    entity.tempRegentCode=regentCode;
+    entity.regentId=res[0].id;
+    entity.regentCode=regentCode;
     return 'valid_regentcode';
   };
 
 
   const initAddUserEntity =  (entity,data)=> {
     if(data.mobile){
-      entity.tempMobile=data.mobile;
+      entity.mobile=data.mobile;
     }
     if(data.email){
-      entity.tempEmail=data.email;
+      entity.email=data.email;
     }
     let mobileConfirmCode =Math.random().toString().substring(2,6);
     entity.mobileConfirmCode = mobileConfirmCode;
@@ -100,10 +99,10 @@ module.exports = function(Model) {
   const initUpdateUserEntity = (entity,data)=> {
     let mobileConfirmCode = Math.random().toString().substring(2,6);
     if(data.mobile){
-      entity.tempMobile=data.mobile;
+      entity.mobile=data.mobile;
     }
     if(data.email){
-      entity.tempEmail=data.email;
+      entity.email=data.email;
     }
     entity.mobileConfirmCode = mobileConfirmCode;
     entity.numberOfMobileRegister = entity.numberOfMobileRegister+1 ;
@@ -198,15 +197,16 @@ module.exports = function(Model) {
         regentStatue=await checkRegentCode(data.regentCode,entity);
         entity=initAddUserEntity(entity,data);
       }
+
+    }
+    if(regentStatue=='no_regentCode'){
+      return callback({code:2,key:'server_member_required_invitationLink',message:'required regent Code',pmessage:'برای شبکه سازی، باید از طریق لینک دعوت وارد سایت شوید.'});
+    }
+    if(regentStatue=='invalid_regentcode'){
+      return callback({code:3,key:'server_member_invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
     }
     return Model.updateOrCreate(entity)
       .then(res=>{
-        if(regentStatue=='no_regentCode'){
-          return callback({code:2,key:'server_member_required_invitationLink',message:'required regent Code',pmessage:'برای شبکه سازی، باید از طریق لینک دعوت وارد سایت شوید.'});
-        }
-        if(regentStatue=='invalid_regentcode'){
-          return callback({code:3,key:'server_member_invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
-        }
         callback(null,res);
         //sendSmsCode(entity.mobile,entity.mobileConfirmCode);
         //setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
@@ -367,6 +367,7 @@ module.exports = function(Model) {
       firstName:data.firstName,
       lastName:data.lastName,
       gender:data.gender,
+      age:data.age,
       biarthDate: currentDate.setYear(currentDate.getFullYear()-Number(data.age)),
       state:'initMyProfile'
     };
