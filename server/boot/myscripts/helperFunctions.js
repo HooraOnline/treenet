@@ -2,7 +2,7 @@ var crypto = require('crypto');
 const excelToJson = require('convert-excel-to-json');
 
 module.exports = {
-    isXssScripts: function (model) {
+    isXssScripts: function (model={}) {
         let inputStr = JSON.stringify(model);
         inputStr = inputStr.replace('&amp', "").replace('&amp', '').replace('&lt', '').replace('&gt', '').replace('&amp', '').replace('&amp', '').replace('&amp', '');
         return /(<([^>]+)>)/ig.test(inputStr);

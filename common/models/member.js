@@ -110,7 +110,6 @@ module.exports = function(Model) {
     return entity;
   };
 
-
   const sendSmsCode =async (mobile,confirmCode,callback)=> {
     SmsTools.autoSendCode(mobile, "treenetgram.com")
       .then((messageId) => {
@@ -164,11 +163,23 @@ module.exports = function(Model) {
     }
   );
 
+  Model.beforeRemote('*', function (context, user, next) {
+    var req = context.req;
+    /* if(helper.isXssScripts(req.body)){
+        return  callback(new Error("not secure"));
+     }*/
+    //console.log('req.body33====',req.body);
+   // console.log('req.userId====',req.userId);
+    //console.log('req.params====',req.params);
+    //req.params.userId=req.userId;
+    if(req.body){
+      req.body.userId=req.userId;
+    }
+    next();
+  });
 
-  Model.registerMe = async (data, callback)=> {
-    /* if(helper.isXssScripts(data))
-       return  callback(new Error("not secure"));*/
-    console.log(data);
+
+  Model.registerMe = async (data, callback,params)=> {
     if(!data.mobile && !data.email){
       return callback({code:1,key:'server_member_enter_your_phone_number_or_email',message:'required regent Code',pmessage:'شماره موبایل یا ایمیل وارد نشده است.'});
     }
@@ -457,6 +468,8 @@ module.exports = function(Model) {
     }
   );
 
+
+
   //برای لینکهای دعوتی که بدون اجازه صاحب موبایل توسط دوست او در ترینت ثبت شده
   //این لینک به موبایل کاربر ارسال می شود و کاربر با کلیک آن وارد پنل خود می شود
   Model.confirmMeByLink = async (data, callback)=> {
@@ -475,7 +488,7 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/registerMe',
+        path: '/me/confirmByLink',
         verb: 'POST',
       },
     }
@@ -484,26 +497,31 @@ module.exports = function(Model) {
   const unsucsessLoginNumber={};
   const unsucsessLoginNumberFlag={};
   const unsucsessLoginTime={};
-  Model.loginMember = function(params, callback) {
-    params.username=params.username.toLowerCase();
-    if(unsucsessLoginNumber[params.username] && unsucsessLoginNumber[params.username]>2){
-      if(!unsucsessLoginNumberFlag[params.username]){
+  Model.loginMember = function(data, callback) {
+    console.log('gfhfh=',data);
+    //data.username=data.username.toLowerCase();
+    if(unsucsessLoginNumber[data.username] && unsucsessLoginNumber[data.username]>2){
+      if(!unsucsessLoginNumberFlag[data.username]){
         setTimeout(()=>{
-          delete unsucsessLoginNumberFlag[params.username];
-          delete  unsucsessLoginNumber[params.username];
-        },1800000);
+          delete unsucsessLoginNumberFlag[data.username];
+          delete  unsucsessLoginNumber[data.username];
+        },180000);
       }
-      unsucsessLoginNumberFlag[params.username]=true;
-      return callback(new Error('لاگین ناموفق بصورت پی در پی، حداقل 30 دقیقه صبر کرده و دوباره امتحان کنید'));
+      unsucsessLoginNumberFlag[data.username]=true;
+      return callback({code:5,key:'server_login_multi_login',pmessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
+
     }
-    Model.login(params, function(err, res) {
+    Model.login(data, function(err, res) {
       if (err){
-        unsucsessLoginNumber[params.username]=unsucsessLoginNumber[params.username]?++unsucsessLoginNumber[params.username]:1;
-        unsucsessLoginTime[params.username]=new Date();
-        return callback(new Error('ورود ناموفق'));
+        unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
+        unsucsessLoginTime[data.username]=new Date();
+        return callback({code:5,key:'server_login_unsuccess',pmessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
+
       }
-      delete unsucsessLoginNumber[params.username];
-      delete unsucsessLoginTime[params.username];
+      console.log(4444444444444444);
+      delete unsucsessLoginNumber[data.username];
+      delete unsucsessLoginTime[data.username];
+      console.log(5555555555555555555);
       if (res.id) {
         return Model.findById(res.userId, {}, function(err2, member) {
           //خطا در لود اطلاعات کاربر'
@@ -515,7 +533,7 @@ module.exports = function(Model) {
 
           delete member.password;
           delete member.mobileConfirmCode;
-          delete member.oldPassword;
+          delete member.tempPassword;
           member.mobileConfirmCode="";
           member.beforloginDate = member.loginDate;
           member.loginDate = new Date().toJSON();
@@ -535,7 +553,7 @@ module.exports = function(Model) {
   };
   Model.remoteMethod('loginMember', {
     accepts: [{
-      arg: 'params',
+      arg: 'data',
       type: 'object',
       http: { source: 'body' }
     },],
@@ -545,8 +563,44 @@ module.exports = function(Model) {
       root: true
     },
     http: {
-      path: '/loginMember',
+      path: '/me/login',
       verb: 'POST',
     },
   });
+
+  Model.getProfile = function (cUser,params={}, callback) {
+    console.log('cUserID====',cUser);
+    console.log('params====',params);
+    const userId=cUser.userId;
+    return Model.findById(userId,params.filter, function (err, res) {
+      if (err) {
+
+        app.models.Bug.create({err:err}); callback(err);
+      } else {
+        callback(err, res);
+      }
+    });
+  };
+  Model.remoteMethod(
+    'getProfile',
+    {
+      accepts: [{
+        arg: 'cUser',
+        type: 'object',
+        http: { source: 'body' }
+      },
+        {
+          arg: 'params',
+          type: 'string',
+        }
+      ],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/getProfile',
+        verb: 'GET'
+      }
+    }
+  );
+
+
 };

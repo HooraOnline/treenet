@@ -67,3 +67,4 @@ boot(app, { "appRootDir": __dirname, "bootScripts" : [ "./boot/myscripts/public.
 app.use(`api/acssesses`, (req, res, next)=> {
   console.log(4444);
 });
+

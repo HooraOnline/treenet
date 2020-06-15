@@ -37,7 +37,7 @@
     "serverConfig": {
       "testPort": 5000,
       "productPort": 4000,
-      "SN": "/apaman198"
+      "SN": "/api"
     },
     "fileConfig": {
       "uploadPath": "/views/images",
