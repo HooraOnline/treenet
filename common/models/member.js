@@ -373,6 +373,7 @@ module.exports = function(Model) {
 
     const currentDate=new Date();
     const userId=data.id;
+
     let entity={
       id:userId,
       firstName:data.firstName,
@@ -528,7 +529,7 @@ module.exports = function(Model) {
           if(err2 || !member)
             return callback(new Error('ورود ناموفق1'));
           //'اکانت شما توسط مدیر سیستم غیر فعال شده است'
-          if (!member.isActive)
+          if (member.disable)
             return callback(new Error("ورود ناموفق2"));
 
           delete member.password;
@@ -572,11 +573,15 @@ module.exports = function(Model) {
     console.log('cUserID====',cUser);
     console.log('params====',params);
     const userId=cUser.userId;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
     return Model.findById(userId,params.filter, function (err, res) {
       if (err) {
-
         app.models.Bug.create({err:err}); callback(err);
       } else {
+        console.log(res);
         callback(err, res);
       }
     });
@@ -599,6 +604,46 @@ module.exports = function(Model) {
         path: '/me/getProfile',
         verb: 'GET'
       }
+    }
+  );
+
+
+  Model.getSubsetList = function (params, callback) {
+    console.log('userId====',params.userId);
+    console.log('params22====',params);
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+
+    params.include= {"subsets":{"subsets":{"subsets":"subsets"}}}
+    params.where={regentId:userId};
+    return Model.find(params, function (err, res) {
+      if (err) {
+        app.models.Bug.create({err:err}); callback(err);
+      } else {
+        callback(err, res);
+      }
+    });
+  };
+  Model.remoteMethod(
+    'getSubsetList',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/me/getSubsetList',
+        verb: 'POST',
+      },
     }
   );
 

@@ -67,7 +67,24 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "subsets": {
+      "type": "hasMany",
+      "model": "Member",
+      "foreignKey": "regentId"
+    },
+    "likes": {
+      "type": "hasMany",
+      "model": "Like",
+      "foreignKey": ""
+    },
+    "seens": {
+      "type": "hasMany",
+      "model": "Seen",
+      "foreignKey": ""
+    }
+
+  },
   "acls": [],
   "methods": {}
 }
