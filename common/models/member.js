@@ -316,7 +316,7 @@ module.exports = function(Model) {
     if(data.gender){
       entity.gender=data.gender;
     }
-    return Model.updateAttributes(entity)
+    return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,res)
       }).then(err=>{
