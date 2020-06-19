@@ -271,13 +271,13 @@ module.exports = function(Model) {
     }
   );
   Model.updateUsernameAndPassword = async (data, callback)=> {
-    console.log('000000000data=',data);
+
     const userId=data.userId;
     if(!userId){
       callback({code:7, lbError:error, key:'server_your_token_expier',pmessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
       return
     }
-    console.log('111111111111userId===',userId);
+
     if(!data.username){
       callback(new Error('username is require'));
       return
@@ -286,9 +286,9 @@ module.exports = function(Model) {
       callback(new Error('password is require'));
       return
     }
-    console.log('2222222222222222');
-    //ObjectId("5444349871af283b92c440cc")
 
+    //ObjectId("5444349871af283b92c440cc")
+    const currentDate=new Date();
     let entity={
       id:userId,
       username:data.username,
@@ -297,13 +297,29 @@ module.exports = function(Model) {
       isVerify:true,
       udate:new Date(),
     };
-    console.log('33333333333333entity===',entity);
+    if(data.mobile){
+      entity.mobile=data.mobile;
+    }
+    if(data.email){
+      entity.email=data.email;
+    }
+    if(data.firstName){
+      entity.firstName=data.firstName;
+    }
+    if(data.lastName){
+      entity.lastName=data.lastName;
+    }
+    if(data.age){
+      entity.age=data.age;
+      entity.biarthDate= currentDate.setYear(currentDate.getFullYear()-Number(data.age));
+    }
+    if(data.gender){
+      entity.gender=data.gender;
+    }
     return Model.updateOrCreate(entity)
       .then(res=>{
-        console.log('4444444444444==res=',res);
         callback(null,res)
       }).then(err=>{
-        console.log('4444444444444==err=',err);
         callback({code:7, lbError:error, key:'server_public_error',pmessage:'خطایی رخ داد. دوباره تلاش کنید.'});
         return err;
       })
