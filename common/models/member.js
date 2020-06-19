@@ -316,10 +316,14 @@ module.exports = function(Model) {
     if(data.gender){
       entity.gender=data.gender;
     }
-    return Model.updateOrCreate(entity)
+    return Model.updateAttributes(entity)
       .then(res=>{
         callback(null,res)
       }).then(err=>{
+        if(err.statusCode= 422){
+          callback({code:442, lbError:error, key:'server_member_email_is_exist',pmessage:'ایمیل تکراری'});
+          return
+        }
         callback({code:7, lbError:error, key:'server_public_error',pmessage:'خطایی رخ داد. دوباره تلاش کنید.'});
         return err;
       })
