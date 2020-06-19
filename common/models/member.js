@@ -37,7 +37,7 @@ module.exports = function(Model) {
   Model.validate('email', function (err) { if (!re.test(this.email) && this.email !== undefined) err(); }, {message: 'Email format is invalid'});
 
   // Adds email uniqueness validation
-  Model.validatesUniquenessOf('email', {message: 'Email already exists'});
+  //Model.validatesUniquenessOf('email', {message: 'Email already exists'});
 
   const getUniqId =(mask)=> {
     return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
