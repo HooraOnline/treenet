@@ -39,7 +39,7 @@ module.exports = function(Model) {
   // Adds email uniqueness validation
   Model.validatesUniquenessOf('email', {message: 'Email already exists'});
 
-  const getUniqid =(mask)=> {
+  const getUniqId =(mask)=> {
     return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
   }
   const checkMobileExist =async (mobile)=> {
@@ -74,17 +74,16 @@ module.exports = function(Model) {
     }
     let mobileConfirmCode =Math.random().toString().substring(2,6);
     entity.mobileConfirmCode = mobileConfirmCode;
-    entity.password = getUniqid('xxxxxxxx');
+    entity.password = getUniqId('xxxxxxxx');
     entity.tempPassword = entity.password;
-    let username=getUniqid('xxxxxxxxxxxxxxxxxxxxxxxx');
-    console.log('rrrrrrrrrrrr======',username);
+    let username=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
     entity.username=username;
     entity.username =username.toLowerCase();
     entity.state = 'registermobile';
     entity.userVerified=false;
     entity.numberOfMobileRegister=0;
     entity.profileImage = data.profileImage || 'defaultProfileImage.png';
-    entity.invitationCode=getUniqid('xxxxxxxxxxxxxxxxxxxxxxxx');
+    entity.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
     entity.loginDate="";
     entity.logOutDate="";
     entity.beforloginDate="";
@@ -113,7 +112,7 @@ module.exports = function(Model) {
   const sendSmsCode =async (mobile,confirmCode,callback)=> {
     SmsTools.autoSendCode(mobile, "treenetgram.com")
       .then((messageId) => {
-        console.log(`Sent to ${mobile} Message ID: ` + messageId);
+
       })
       .catch(error => console.log(error));
 
@@ -168,62 +167,60 @@ module.exports = function(Model) {
     /* if(helper.isXssScripts(req.body)){
         return  callback(new Error("not secure"));
      }*/
-    //console.log('req.body33====',req.body);
-   // console.log('req.userId====',req.userId);
-    //console.log('req.params====',req.params);
     //req.params.userId=req.userId;
+    console.log('ttttttttt==req.userId',req.userId);
     if(req.body){
       req.body.userId=req.userId;
     }
     next();
   });
 
+  const initNewUser =  (regent,geo,geoInfo)=> {
+    const user={geo,geoInfo};
+    const username=getUniqId('xxxxxxxxx');
+    user.username =username.toLowerCase();
+    const password = Math.random().toString().substring(2,8);
+    user.password =password;
+    user.tempPassword = password;
+    user.state = 'register';
+    user.regentCode=regent.invitationCode;
+    user.regentId=regent.id;
+    user.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
+    user.profileImage = 'defaultProfileImage.png';
+    user.loginDate="";
+    user.logOutDate="";
+    user.beforloginDate="";
+    user.permissions=[];
+    user.mobileVerify=false;
+    user.emailVerify=false;
+    user.role='normalUser'
+    user.cdate = new Date().toJSON();
+    user.udate = new Date().toJSON();
 
-  Model.registerMe = async (data, callback,params)=> {
-    if(!data.mobile && !data.email){
-      return callback({code:1,key:'server_member_enter_your_phone_number_or_email',message:'required regent Code',pmessage:'شماره موبایل یا ایمیل وارد نشده است.'});
-    }
-    let filter={or: []};
-    if(data.mobile){
-      filter.or.push({mobile: data.mobile})
-    }
-    if(data.email){
-      filter.or.push({email: data.email})
-    }
-    console.log(filter);
-    let entity={};
-    let regentStatue;
-    if(filter.or.length>0){
-      const userList= await Model.find({where:filter});
-      console.log('&&&&&&&&&&&&&&&&&&&&=',userList);
-      if(userList && userList.length>0 ){
-        if(userList[0].userVerified){
-          return callback({code:2,key:'server_member_user_was_verified_before',message:'user was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
-          return;
-        }
-        entity=userList[0];
-        regentStatue=await checkRegentCode(data.regentCode,entity);
-        entity=initUpdateUserEntity(entity,data);
-      }else{
-        regentStatue=await checkRegentCode(data.regentCode,entity);
-        entity=initAddUserEntity(entity,data);
-      }
+    return user;
+  };
 
+  Model.registerMe = async (data, callback)=> {
+    if(!data.regentCode){
+      return callback({code:1,key:'server_member_required_regent_code',message:'required regent Code',pmessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
     }
-    if(regentStatue=='no_regentCode'){
-      return callback({code:2,key:'server_member_required_invitationLink',message:'required regent Code',pmessage:'برای شبکه سازی، باید از طریق لینک دعوت وارد سایت شوید.'});
+    const regentList=await Model.find({where: {invitationCode: data.regentCode}});
+    if(!regentList){
+      callback({code:1,key:'server_public_error',pmessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+      return
     }
-    if(regentStatue=='invalid_regentcode'){
-      return callback({code:3,key:'server_member_invalid_invitation_link',message:'invalid regent Code',pmessage:'این لینک دعوت معتبر نیست'});
+    if(regentList.length==0){
+      callback({code:3,key:'server_member_invalid_invitation_link',pmessage:'این لینک دعوت معتبر نیست'});
+      return ;
     }
-    return Model.updateOrCreate(entity)
+
+    let user=initNewUser(regentList[0],data.geo,data.geoInfo);
+    user.forTest=1
+    return Model.updateOrCreate(user)
       .then(res=>{
         callback(null,res);
-        //sendSmsCode(entity.mobile,entity.mobileConfirmCode);
-        //setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
       }).then(err=>{
-        app.models.Bug.create({err:err});
-        return err;
+        callback({code:1,key:'server_public_error',pmessage:'خطایی رخ داد، دوباره تلاش کنید.'});;
       })
 
   };
@@ -242,17 +239,15 @@ module.exports = function(Model) {
       },
     }
   );
-
   Model.checkUserNameExist = async (data, callback)=> {
-    if(!data.userName){
-      callback(new Error('userName is require'));
+    if(!data.username){
+      callback(new Error('username is require'));
       return
     }
-    return Model.find({where: {username:data.userName}})
+    return Model.find({where: {username:data.username}})
       .then(res=>{
-        console.log('ppppppp===',res);
         if(res && res[0])
-         callback(null,true);
+          callback(null,true);
         else
           callback(null,false);
       }).then(err=>{
@@ -275,40 +270,41 @@ module.exports = function(Model) {
       },
     }
   );
-
   Model.updateUsernameAndPassword = async (data, callback)=> {
-    console.log('updateUsernameAndPassword',data);
-    if(!data.id){
-      callback(new Error('id is require'));
+    console.log('000000000data=',data);
+    const userId=data.userId;
+    if(!userId){
+      callback({code:7, lbError:error, key:'server_your_token_expier',pmessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
       return
     }
-    const userId=data.id;
-    if(!data.userName){
-      callback(new Error('userName is require'));
+    console.log('111111111111userId===',userId);
+    if(!data.username){
+      callback(new Error('username is require'));
       return
     }
     if(!data.password){
       callback(new Error('password is require'));
       return
     }
+    console.log('2222222222222222');
     //ObjectId("5444349871af283b92c440cc")
-   /* const userList= await Model.findOne({where: {id:data.id}});
-    console.log('findOne===========',userList);
-    if(userList && userList[0]){
-      const user=userList[0];
-      if(user.userVerified){
-        callback({code:6,key:'server_member_this_username_already_exist_chose_another',message:'This username already exist chose another',pmessage:'این نام کاربری وجود دارد. نام کاربری دیگری انتخاب کنید'});
-        return;
-      }
-    }*/
 
-    let entity={id:userId,username:data.userName,password:data.password,state:'updateUsernameAndPassword'};
+    let entity={
+      id:userId,
+      username:data.username,
+      password:data.password,
+      state:'changeUsername',
+      isVerify:true,
+      udate:new Date(),
+    };
+    console.log('33333333333333entity===',entity);
     return Model.updateOrCreate(entity)
       .then(res=>{
-        callback(null,entity)
+        console.log('4444444444444==res=',res);
+        callback(null,res)
       }).then(err=>{
-        app.models.Bug.create({err:err});
-        callback({code:7, lbError:error, key:'server_member_error_updateUsernameAndPassword',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
+        console.log('4444444444444==err=',err);
+        callback({code:7, lbError:error, key:'server_public_error',pmessage:'خطایی رخ داد. دوباره تلاش کنید.'});
         return err;
       })
   };
@@ -328,19 +324,66 @@ module.exports = function(Model) {
     }
   );
 
+  Model.registerMe_Old = async (data, callback,params)=> {
+    if(!data.mobile && !data.email){
+      return callback({code:1,key:'server_member_enter_your_phone_number_or_email',message:'required regent Code',pmessage:'شماره موبایل یا ایمیل وارد نشده است.'});
+    }
+    let filter={or: []};
+    if(data.mobile){
+      filter.or.push({mobile: data.mobile})
+    }
+    if(data.email){
+      filter.or.push({email: data.email})
+    }
+    let entity={};
+    let regentStatue;
+    if(filter.or.length>0){
+      const userList= await Model.find({where:filter});
+      if(userList && userList.length>0 ){
+        if(userList[0].userVerified){
+          return callback({code:2,key:'server_member_user_was_verified_before',message:'user was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
+          return;
+        }
+        entity=userList[0];
+        regentStatue=await checkRegentCode(data.regentCode,entity);
+        entity=initUpdateUserEntity(entity,data);
+      }else{
+        regentStatue=await checkRegentCode(data.regentCode,entity);
+        entity=initAddUserEntity(entity,data);
+      }
+
+    }
+    if(regentStatue=='no_regentCode'){
+      return callback({code:2,key:'server_member_required_invitationLink',message:'required regent Code',pmessage:'برای شبکه سازی، باید از طریق لینک دعوت وارد سایت شوید.'});
+    }
+    if(regentStatue=='invalid_regentcode'){
+      return callback({code:3,key:'server_member_invalid_invitation_link',pmessage:'این لینک دعوت معتبر نیست'});
+    }
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        callback(null,res);
+        //sendSmsCode(entity.mobile,entity.mobileConfirmCode);
+        //setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
+      }).then(err=>{
+        app.models.Bug.create({err:err});
+        return err;
+      })
+
+  };
+
+
+
   Model.setProfileImage = async (data, callback)=> {
-    console.log('setProfileImage',data);
+    const userId=data.userId;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+
     if(!data.profileImage){
       callback(new Error('image is require'));
       return
     }
-    if(!data.id){
-      callback(new Error('id is require'));
-      return
-    }
-    const userId=data.id;
-
-
 
     let entity={id:userId,profileImage:data.profileImage};
     return Model.updateOrCreate(entity)
@@ -368,12 +411,13 @@ module.exports = function(Model) {
     }
   );
   Model.initMyProfile = async (data, callback)=> {
-    /* if(helper.isXssScripts(data))
-       return  callback(new Error("not secure"));*/
+    const userId=data.userId;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
 
     const currentDate=new Date();
-    const userId=data.id;
-
     let entity={
       id:userId,
       firstName:data.firstName,
@@ -386,7 +430,6 @@ module.exports = function(Model) {
 
     return Model.updateOrCreate(entity)
       .then(res=>{
-        console.log('initMyProfile_res=====',res);
         callback(null,res)
       }).then(err=>{
         app.models.Bug.create({err:err});
@@ -480,7 +523,7 @@ module.exports = function(Model) {
 
   };
   Model.remoteMethod(
-    'registerMe',
+    'confirmByLink',
     {
       accepts: [{
         arg: 'data',
@@ -499,7 +542,6 @@ module.exports = function(Model) {
   const unsucsessLoginNumberFlag={};
   const unsucsessLoginTime={};
   Model.loginMember = function(data, callback) {
-    console.log('gfhfh=',data);
     //data.username=data.username.toLowerCase();
     if(unsucsessLoginNumber[data.username] && unsucsessLoginNumber[data.username]>2){
       if(!unsucsessLoginNumberFlag[data.username]){
@@ -519,10 +561,8 @@ module.exports = function(Model) {
         return callback({code:5,key:'server_login_unsuccess',pmessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
 
       }
-      console.log(4444444444444444);
       delete unsucsessLoginNumber[data.username];
       delete unsucsessLoginTime[data.username];
-      console.log(5555555555555555555);
       if (res.id) {
         return Model.findById(res.userId, {}, function(err2, member) {
           //خطا در لود اطلاعات کاربر'
@@ -570,8 +610,7 @@ module.exports = function(Model) {
   });
 
   Model.getProfile = function (cUser,params={}, callback) {
-    console.log('cUserID====',cUser);
-    console.log('params====',params);
+    console.log(99999999999999);
     const userId=cUser.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -581,7 +620,6 @@ module.exports = function(Model) {
       if (err) {
         app.models.Bug.create({err:err}); callback(err);
       } else {
-        console.log(res);
         callback(err, res);
       }
     });
@@ -609,8 +647,6 @@ module.exports = function(Model) {
 
 
   Model.getSubsetList = function (params, callback) {
-    console.log('userId====',params.userId);
-    console.log('params22====',params);
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));

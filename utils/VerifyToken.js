@@ -10,14 +10,8 @@ function verifyToken(req, res, next) {
 
 
   let openApiList=[
-      '/members/me/login',
-      '/members/me/confirmMobile',
       '/members/me/register',
-      '/members/me/checkUserNameExist',
-      '/members/me/updateUsernameAndPassword',
-      '/members/me/setProfileImage',
-      '/members/me/initProfile',
-      '/members/me/checkUserNameExist',
+      '/members/me/login',
       '/pay/result',
     ];
   //let apiPath=req.originalUrl.toLowerCase().replace('/api','');

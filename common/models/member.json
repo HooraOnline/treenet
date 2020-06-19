@@ -14,7 +14,7 @@
       "type": "string",
       "required": true
     },
-    "permissionList": {
+    "permissions": {
       "type": "array",
       "default": [
         "register",
