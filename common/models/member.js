@@ -215,7 +215,7 @@ module.exports = function(Model) {
     }
 
     let user=initNewUser(regentList[0],data.geo,data.geoInfo);
-    user.forTest=1
+   // user.forTest=1
     return Model.updateOrCreate(user)
       .then(res=>{
         callback(null,res);
