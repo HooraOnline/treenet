@@ -168,7 +168,6 @@ module.exports = function(Model) {
         return  callback(new Error("not secure"));
      }*/
     //req.params.userId=req.userId;
-    console.log('ttttttttt==req.userId',req.userId);
     if(req.body){
       req.body.userId=req.userId;
     }
@@ -630,8 +629,9 @@ module.exports = function(Model) {
   });
 
   Model.getProfile = function (cUser,params={}, callback) {
-    console.log(99999999999999);
+
     const userId=cUser.userId;
+    console.log('99999999999999==',userId);
     if(!userId){
       callback(new Error('token expier'));
       return
