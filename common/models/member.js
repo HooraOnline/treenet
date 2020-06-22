@@ -89,7 +89,7 @@ module.exports = function(Model) {
     entity.beforloginDate="";
     entity.permissions=[];
     entity.emailVerify=false;
-    entity.role='normalUser'
+    entity.role='normalUser';
     entity.cdate = new Date().toJSON();
     entity.udate = new Date().toJSON();
     return entity;
@@ -312,9 +312,7 @@ module.exports = function(Model) {
       entity.age=data.age;
       entity.biarthDate= currentDate.setYear(currentDate.getFullYear()-Number(data.age));
     }
-    if(data.gender){
-      entity.gender=data.gender;
-    }
+    entity.gender=data.gender ||0;
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,res)
@@ -393,6 +391,7 @@ module.exports = function(Model) {
 
 
   Model.setProfileImage = async (data, callback)=> {
+    console.log('image========',data.userId);
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -599,10 +598,11 @@ module.exports = function(Model) {
           member.loginDate = new Date().toJSON();
           member.state = 'login';
           const token = jwtRun.sign({userId: member.id});
-          delete member.id;
+          //delete member.id;
           const responseObject =Object.assign(member,{token: token}) ;
           callback(err2, responseObject);
           delete member.token;
+
           Model.updateOrCreate(member, (err3, res3)=> {
 
           });
