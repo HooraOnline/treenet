@@ -293,7 +293,7 @@ module.exports = function(Model) {
       username:data.username,
       password:data.password,
       state:'changeUsername',
-      isVerify:true,
+      userChangedUserName:true,
       udate:new Date(),
     };
     if(data.mobile){
@@ -310,7 +310,7 @@ module.exports = function(Model) {
     }
     if(data.age){
       entity.age=data.age;
-      entity.biarthDate= currentDate.setYear(currentDate.getFullYear()-Number(data.age));
+      entity.birthDate= currentDate.setYear(currentDate.getFullYear()-Number(data.age));
     }
     entity.gender=data.gender ||0;
     return Model.updateOrCreate(entity)
@@ -340,55 +340,6 @@ module.exports = function(Model) {
       },
     }
   );
-
-  Model.registerMe_Old = async (data, callback,params)=> {
-    if(!data.mobile && !data.email){
-      return callback({code:1,key:'server_member_enter_your_phone_number_or_email',message:'required regent Code',pmessage:'شماره موبایل یا ایمیل وارد نشده است.'});
-    }
-    let filter={or: []};
-    if(data.mobile){
-      filter.or.push({mobile: data.mobile})
-    }
-    if(data.email){
-      filter.or.push({email: data.email})
-    }
-    let entity={};
-    let regentStatue;
-    if(filter.or.length>0){
-      const userList= await Model.find({where:filter});
-      if(userList && userList.length>0 ){
-        if(userList[0].userVerified){
-          return callback({code:2,key:'server_member_user_was_verified_before',message:'user was verified before',pmessage:'این موبایل قبلا ثبت شده است.'});
-          return;
-        }
-        entity=userList[0];
-        regentStatue=await checkRegentCode(data.regentCode,entity);
-        entity=initUpdateUserEntity(entity,data);
-      }else{
-        regentStatue=await checkRegentCode(data.regentCode,entity);
-        entity=initAddUserEntity(entity,data);
-      }
-
-    }
-    if(regentStatue=='no_regentCode'){
-      return callback({code:2,key:'server_member_required_invitationLink',message:'required regent Code',pmessage:'برای شبکه سازی، باید از طریق لینک دعوت وارد سایت شوید.'});
-    }
-    if(regentStatue=='invalid_regentcode'){
-      return callback({code:3,key:'server_member_invalid_invitation_link',pmessage:'این لینک دعوت معتبر نیست'});
-    }
-    return Model.updateOrCreate(entity)
-      .then(res=>{
-        callback(null,res);
-        //sendSmsCode(entity.mobile,entity.mobileConfirmCode);
-        //setTimeout(()=>Model.updateOrCreate({id:res.id,mobileConfirmCode:'expired'}),60000*3)
-      }).then(err=>{
-        app.models.Bug.create({err:err});
-        return err;
-      })
-
-  };
-
-
 
   Model.setProfileImage = async (data, callback)=> {
     console.log('image========',data.userId);
@@ -428,35 +379,36 @@ module.exports = function(Model) {
       },
     }
   );
-  Model.initMyProfile = async (data, callback)=> {
+  Model.editProfile = async (data, callback)=> {
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
 
-    const currentDate=new Date();
+    const now=new Date();
+    let year=now.getFullYear()-Number(data.age);
+    let birthDate=now.setYear(year);
     let entity={
       id:userId,
       firstName:data.firstName,
       lastName:data.lastName,
       gender:data.gender,
       age:data.age,
-      biarthDate: currentDate.setYear(currentDate.getFullYear()-Number(data.age)),
-      state:'initMyProfile'
-    };
+      birthDate:birthDate ,
 
+    };
+    console.log(entity);
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,res)
       }).then(err=>{
-        app.models.Bug.create({err:err});
         callback({code:7, lbError:error, key:'server_member_error_on_send_ivitation_code',message:'Error on send ivitation code',pmessage:'خطا در ارسال کد دعوت'});
         return err;
       });
   };
   Model.remoteMethod(
-    'initMyProfile',
+    'editProfile',
     {
       accepts: [{
         arg: 'data',
@@ -465,7 +417,7 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/me/initProfile',
+        path: '/me/editProfile',
         verb: 'POST',
       },
     }
