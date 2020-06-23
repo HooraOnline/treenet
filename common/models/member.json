@@ -83,7 +83,6 @@
       "model": "Seen",
       "foreignKey": ""
     }
-
   },
   "acls": [],
   "methods": {}

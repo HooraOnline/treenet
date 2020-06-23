@@ -7,9 +7,9 @@
     "host": "ds113134.mlab.com",
     "port": 13134,
     "url": "",
+    "database": "treenetdb",
     "username": "treenet_user1",
     "password": "hoora434343",
-    "database": "treenetdb",
     "name": "treenetds",
     "connector": "mongodb"
   },
@@ -17,9 +17,14 @@
     "name": "storage",
     "connector": "loopback-component-storage",
     "provider": "filesystem",
-    "maxFileSize":  "1048576000",
+    "maxFileSize": "1048576000",
     "root": "./server/storage",
-    "allowedContentTypes": ["image/png","image/jpeg","image/jpg","video/mp4","video/mkv"]
+    "allowedContentTypes": [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "video/mp4",
+      "video/mkv"
+    ]
   }
 }
-

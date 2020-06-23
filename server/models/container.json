@@ -30,22 +30,48 @@
       "principalType": "ROLE",
       "principalId": "$authenticated",
       "permission": "ALLOW",
-      "property": ["uploadSmallFile","deleteProfileImage","download"]
+      "property": [
+        "uploadSmallFile",
+        "deleteProfileImage",
+        "download"
+      ]
     },
     {
       "principalType": "ROLE",
       "principalId": "admin",
       "permission": "ALLOW",
-      "property": ["upload","uploadSmallFile","uploadBiglFile","deleteProfileImage","getContainers","createContainer","destroyContainer","getContainer","getFiles","removeFile","download"]
+      "property": [
+        "upload",
+        "uploadSmallFile",
+        "uploadBiglFile",
+        "deleteProfileImage",
+        "getContainers",
+        "createContainer",
+        "destroyContainer",
+        "getContainer",
+        "getFiles",
+        "removeFile",
+        "download"
+      ]
     },
     {
       "principalType": "ROLE",
       "principalId": "superadmin",
       "permission": "ALLOW",
-      "property": ["uploadBiglFile","deleteProfileImage","getContainers","createContainer","destroyContainer","getContainer","getFiles","removeFile","upload","download","uploadSmallFile"]
+      "property": [
+        "uploadBiglFile",
+        "deleteProfileImage",
+        "getContainers",
+        "createContainer",
+        "destroyContainer",
+        "getContainer",
+        "getFiles",
+        "removeFile",
+        "upload",
+        "download",
+        "uploadSmallFile"
+      ]
     }
-
-
   ],
   "methods": {}
 }

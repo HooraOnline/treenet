@@ -393,6 +393,8 @@ module.exports = function(Model) {
       id:userId,
       firstName:data.firstName,
       lastName:data.lastName,
+      mobile:data.mobile?data.mobile:'',
+      email:data.email?data.email:'',
       gender:data.gender,
       age:data.age,
       birthDate:birthDate ,
@@ -581,9 +583,8 @@ module.exports = function(Model) {
   });
 
   Model.getProfile = function (cUser,params={}, callback) {
-
     const userId=cUser.userId;
-    console.log('99999999999999==',userId);
+    console.log('9999 userId==',userId);
     if(!userId){
       callback(new Error('token expier'));
       return
