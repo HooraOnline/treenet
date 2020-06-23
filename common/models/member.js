@@ -147,6 +147,10 @@ module.exports = function(Model) {
       callback(new Error('username is require'));
       return
     }
+    if(data.currentUsername==data.username){
+      callback(null,false);
+      return
+    }
     return Model.find({where: {username:data.username}})
       .then(res=>{
         if(res && res[0])
