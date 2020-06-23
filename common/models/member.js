@@ -33,8 +33,8 @@ module.exports = function(Model) {
 
   // Adds email format validation
   // Note custom validator because validatesFormat with regex will return false on a null value
-  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  Model.validate('email', function (err) { if (!re.test(this.email) && this.email !== undefined) err(); }, {message: 'Email format is invalid'});
+  //var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  //Model.validate('email', function (err) { if (!re.test(this.email) && this.email !== undefined) err(); }, {message: 'Email format is invalid'});
 
   // Adds email uniqueness validation
   //Model.validatesUniquenessOf('email', {message: 'Email already exists'});
@@ -301,13 +301,17 @@ module.exports = function(Model) {
       id:userId,
       firstName:data.firstName,
       lastName:data.lastName,
-      mobile:data.mobile?data.mobile:'',
-      email:data.email?data.email:'',
       gender:data.gender,
       age:data.age,
       birthDate:birthDate ,
 
     };
+    if(data.mobile){
+      entity.mobile=data.mobile;
+    }
+    if(data.email){
+      entity.email=data.email;
+    }
     console.log(entity);
     return Model.updateOrCreate(entity)
       .then(res=>{
