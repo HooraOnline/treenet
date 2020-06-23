@@ -65,103 +65,6 @@ module.exports = function(Model) {
   };
 
 
-  const initAddUserEntity =  (entity,data)=> {
-    if(data.mobile){
-      entity.mobile=data.mobile;
-    }
-    if(data.email){
-      entity.email=data.email;
-    }
-    let mobileConfirmCode =Math.random().toString().substring(2,6);
-    entity.mobileConfirmCode = mobileConfirmCode;
-    entity.password = getUniqId('xxxxxxxx');
-    entity.tempPassword = entity.password;
-    let username=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
-    entity.username=username;
-    entity.username =username.toLowerCase();
-    entity.state = 'registermobile';
-    entity.userVerified=false;
-    entity.numberOfMobileRegister=0;
-    entity.profileImage = data.profileImage || 'defaultProfileImage.png';
-    entity.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
-    entity.loginDate="";
-    entity.logOutDate="";
-    entity.beforloginDate="";
-    entity.permissions=[];
-    entity.emailVerify=false;
-    entity.role='normalUser';
-    entity.cdate = new Date().toJSON();
-    entity.udate = new Date().toJSON();
-    return entity;
-  };
-
-  const initUpdateUserEntity = (entity,data)=> {
-    let mobileConfirmCode = Math.random().toString().substring(2,6);
-    if(data.mobile){
-      entity.mobile=data.mobile;
-    }
-    if(data.email){
-      entity.email=data.email;
-    }
-    entity.mobileConfirmCode = mobileConfirmCode;
-    entity.numberOfMobileRegister = entity.numberOfMobileRegister+1 ;
-    entity.udate = [new Date().toJSON()];
-    return entity;
-  };
-
-  const sendSmsCode =async (mobile,confirmCode,callback)=> {
-    SmsTools.autoSendCode(mobile, "treenetgram.com")
-      .then((messageId) => {
-
-      })
-      .catch(error => console.log(error));
-
-
-
-    request.post({
-      url: 'http://ippanel.com/api/select',
-      body: {
-        "op" : "send",
-        "uname" : "YOUR_USERNAME",
-        "pass":  "YOUR_PASSWORD",
-        "message" : "salam",
-        "from": "1000XXX",
-        "to" : ["936xxxxx","912xxxx"],
-
-      },
-      json: true,
-    }, function (error, response, body) {
-      if (!error && response.statusCode === 200) {
-        console.log(response.body);
-      } else {
-        console.log("whatever you want====",error, response);
-      }
-    });
-
-  };
-  Model.sendConfirmCode = async (data, callback)=> {
-    SmsTools.autoSendCode(data.mobile, "treenetgram.com")
-      .then((messageId) => {
-        console.log(`Sent to ${data.mobile} Message ID: ` + messageId);
-      })
-      .catch(error => console.log(error));
-  };
-  Model.remoteMethod(
-    'sendConfirmCode',
-    {
-      accepts: [{
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      }],
-      returns: {arg: 'result', type: 'object',root:true },
-      http: {
-        path: '/sendConfirmCode',
-        verb: 'POST',
-      },
-    }
-  );
-
   Model.beforeRemote('*', function (context, user, next) {
     var req = context.req;
     /* if(helper.isXssScripts(req.body)){
@@ -193,6 +96,7 @@ module.exports = function(Model) {
     user.mobileVerify=false;
     user.emailVerify=false;
     user.role='normalUser'
+    user.notChangePassword=true,
     user.cdate = new Date().toJSON();
     user.udate = new Date().toJSON();
 
@@ -201,15 +105,15 @@ module.exports = function(Model) {
 
   Model.registerMe = async (data, callback)=> {
     if(!data.regentCode){
-      return callback({code:1,key:'server_member_required_regent_code',message:'required regent Code',pmessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
+      return callback(null,{errorCode:1,errorKey:'server_member_required_regent_code',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
     }
     const regentList=await Model.find({where: {invitationCode: data.regentCode}});
     if(!regentList){
-      callback({code:1,key:'server_public_error',pmessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+      callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
       return
     }
     if(regentList.length==0){
-      callback({code:3,key:'server_member_invalid_invitation_link',pmessage:'این لینک دعوت معتبر نیست'});
+      callback(null,{errorCode:3,errorKey:'server_member_invalid_invitation_link',errorMessage:'این لینک دعوت معتبر نیست'});
       return ;
     }
 
@@ -219,7 +123,7 @@ module.exports = function(Model) {
       .then(res=>{
         callback(null,res);
       }).then(err=>{
-        callback({code:1,key:'server_public_error',pmessage:'خطایی رخ داد، دوباره تلاش کنید.'});;
+        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});;
       })
 
   };
@@ -250,7 +154,7 @@ module.exports = function(Model) {
         else
           callback(null,false);
       }).then(err=>{
-        callback({code:7, lbError:error, key:'server_member_error_tryAgain',message:'Error,Pleas try again.',pmessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })
   };
@@ -273,7 +177,7 @@ module.exports = function(Model) {
 
     const userId=data.userId;
     if(!userId){
-      callback({code:7, lbError:error, key:'server_your_token_expier',pmessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
+      callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
       return
     }
 
@@ -293,7 +197,7 @@ module.exports = function(Model) {
       username:data.username,
       password:data.password,
       state:'changeUsername',
-      userChangedUserName:true,
+      notChangePassword:false,
       udate:new Date(),
     };
     if(data.mobile){
@@ -318,10 +222,10 @@ module.exports = function(Model) {
         callback(null,res)
       }).then(err=>{
         if(err.statusCode= 422){
-          callback({code:442, lbError:error, key:'server_member_email_is_exist',pmessage:'ایمیل تکراری'});
+          callback(null,{errorCode:442, lbError:error, errorKey:'server_member_email_is_exist',errorMessage:'ایمیل تکراری'});
           return
         }
-        callback({code:7, lbError:error, key:'server_public_error',pmessage:'خطایی رخ داد. دوباره تلاش کنید.'});
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
         return err;
       })
   };
@@ -360,7 +264,7 @@ module.exports = function(Model) {
         callback(null,entity);
       }).then(err=>{
         app.models.Bug.create({err:err});
-        callback({code:7, lbError:error, key:'server_member_error_update_profileImage',message:'Error update profileImage',pmessage:'خطا در ذخیره تصویر پروفایل'});
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
         return err;
       })
   };
@@ -405,7 +309,7 @@ module.exports = function(Model) {
       .then(res=>{
         callback(null,res)
       }).then(err=>{
-        callback({code:7, lbError:error, key:'server_member_error_on_send_ivitation_code',message:'Error on send ivitation code',pmessage:'خطا در ارسال کد دعوت'});
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_on_send_ivitation_code',message:'Error on send ivitation errorCode',errorMessage:'خطا در ارسال کد دعوت'});
         return err;
       });
   };
@@ -451,16 +355,16 @@ module.exports = function(Model) {
       return;
     }
     if(user.mobileConfirmCode=='expired'){
-      callback({code:4,key:'fa_server_member_expired_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید منقضی شده است'});
+      callback(null,{errorCode:4,errorKey:'fa_server_member_expired_confirmation_code',message:'invalid confirm Code',errorMessage:'کد تایید منقضی شده است'});
       return;
     }
     if(user.mobileConfirmCode!==data.mobileConfirmCode){
-      callback({code:5,key:'server_member_invalid_mobile_confirmation_code',message:'invalid confirm Code',pmessage:'کد تایید موبایل اشتباه است'});
+      callback(null,{errorCode:5,errorKey:'server_member_invalid_mobile_confirmation_code',message:'invalid confirm Code',errorMessage:'کد تایید موبایل اشتباه است'});
       return;
     }
     const regentList= await Model.find({where: {invitationCode: data.regentCode}});
     if(!regentList || !regentList[0]){
-      callback(new Error('regentCode code is invalid'));
+      callback(new Error('regentCode errorCode is invalid'));
       return
     }
     const regent=regentList[0];
@@ -523,14 +427,16 @@ module.exports = function(Model) {
         },180000);
       }
       unsucsessLoginNumberFlag[data.username]=true;
-      return callback({code:5,key:'server_login_multi_login',pmessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
+      return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
 
     }
     Model.login(data, function(err, res) {
       if (err){
+        console.log(1111111111);
         unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
         unsucsessLoginTime[data.username]=new Date();
-        return callback({code:5,key:'server_login_unsuccess',pmessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
+        console.log(22222222222222);
+        return callback(null,{isError:true,errorCode:5,errorKey:'server_login_unsuccess',errorMessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
 
       }
       delete unsucsessLoginNumber[data.username];
