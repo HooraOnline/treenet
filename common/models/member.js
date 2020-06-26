@@ -70,8 +70,11 @@ module.exports = function(Model) {
     /* if(helper.isXssScripts(req.body)){
         return  callback(new Error("not secure"));
      }*/
-    //req.params.userId=req.userId;
-    if(req.body){
+    //req.pa
+    //
+    // rams.userId=req.userId;
+
+    if(req.body && req.userId){
       req.body.userId=req.userId;
     }
     next();
@@ -79,7 +82,7 @@ module.exports = function(Model) {
 
   const initNewUser =  (regent,geo,geoInfo)=> {
     const user={geo,geoInfo};
-    const username=getUniqId('xxxxxxxxx');
+    const username=getUniqId('xxxxxxxxxx');
     user.username =username.toLowerCase();
     const password = Math.random().toString().substring(2,8);
     user.password =password;
@@ -89,6 +92,8 @@ module.exports = function(Model) {
     user.regentId=regent.id;
     user.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
     user.profileImage = 'defaultProfileImage.png';
+    user.inviteProfileImage= 'defaultProfileImage.png';
+    user.avatar='عضو فعال تری نتگرام';
     user.loginDate="";
     user.logOutDate="";
     user.beforloginDate="";
@@ -99,7 +104,6 @@ module.exports = function(Model) {
     user.notChangePassword=true,
     user.cdate = new Date().toJSON();
     user.udate = new Date().toJSON();
-
     return user;
   };
 
@@ -116,11 +120,24 @@ module.exports = function(Model) {
       callback(null,{errorCode:3,errorKey:'server_member_invalid_invitation_link',errorMessage:'این لینک دعوت معتبر نیست'});
       return ;
     }
-
-    let user=initNewUser(regentList[0],data.geo,data.geoInfo);
+    const regent=regentList[0];
+    let user=initNewUser(regent,data.geo,data.geoInfo);
    // user.forTest=1
+    user.host=data.host;
     return Model.updateOrCreate(user)
       .then(res=>{
+        const token = jwtRun.sign({userId: user.id});
+        res.token=token;
+        let inviteProfileImage=regent.inviteProfileImage;
+        if(!inviteProfileImage || inviteProfileImage=='defaultProfileImage.png')
+          inviteProfileImage=regent.profileImage;
+        res.regent={
+          id:regent.id,
+          username:regent.username,
+          name:(regent.firstName || '')+' '+(regent.lastName || ''),
+          inviteProfileImage:inviteProfileImage,
+          avatar:regent.avatar,
+        };
         callback(null,res);
       }).then(err=>{
         callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});;
@@ -142,6 +159,81 @@ module.exports = function(Model) {
       },
     }
   );
+
+  const unsucsessLoginNumber={};
+  const unsucsessLoginNumberFlag={};
+  const unsucsessLoginTime={};
+  Model.loginMember = function(data, callback) {
+    //data.username=data.username.toLowerCase();
+    if(unsucsessLoginNumber[data.username] && unsucsessLoginNumber[data.username]>2){
+      if(!unsucsessLoginNumberFlag[data.username]){
+        setTimeout(()=>{
+          delete unsucsessLoginNumberFlag[data.username];
+          delete  unsucsessLoginNumber[data.username];
+        },180000);
+      }
+      unsucsessLoginNumberFlag[data.username]=true;
+      return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
+
+    }
+    Model.login(data, function(err, res) {
+      if (err){
+        unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
+        unsucsessLoginTime[data.username]=new Date();
+        return callback(null,{isError:true,errorCode:5,errorKey:'server_login_unsuccess',errorMessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
+      }
+      delete unsucsessLoginNumber[data.username];
+      delete unsucsessLoginTime[data.username];
+      if (res.id) {
+        return Model.findById(res.userId, {}, function(err2, member) {
+          //خطا در لود اطلاعات کاربر'
+          if(err2 || !member)
+            return callback(new Error('ورود ناموفق1'));
+          //'اکانت شما توسط مدیر سیستم غیر فعال شده است'
+          if (member.disable)
+            return callback(new Error("ورود ناموفق2"));
+
+          delete member.password;
+          delete member.mobileConfirmCode;
+          delete member.tempPassword;
+          member.mobileConfirmCode="";
+          member.beforloginDate = member.loginDate;
+          member.loginDate = new Date().toJSON();
+          member.state = 'login';
+
+          const token = jwtRun.sign({userId: member.id});
+          //delete member.id;
+
+          const responseObject =Object.assign(member,{token: token}) ;
+          callback(err2, responseObject);
+          delete member.token;
+
+          Model.updateOrCreate(member, (err3, res3)=> {
+
+          });
+
+        });
+      }
+    });
+  };
+  Model.remoteMethod('loginMember', {
+    accepts: [{
+      arg: 'data',
+      type: 'object',
+      http: { source: 'body' }
+    },],
+    returns: {
+      arg: 'result',
+      type: 'object',
+      root: true
+    },
+    http: {
+      path: '/me/login',
+      verb: 'POST',
+    },
+  });
+
+
   Model.checkUserNameExist = async (data, callback)=> {
     if(!data.username){
       callback(new Error('username is require'));
@@ -267,7 +359,7 @@ module.exports = function(Model) {
       .then(res=>{
         callback(null,entity);
       }).then(err=>{
-        app.models.Bug.create({err:err});
+
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
         return err;
       })
@@ -283,6 +375,44 @@ module.exports = function(Model) {
       returns: {arg: 'result', type: 'object',root:true },
       http: {
         path: '/me/setProfileImage',
+        verb: 'POST',
+      },
+    }
+  );
+  Model.setInviteProfileImage = async (data, callback)=> {
+    console.log('image========',data.userId);
+    const userId=data.userId;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+
+    if(!data.inviteProfileImage){
+      callback(new Error('image is require'));
+      return
+    }
+
+    let entity={id:userId,inviteProfileImage:data.inviteProfileImage};
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        callback(null,entity);
+      }).then(err=>{
+
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'setInviteProfileImage',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/setInviteProfileImage',
         verb: 'POST',
       },
     }
@@ -304,6 +434,7 @@ module.exports = function(Model) {
       gender:data.gender,
       age:data.age,
       birthDate:birthDate ,
+      avatar:data.avatar ,
 
     };
     if(data.mobile){
@@ -422,79 +553,7 @@ module.exports = function(Model) {
     }
   );
 
-  const unsucsessLoginNumber={};
-  const unsucsessLoginNumberFlag={};
-  const unsucsessLoginTime={};
-  Model.loginMember = function(data, callback) {
-    //data.username=data.username.toLowerCase();
-    if(unsucsessLoginNumber[data.username] && unsucsessLoginNumber[data.username]>2){
-      if(!unsucsessLoginNumberFlag[data.username]){
-        setTimeout(()=>{
-          delete unsucsessLoginNumberFlag[data.username];
-          delete  unsucsessLoginNumber[data.username];
-        },180000);
-      }
-      unsucsessLoginNumberFlag[data.username]=true;
-      return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
 
-    }
-    Model.login(data, function(err, res) {
-      if (err){
-        console.log(1111111111);
-        unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
-        unsucsessLoginTime[data.username]=new Date();
-        console.log(22222222222222);
-        return callback(null,{isError:true,errorCode:5,errorKey:'server_login_unsuccess',errorMessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
-
-      }
-      delete unsucsessLoginNumber[data.username];
-      delete unsucsessLoginTime[data.username];
-      if (res.id) {
-        return Model.findById(res.userId, {}, function(err2, member) {
-          //خطا در لود اطلاعات کاربر'
-          if(err2 || !member)
-            return callback(new Error('ورود ناموفق1'));
-          //'اکانت شما توسط مدیر سیستم غیر فعال شده است'
-          if (member.disable)
-            return callback(new Error("ورود ناموفق2"));
-
-          delete member.password;
-          delete member.mobileConfirmCode;
-          delete member.tempPassword;
-          member.mobileConfirmCode="";
-          member.beforloginDate = member.loginDate;
-          member.loginDate = new Date().toJSON();
-          member.state = 'login';
-          const token = jwtRun.sign({userId: member.id});
-          //delete member.id;
-          const responseObject =Object.assign(member,{token: token}) ;
-          callback(err2, responseObject);
-          delete member.token;
-
-          Model.updateOrCreate(member, (err3, res3)=> {
-
-          });
-
-        });
-      }
-    });
-  };
-  Model.remoteMethod('loginMember', {
-    accepts: [{
-      arg: 'data',
-      type: 'object',
-      http: { source: 'body' }
-    },],
-    returns: {
-      arg: 'result',
-      type: 'object',
-      root: true
-    },
-    http: {
-      path: '/me/login',
-      verb: 'POST',
-    },
-  });
 
   Model.getProfile = function (cUser,params={}, callback) {
     const userId=cUser.userId;
@@ -505,7 +564,7 @@ module.exports = function(Model) {
     }
     return Model.findById(userId,params.filter, function (err, res) {
       if (err) {
-        app.models.Bug.create({err:err}); callback(err);
+         callback(err);
       } else {
         callback(err, res);
       }
@@ -534,17 +593,19 @@ module.exports = function(Model) {
 
 
   Model.getSubsetList = function (params, callback) {
+    console.log('22222222222222=',params);
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
 
-    params.include= {"subsets":{"subsets":{"subsets":"subsets"}}}
+    params.include= {"subsets":{"subsets":{"subsets":"subsets"}}};
+    //params.include= {"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":"subsets"}}}}}}
     params.where={regentId:userId};
     return Model.find(params, function (err, res) {
       if (err) {
-        app.models.Bug.create({err:err}); callback(err);
+         callback(err);
       } else {
         callback(err, res);
       }
@@ -569,6 +630,7 @@ module.exports = function(Model) {
       },
     }
   );
+
 
 
 };

@@ -21,11 +21,15 @@ function verifyToken(req, res, next) {
     if (openPath || apiPath.search('containers')>-1) {
         next();
     }else {
-        jwtRun.tokenValidation(req, (state, id) => {
-          if (state) {
+
+      jwtRun.tokenValidation(req, (state, id) => {
+
+        if (state) {
                logger.info('Verify Token API: %s', req.originalUrl);
-               req.params.userId=id;
-               req.userId = id;
+               if(id){
+                 req.params.userId=id;
+                 req.userId = id;
+               }
                next();
             } else {
                 logger.error('!!!Verify Token not have Token: Authorization Failed!!! => API: %s', req.originalUrl);
