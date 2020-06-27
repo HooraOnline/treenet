@@ -566,9 +566,11 @@ module.exports = function(Model) {
       console.log(res);
       if (err) {
          callback(err);
-      } else if(!res || !res.userId) {
+      }
+     /* else if(!res || !res.userId) {
         callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
-      } else {
+      } */
+      else {
         callback(err, res);
       }
     });
