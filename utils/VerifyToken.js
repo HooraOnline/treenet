@@ -16,9 +16,9 @@ function verifyToken(req, res, next) {
     ];
   //let apiPath=req.originalUrl.toLowerCase().replace('/api','');
   let apiPath=req._parsedUrl.pathname.toLowerCase().replace('/api','');
-  console.log(apiPath);
+  console.log('apiPath=',apiPath);
   let openPath=openApiList.find(path=>path.toLowerCase()==apiPath);
-    if (openPath || apiPath.search('containers')>-1) {
+    if (openPath || apiPath.search('containers')>-1 || apiPath.search('explorer')>-1) {
         next();
     }else {
 

@@ -29,6 +29,9 @@
         "normal_member"
       ]
     },
+    "posts": {
+      "type": "array"
+    },
     "invitationCode": {
       "type": "string"
     },
@@ -47,10 +50,7 @@
     "mobileVerified": {
       "type": "boolean"
     },
-    "firstName": {
-      "type": "string"
-    },
-    "lastName": {
+    "fullName": {
       "type": "string"
     },
     "displayName": {
@@ -73,15 +73,20 @@
       "model": "Member",
       "foreignKey": "regentId"
     },
+    "posts": {
+      "type": "hasMany",
+      "model": "Post",
+      "foreignKey": "memberId"
+    },
     "likes": {
       "type": "hasMany",
       "model": "Like",
-      "foreignKey": ""
+      "foreignKey": "memberId"
     },
     "seens": {
       "type": "hasMany",
       "model": "Seen",
-      "foreignKey": ""
+      "foreignKey": "memberId"
     }
   },
   "acls": [],

@@ -64,23 +64,7 @@ module.exports = function(Model) {
     return 'valid_regentcode';
   };
 
-
-  Model.beforeRemote('*', function (context, user, next) {
-    var req = context.req;
-    /* if(helper.isXssScripts(req.body)){
-        return  callback(new Error("not secure"));
-     }*/
-    //req.pa
-    //
-    // rams.userId=req.userId;
-
-    if(req.body && req.userId){
-      req.body.userId=req.userId;
-    }
-    next();
-  });
-
-  const initNewUser =  (regent,geo,geoInfo)=> {
+    const initNewUser =  (regent,geo,geoInfo)=> {
     const user={geo,geoInfo};
     const username=getUniqId('xxxxxxxxxx');
     user.username =username.toLowerCase();
@@ -177,6 +161,7 @@ module.exports = function(Model) {
 
     }
     Model.login(data, function(err, res) {
+      console.log(err);
       if (err){
         unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
         unsucsessLoginTime[data.username]=new Date();
@@ -192,25 +177,13 @@ module.exports = function(Model) {
           //'اکانت شما توسط مدیر سیستم غیر فعال شده است'
           if (member.disable)
             return callback(new Error("ورود ناموفق2"));
-
-          delete member.password;
-          delete member.mobileConfirmCode;
-          delete member.tempPassword;
-          member.mobileConfirmCode="";
-          member.beforloginDate = member.loginDate;
-          member.loginDate = new Date().toJSON();
-          member.state = 'login';
-
           const token = jwtRun.sign({userId: member.id});
-          //delete member.id;
+          let tokenObj={token:token};
+          console.log(tokenObj);
+          callback(err2,tokenObj );
 
-          const responseObject =Object.assign(member,{token: token}) ;
-          callback(err2, responseObject);
-          delete member.token;
-
-          Model.updateOrCreate(member, (err3, res3)=> {
-
-          });
+          let user={id:res.userId,beforloginDate:member.loginDate,loginDate: new Date().toJSON(),succeesLogin:true, isLogin:true,}
+          Model.updateOrCreate(user);
 
         });
       }
@@ -435,6 +408,7 @@ module.exports = function(Model) {
       age:data.age,
       birthDate:birthDate ,
       avatar:data.avatar ,
+      story:data.story ,
 
     };
     if(data.mobile){
@@ -563,15 +537,19 @@ module.exports = function(Model) {
       return
     }
     return Model.findById(userId,params.filter, function (err, res) {
-      console.log(res);
       if (err) {
          callback(err);
       }
-     /* else if(!res || !res.userId) {
+      else if(!res || !res.username) {
         callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
-      } */
+      }
       else {
-        callback(err, res);
+        let user=res;
+        let birthYear=user.birthDate?new Date(user.birthDate).getFullYear():'';
+        user. invitationLink=`https://treenetgram.com/?invitationCode=${res.invitationCode}`;
+        user.age=user.birthDate?(new Date()).getFullYear()-birthYear:'';
+        user.shortMobile=user.mobile?user.mobile.split('-')[1]:'';
+        callback(err, user);
       }
     });
   };
@@ -598,7 +576,7 @@ module.exports = function(Model) {
 
 
   Model.getSubsetList = function (params, callback) {
-    console.log('22222222222222=',params);
+    console.log('11111111111getSubset=',params);
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));

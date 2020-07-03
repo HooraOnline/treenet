@@ -36,13 +36,9 @@
     "dataSource": "treenetds",
     "public": true
   },
-  "Personalpage": {
-    "dataSource": "treenetds",
-    "public": true
-  },
   "Post": {
     "dataSource": "treenetds",
-    "public": false
+    "public": true
   },
   "bug": {
     "dataSource": "treenetds",
@@ -52,11 +48,7 @@
     "dataSource": "storage",
     "public": true
   },
-  "speaker": {
-    "dataSource": "treenetds",
-    "public": true
-  },
-  "message": {
+  "Message": {
     "dataSource": "treenetds",
     "public": true
   }

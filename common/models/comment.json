@@ -1,5 +1,5 @@
 {
-  "name": "Post",
+  "name": "Comment",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -45,21 +45,6 @@
       "type": "belongsTo",
       "model": "Member",
       "foreignKey": "memberId"
-    },
-    "comments": {
-      "type": "hasMany",
-      "model": "Comment",
-      "foreignKey": "postId"
-    },
-    "liks": {
-      "type": "hasMany",
-      "model": "Like",
-      "foreignKey": "postId"
-    },
-    "seens": {
-      "type": "hasMany",
-      "model": "Seen",
-      "foreignKey": "postId"
     }
   },
   "acls": [],
