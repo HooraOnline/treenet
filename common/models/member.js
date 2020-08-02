@@ -67,7 +67,9 @@ module.exports = function(Model) {
     const initNewUser =  (regent,geo,geoInfo)=> {
     const user={geo,geoInfo};
     const username=getUniqId('xxxxxxxxxx');
+    const userName=username;
     user.username =username.toLowerCase();
+    user.userName=user.username;
     const password = Math.random().toString().substring(2,8);
     user.password =password;
     user.tempPassword = password;
@@ -183,6 +185,9 @@ module.exports = function(Model) {
           callback(err2,tokenObj );
 
           let user={id:res.userId,beforloginDate:member.loginDate,loginDate: new Date().toJSON(),succeesLogin:true, isLogin:true,}
+          if(data.mobile){
+            user.username=data.mobile;
+          }
           Model.updateOrCreate(user);
 
         });
@@ -309,6 +314,46 @@ module.exports = function(Model) {
       returns: {arg: 'result', type: 'object',root:true },
       http: {
         path: '/me/updateUsernameAndPassword',
+        verb: 'POST',
+      },
+    }
+  );
+  Model.updatePassword = async (data, callback)=> {
+    const userId=data.userId;
+    if(!userId){
+      callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
+      return
+    }
+    if(!data.password){
+      callback(new Error('password is require'));
+      return
+    }
+    let entity={
+      id:userId,
+      password:data.password,
+      state:'updatePassword',
+      notChangePassword:false,
+      udate:new Date(),
+    };
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        callback(null,res)
+      }).then(err=>{
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'updatePassword',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/updatePassword',
         verb: 'POST',
       },
     }

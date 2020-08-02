@@ -94,7 +94,61 @@ module.exports = function(Model) {
       },
     }
   );
+  Model.getUserPosts = function (params, callback) {
+    console.log('4444444444=',params);
+    const userId=params.memberId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    params.include=  {
+      relation: 'member',
+      scope: {
+        fields: ['id', 'fullName','username','profileImage','avatar'],
+        /*include: {
+          relation: 'orders',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    }
 
+    params.where={memberId:userId};
+    params.order='id DESC';
+    return Model.find(params)
+      .then(res => {
+        console.log(res);
+        callback(null, res);
+      }).then(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در بارگذاری پستها'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'getUserPosts',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getUserPosts',
+        verb: 'POST',
+      },
+    }
+  );
   Model.getLastSpecialedPost = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
