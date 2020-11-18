@@ -4,7 +4,7 @@ const jwtRun = require('../../utils/jwtRun');
 const uuidV4 = require('uuid/v4')
 const request = require('request');
 module.exports = function(Model) {
-  //Model.disableRemoteMethod("create", true);
+  Model.disableRemoteMethod("create", true);
   Model.disableRemoteMethod("upsert", true);
   Model.disableRemoteMethod("replaceOrCreate", true);
   Model.disableRemoteMethod("upsertWithWhere", true);
@@ -64,38 +64,73 @@ module.exports = function(Model) {
     return 'valid_regentcode';
   };
 
-    const initNewUser =  (regent,geo,geoInfo)=> {
-    const user={geo,geoInfo};
-    const username=getUniqId('xxxxxxxxxx');
-    const userName=username;
-    user.username =username.toLowerCase();
-    user.userName=user.username;
-    const password = Math.random().toString().substring(2,8);
-    user.password =password;
-    user.tempPassword = password;
-    user.state = 'register';
-    user.regentCode=regent.invitationCode;
-    user.regentId=regent.id;
-    user.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
-    user.profileImage = 'defaultProfileImage.png';
-    user.inviteProfileImage= 'defaultProfileImage.png';
-    user.avatar='عضو فعال تری نتگرام';
-    user.loginDate="";
-    user.logOutDate="";
-    user.beforloginDate="";
-    user.permissions=[];
-    user.mobileVerify=false;
-    user.emailVerify=false;
-    user.role='normalUser'
-    user.notChangePassword=true,
-    user.cdate = new Date().toJSON();
-    user.udate = new Date().toJSON();
-    return user;
+    const initNewUser =  (data,regent)=> {
+      const user={geo:data.geo,geoInfo:data.geoInfo};
+      const userName=getUniqId('xxxxxxxxxx');
+      const username=data.mobile || userName;
+      user.mobile=data.mobile || '';
+      user.username =username.toLowerCase();
+      user.userName=userName;
+      const userPassword =data.password || Math.random().toString().substring(2,8);
+      user.password =userPassword;
+      user.tempPassword = userPassword;
+      user.countryCode=data.countryCode;
+      user.state = 'register';
+      user.regentCode=regent.invitationCode;
+      user.regentId=regent.id;
+      user.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
+      user.profileImage = 'defaultProfileImage.png';
+      user.inviteProfileImage= 'defaultProfileImage.png';
+      user.avatar='عضو فعال تری نتگرام';
+      user.loginDate="";
+      user.logOutDate="";
+      user.beforloginDate="";
+      user.permissions=[];
+      user.mobileVerify=false;
+      user.emailVerify=false;
+      user.role='normalUser'
+      user.notChangePassword=true,
+      user.cdate = new Date().toJSON();
+      user.udate = new Date().toJSON();
+      console.log(user)
+      return user;
   };
 
-  Model.registerMe = async (data, callback)=> {
+  Model.checkMobileExist = async (data, callback)=> {
+    if(!data.mobile){
+      callback(new Error('mobile is require'));
+      return
+    }
+    return Model.find({where: {mobile:data.mobile}})
+      .then(res=>{
+        if(res && res[0])
+          callback(null,true);
+        else
+          callback(null,false);
+      }).then(err=>{
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',pMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'checkMobileExist',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/checkMobileExist',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.registerUser = async (data, callback)=> {
     if(!data.regentCode){
-      return callback(null,{errorCode:1,errorKey:'server_member_required_regent_code',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
+      return callback(null,{errorCode:1,errorKey:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
     }
     const regentList=await Model.find({where: {invitationCode: data.regentCode}});
     if(!regentList){
@@ -107,12 +142,13 @@ module.exports = function(Model) {
       return ;
     }
     const regent=regentList[0];
-    let user=initNewUser(regent,data.geo,data.geoInfo);
+    let user=initNewUser(data,regent);
    // user.forTest=1
     user.host=data.host;
     return Model.updateOrCreate(user)
       .then(res=>{
         const token = jwtRun.sign({userId: user.id});
+        console.log(token)
         res.token=token;
         let inviteProfileImage=regent.inviteProfileImage;
         if(!inviteProfileImage || inviteProfileImage=='defaultProfileImage.png')
@@ -131,7 +167,7 @@ module.exports = function(Model) {
 
   };
   Model.remoteMethod(
-    'registerMe',
+    'registerUser',
     {
       accepts: [{
         arg: 'data',
@@ -162,15 +198,19 @@ module.exports = function(Model) {
       return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
 
     }
-    Model.login(data, function(err, res) {
+    Model.login({username:data.username,password:data.password}, function(err, res) {
       console.log(err);
+      console.log(data);
       if (err){
         unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
         unsucsessLoginTime[data.username]=new Date();
+        console.log(22222);
         return callback(null,{isError:true,errorCode:5,errorKey:'server_login_unsuccess',errorMessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
       }
+    
       delete unsucsessLoginNumber[data.username];
       delete unsucsessLoginTime[data.username];
+      console.log(3333);
       if (res.id) {
         return Model.findById(res.userId, {}, function(err2, member) {
           //خطا در لود اطلاعات کاربر'

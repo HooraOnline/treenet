@@ -10,6 +10,7 @@ function verifyToken(req, res, next) {
 
 
   let openApiList=[
+      '/members/checkMobileExist',
       '/members/me/register',
       '/members/me/login',
       '/pay/result',
@@ -23,9 +24,10 @@ function verifyToken(req, res, next) {
     }else {
 
       jwtRun.tokenValidation(req, (state, id) => {
-
+        
         if (state) {
                logger.info('Verify Token API: %s', req.originalUrl);
+               console.log('66666666======',id)
                if(id){
                  req.params.userId=id;
                  req.userId = id;
