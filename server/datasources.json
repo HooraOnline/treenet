@@ -7,7 +7,7 @@
     "host": "localhost",
     "port": 27017,
     "url": "",
-    "database": "treenet",
+    "database": "treenetdb",
     "name": "treenetds",
     "connector": "mongodb"
   },

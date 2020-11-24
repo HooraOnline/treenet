@@ -65,16 +65,18 @@ module.exports = function(Model) {
   };
 
     const initNewUser =  (data,regent)=> {
+      const countryCode=data.countryCode || '98';
+      user.countryCode=countryCode;
       const user={geo:data.geo,geoInfo:data.geoInfo};
       const userName=getUniqId('xxxxxxxxxx');
-      const username=data.mobile || userName;
+      const username=countryCode+data.mobile || userName;
       user.mobile=data.mobile || '';
       user.username =username.toLowerCase();
       user.userName=userName;
       const userPassword =data.password || Math.random().toString().substring(2,8);
       user.password =userPassword;
       user.tempPassword = userPassword;
-      user.countryCode=data.countryCode;
+      
       user.state = 'register';
       user.regentCode=regent.invitationCode;
       user.regentId=regent.id;
@@ -123,6 +125,48 @@ module.exports = function(Model) {
       returns: {arg: 'result', type: 'object',root:true },
       http: {
         path: '/checkMobileExist',
+        verb: 'POST',
+      },
+    }
+  );
+
+
+  Model.getRegentInfo = async (data, callback)=> {
+    if(!data.invitationCode){
+      callback(new Error('invitationCode is require'));
+      return
+    }
+
+    return Model.find({where: {invitationCode:data.invitationCode}})
+      .then(res=>{
+        if(res && res[0]){
+          let regent={
+            fullName:res[0].fullName,
+            displayName: res[0].displayName,
+            avatar: res[0].displayName,
+            profileImage: res[0].profileImage,
+          }
+          callback(null,regent);
+        }
+         
+        else
+          callback(null,false);
+      }).then(err=>{
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'getRegentInfo',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/getRegentInfo',
         verb: 'POST',
       },
     }
@@ -659,7 +703,9 @@ module.exports = function(Model) {
     }
   );
 
+ 
 
+  
   Model.getSubsetList = function (params, callback) {
     console.log('11111111111getSubset=',params);
     const userId=params.userId ;
