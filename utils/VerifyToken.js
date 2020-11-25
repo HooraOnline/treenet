@@ -12,6 +12,7 @@ function verifyToken(req, res, next) {
   let openApiList=[
       '/members/getRegentInfo',
       '/members/checkMobileExist',
+      '/members/me/checkUserNameExist',
       '/members/me/register',
       '/members/me/login',
       '/pay/result',

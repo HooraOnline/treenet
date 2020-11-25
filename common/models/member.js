@@ -66,10 +66,10 @@ module.exports = function(Model) {
 
     const initNewUser =  (data,regent)=> {
       const countryCode=data.countryCode || '98';
-      user.countryCode=countryCode;
       const user={geo:data.geo,geoInfo:data.geoInfo};
       const userName=getUniqId('xxxxxxxxxx');
       const username=countryCode+data.mobile || userName;
+      user.countryCode=countryCode;
       user.mobile=data.mobile || '';
       user.username =username.toLowerCase();
       user.userName=userName;
@@ -173,9 +173,11 @@ module.exports = function(Model) {
   );
 
   Model.registerUser = async (data, callback)=> {
+  
     if(!data.regentCode){
       return callback(null,{errorCode:1,errorKey:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
     }
+    
     const regentList=await Model.find({where: {invitationCode: data.regentCode}});
     if(!regentList){
       callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
@@ -185,12 +187,16 @@ module.exports = function(Model) {
       callback(null,{errorCode:3,errorKey:'server_member_invalid_invitation_link',errorMessage:'این لینک دعوت معتبر نیست'});
       return ;
     }
+    
     const regent=regentList[0];
+   
     let user=initNewUser(data,regent);
+    
    // user.forTest=1
     user.host=data.host;
     return Model.updateOrCreate(user)
       .then(res=>{
+       
         const token = jwtRun.sign({userId: user.id});
         console.log(token)
         res.token=token;
@@ -203,6 +209,7 @@ module.exports = function(Model) {
           name:(regent.firstName || '')+' '+(regent.lastName || ''),
           inviteProfileImage:inviteProfileImage,
           avatar:regent.avatar,
+          
         };
         callback(null,res);
       }).then(err=>{
