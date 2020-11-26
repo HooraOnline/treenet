@@ -1,8 +1,8 @@
 'use strict';
-
+var app = require('../../server/server');
 module.exports = function(Model) {
   Model.addPost = async (data, callback)=> {
-    console.log(data);
+
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -40,7 +40,7 @@ module.exports = function(Model) {
   );
 
   Model.getMyPosts = function (params, callback) {
-    console.log('4444444444=',params);
+
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -63,7 +63,7 @@ module.exports = function(Model) {
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
-        console.log(res);
+
         callback(null, res);
       }).then(err => {
         callback(null, {
@@ -95,7 +95,7 @@ module.exports = function(Model) {
     }
   );
   Model.getUserPosts = function (params, callback) {
-    console.log('4444444444=',params);
+    
     const userId=params.memberId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -118,7 +118,7 @@ module.exports = function(Model) {
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
-        console.log(res);
+    
         callback(null, res);
       }).then(err => {
         callback(null, {
@@ -149,6 +149,87 @@ module.exports = function(Model) {
       },
     }
   );
+
+  
+
+  Model.getFollowboardPosts = async function (data, callback) {
+    console.log('aaaaaaaaaaaaaaaaaa')
+    console.log('regentId=',data.regentId);
+    const userId=data.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    if(!data.regentId){
+      callback(new Error('regentId is requie'));
+      return
+    }
+    const params={}
+    params.include=  {
+      relation: 'member',
+      scope: {
+        fields: ['id', 'fullName','username','profileImage','avatar'],
+        /*include: {
+          relation: 'orders',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    }
+    let parentIds=[];
+    const getUserParentsIds= async(regentId)=>{
+        let query={where:{invitationCode:regentId},fields:["id","regentId"]};
+        let parentList=await app.models.Member.find(query);
+        
+        if(parentList && parentList[0] && parentList[0].regentId!=='null'){
+          parentIds.push(res[0]);
+          await getUserParentsIds(res[0].regentId)
+        }else{
+          console.log('idsidsidsidsidsidsidsidsids==========',parentList[0]);
+          console.log('userIduserIduserId==',userId)
+          params.where={memberId:parentList[0]};
+          params.order='id DESC';
+          return Model.find(params)
+            .then(res => {
+             
+              callback(null, res);
+            }).then(err => {
+              callback(null, {
+                errorCode: 17,
+                lbError: err,
+                errorKey: 'server_post_error_get_my_posts',
+                errorMessage: 'خطا در بارگذاری پستها'
+              });
+              return err;
+            });
+        }
+    }
+    await getUserParentsIds(data.regentId);
+  
+   
+   
+  };
+  Model.remoteMethod(
+    'getFollowboardPosts',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getFollowboardPosts',
+        verb: 'POST',
+      },
+    }
+  );
+
   Model.getLastSpecialedPost = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
@@ -162,7 +243,7 @@ module.exports = function(Model) {
 
     return Model.find(params)
       .then(res => {
-        console.log('tttttttttttttyyyyyyy',res);
+ 
         if(res.length>0){
           let post=res[0];
           let secend=(new Date()-new Date(post.cdate))/1000;

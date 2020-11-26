@@ -143,7 +143,7 @@ module.exports = function(Model) {
           let regent={
             fullName:res[0].fullName,
             displayName: res[0].displayName,
-            avatar: res[0].displayName,
+            avatar: res[0].avatar,
             profileImage: res[0].profileImage,
           }
           callback(null,regent);
