@@ -65,6 +65,7 @@ module.exports = function(Model) {
   };
 
     const initNewUser =  (data,regent)=> {
+      console.log('regent========',regent)
       const countryCode=data.countryCode || '98';
       const user={geo:data.geo,geoInfo:data.geoInfo};
       const userName=getUniqId('xxxxxxxxxx');
@@ -80,6 +81,11 @@ module.exports = function(Model) {
       user.state = 'register';
       user.regentCode=regent.invitationCode;
       user.regentId=regent.id;
+
+      let parentsList=regent.parentsList;
+      parentsList.push(regent.id);
+      user.parentsList=parentsList;
+
       user.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
       user.profileImage = 'defaultProfileImage.png';
       user.inviteProfileImage= 'defaultProfileImage.png';
@@ -540,6 +546,7 @@ module.exports = function(Model) {
       id:userId,
       firstName:data.firstName,
       lastName:data.lastName,
+      fullName:data.firstName+data.lastName,
       gender:data.gender,
       age:data.age,
       birthDate:birthDate ,
@@ -552,6 +559,9 @@ module.exports = function(Model) {
     }
     if(data.email){
       entity.email=data.email;
+    }
+    if(data.displayName){
+      entity.displayName=data.displayName;
     }
     console.log(entity);
     return Model.updateOrCreate(entity)
@@ -680,6 +690,7 @@ module.exports = function(Model) {
         callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
       }
       else {
+        
         let user=res;
         let birthYear=user.birthDate?new Date(user.birthDate).getFullYear():'';
         user. invitationLink=`https://treenetgram.com/?invitationCode=${res.invitationCode}`;

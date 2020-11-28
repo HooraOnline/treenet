@@ -1,5 +1,6 @@
 'use strict';
 var app = require('../../server/server');
+var ObjectId = require('mongodb').ObjectId; 
 module.exports = function(Model) {
   Model.addPost = async (data, callback)=> {
 
@@ -40,7 +41,6 @@ module.exports = function(Model) {
   );
 
   Model.getMyPosts = function (params, callback) {
-
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -49,7 +49,7 @@ module.exports = function(Model) {
     params.include=  {
       relation: 'member',
       scope: {
-        fields: ['id', 'fullName','username','profileImage','avatar'],
+        fields: ['id', 'fullName','userName','profileImage','avatar'],
         /*include: {
           relation: 'orders',
             scope: {
@@ -96,30 +96,35 @@ module.exports = function(Model) {
   );
   Model.getUserPosts = function (params, callback) {
     
-    const userId=params.memberId ;
-    if(!userId){
+    const userName=params.userName ;
+    if(!userName){
       callback(new Error('token expier'));
       return
     }
+   
+    params.where={userName:userName};
+    params.fields=['id','fullName','userName','profileImage','avatar'];
+    params.order='id DESC';
     params.include=  {
-      relation: 'member',
+      relation: 'posts',
       scope: {
-        fields: ['id', 'fullName','username','profileImage','avatar'],
+        fields: ['id','message','file'],
         /*include: {
-          relation: 'orders',
+          relation: 'comments',
             scope: {
             where: {orderId: 5}
           }
         }*/
       }
     }
+   
 
-    params.where={memberId:userId};
-    params.order='id DESC';
-    return Model.find(params)
+    return  app.models.Member.find(params)
       .then(res => {
-    
-        callback(null, res);
+        console.log(res)
+      
+        callback(null,res);
+
       }).then(err => {
         callback(null, {
           errorCode: 17,
@@ -130,6 +135,8 @@ module.exports = function(Model) {
         return err;
       });
   };
+
+  
   Model.remoteMethod(
     'getUserPosts',
     {
@@ -150,25 +157,40 @@ module.exports = function(Model) {
     }
   );
 
-  
+  let parentIds=[];
+  const getUserParentsIds= async(regentId)=>{
+      let query={where:{invitationCode:regentId},fields:["id","regentId"]};
+      let parentList=await app.models.Member.find(query);
+      
+      if(parentList && parentList[0] && parentList[0].regentId!=='null'){
+        parentIds.push(res[0]);
+        await getUserParentsIds(res[0].regentId)
+      }else{
+       
+      }
+  }
 
   Model.getFollowboardPosts = async function (data, callback) {
-    console.log('aaaaaaaaaaaaaaaaaa')
-    console.log('regentId=',data.regentId);
+   
+   
     const userId=data.userId ;
+    console.log('aaaaaaaaaaaaaaaaaa===',userId);
     if(!userId){
       callback(new Error('token expier'));
       return
     }
-    if(!data.regentId){
-      callback(new Error('regentId is requie'));
-      return
-    }
+    
+    
+    const user= await app.models.Member.findById(userId,{fields:["parentsList"]});
+    const parentsList=user.parentsList;
+    parentsList.push(userId);
+   
+    
     const params={}
     params.include=  {
       relation: 'member',
       scope: {
-        fields: ['id', 'fullName','username','profileImage','avatar'],
+        fields: ['id', 'fullName','userName','dispplayName','profileImage','avatar'],
         /*include: {
           relation: 'orders',
             scope: {
@@ -177,38 +199,23 @@ module.exports = function(Model) {
         }*/
       }
     }
-    let parentIds=[];
-    const getUserParentsIds= async(regentId)=>{
-        let query={where:{invitationCode:regentId},fields:["id","regentId"]};
-        let parentList=await app.models.Member.find(query);
-        
-        if(parentList && parentList[0] && parentList[0].regentId!=='null'){
-          parentIds.push(res[0]);
-          await getUserParentsIds(res[0].regentId)
-        }else{
-          console.log('idsidsidsidsidsidsidsidsids==========',parentList[0]);
-          console.log('userIduserIduserId==',userId)
-          params.where={memberId:parentList[0]};
-          params.order='id DESC';
-          return Model.find(params)
-            .then(res => {
-             
-              callback(null, res);
-            }).then(err => {
-              callback(null, {
-                errorCode: 17,
-                lbError: err,
-                errorKey: 'server_post_error_get_my_posts',
-                errorMessage: 'خطا در بارگذاری پستها'
-              });
-              return err;
-            });
-        }
-    }
-    await getUserParentsIds(data.regentId);
-  
-   
-   
+    
+    const orFilter=parentsList.map(parentId=>{return {memberId:parentId}});
+    const filter={or:orFilter}
+    params.where=filter;
+    params.order='id DESC';
+    return Model.find(params)
+      .then(res => {
+        callback(null, res);
+      }).then(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در بارگذاری پستها'
+        });
+        return err;
+      });
   };
   Model.remoteMethod(
     'getFollowboardPosts',
