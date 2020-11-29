@@ -40,6 +40,10 @@
     "dataSource": "treenetds",
     "public": true
   },
+  "Follower": {
+    "dataSource": "treenetds",
+    "public": true
+  },
   "bug": {
     "dataSource": "treenetds",
     "public": false

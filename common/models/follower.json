@@ -1,0 +1,38 @@
+{
+  "name": "Follower",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "followedId": {
+      "type": "string"
+    },
+    "followerId": {
+      "type": "string"
+    },
+    "isFollowing": {
+      "type": "boolean"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    },
+    "udate": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "member": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "memberId"
+    }
+   
+  },
+  "acls": [],
+  "methods": {}
+}

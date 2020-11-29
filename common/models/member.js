@@ -68,12 +68,13 @@ module.exports = function(Model) {
       console.log('regent========',regent)
       const countryCode=data.countryCode || '98';
       const user={geo:data.geo,geoInfo:data.geoInfo};
-      const userName=getUniqId('xxxxxxxxxx');
-      const username=countryCode+data.mobile || userName;
+      let userKey=getUniqId('xxxxxxxxxxxxxxxx');
+      userKey=userKey.toLowerCase();
+      const username=countryCode+data.mobile || userKey;
       user.countryCode=countryCode;
       user.mobile=data.mobile || '';
       user.username =username.toLowerCase();
-      user.userName=userName;
+      user.userKey=userKey;
       const userPassword =data.password || Math.random().toString().substring(2,8);
       user.password =userPassword;
       user.tempPassword = userPassword;
@@ -344,64 +345,29 @@ module.exports = function(Model) {
       },
     }
   );
-  Model.updateUsernameAndPassword = async (data, callback)=> {
 
-    const userId=data.userId;
-    if(!userId){
-      callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
+  Model.checkUserKeyExist = async (data, callback)=> {
+    if(!data.userKey){
+      callback(new Error('userKey is require'));
       return
     }
-
-    if(!data.username){
-      callback(new Error('username is require'));
+    if(data.currentUserKey==data.userKey){
+      callback(null,false);
       return
     }
-    if(!data.password){
-      callback(new Error('password is require'));
-      return
-    }
-
-    //ObjectId("5444349871af283b92c440cc")
-    const currentDate=new Date();
-    let entity={
-      id:userId,
-      username:data.username,
-      password:data.password,
-      state:'changeUsername',
-      notChangePassword:false,
-      udate:new Date(),
-    };
-    if(data.mobile){
-      entity.mobile=data.mobile;
-    }
-    if(data.email){
-      entity.email=data.email;
-    }
-    if(data.firstName){
-      entity.firstName=data.firstName;
-    }
-    if(data.lastName){
-      entity.lastName=data.lastName;
-    }
-    if(data.age){
-      entity.age=data.age;
-      entity.birthDate= currentDate.setYear(currentDate.getFullYear()-Number(data.age));
-    }
-    entity.gender=data.gender ||0;
-    return Model.updateOrCreate(entity)
+    return Model.find({where: {userKey:data.userKey.toLowerCase()}})
       .then(res=>{
-        callback(null,res)
+        if(res && res[0])
+          callback(null,true);
+        else
+          callback(null,false);
       }).then(err=>{
-        if(err.statusCode= 422){
-          callback(null,{errorCode:442, lbError:error, errorKey:'server_member_email_is_exist',errorMessage:'ایمیل تکراری'});
-          return
-        }
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })
   };
   Model.remoteMethod(
-    'updateUsernameAndPassword',
+    'checkUserKeyExist',
     {
       accepts: [{
         arg: 'data',
@@ -410,11 +376,13 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/me/updateUsernameAndPassword',
+        path: '/me/checkUserKeyExist',
         verb: 'POST',
       },
     }
   );
+
+  
   Model.updatePassword = async (data, callback)=> {
     const userId=data.userId;
     if(!userId){
@@ -546,14 +514,16 @@ module.exports = function(Model) {
       id:userId,
       firstName:data.firstName,
       lastName:data.lastName,
-      fullName:data.firstName+data.lastName,
+      fullName:data.firstName+' '+data.lastName,
       gender:data.gender,
       age:data.age,
       birthDate:birthDate ,
       avatar:data.avatar ,
       story:data.story ,
-
     };
+    if(data.userKey){
+      entity.userKey=data.userKey;
+    }
     if(data.mobile){
       entity.mobile=data.mobile;
     }
@@ -726,12 +696,12 @@ module.exports = function(Model) {
   
   Model.getSubsetList = function (params, callback) {
     console.log('11111111111getSubset=',params);
-    const userId=params.userId ;
+    let userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
-
+    userId=params.memberId || userId;
     params.include= {"subsets":{"subsets":{"subsets":"subsets"}}};
     //params.include= {"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":"subsets"}}}}}}
     params.where={regentId:userId};
@@ -758,6 +728,101 @@ module.exports = function(Model) {
       },
       http: {
         path: '/me/getSubsetList',
+        verb: 'POST',
+      },
+    }
+  );
+
+
+  Model.getUserPage = function (params, callback) {
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    let userKey=params.userKey ;
+    if(!userKey){
+      callback(new Error('token expier'));
+      return
+    }
+    userKey=userKey.toLowerCase();
+    params.where={userKey:userKey};
+    params.fields=['id','fullName','userKey','profileImage','avatar'];
+    params.order='id DESC';
+    params.include=  [{
+      relation: 'posts',
+      scope: {
+        fields: ['id','message','file'],
+        /*include: {
+          relation: 'comments',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    },
+    {
+      relation: 'followers',
+      scope: {
+        fields: ['id','followedId','followerId','isFollowing'],
+        where: {isFollowing: true},
+        /*include: {
+          relation: 'comments',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    },
+    {
+      relation: 'followeds',
+      scope: {
+        fields: ['id','followedId','followerId','isFollowing'],
+        /*include: {
+          relation: 'comments',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    }
+  ]
+   
+
+    return  Model.find(params)
+      .then(res => {
+        console.log(res)
+        res.cUserId=userId; 
+        const useers=Object.assign({cUserId:userId},res)
+        callback(null,useers);
+      
+      }).then(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در بارگذاری پستها'
+        });
+        return err;
+      });
+  };
+
+  
+  Model.remoteMethod(
+    'getUserPage',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getUserPage',
         verb: 'POST',
       },
     }

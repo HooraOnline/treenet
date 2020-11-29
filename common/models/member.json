@@ -73,6 +73,16 @@
       "model": "Member",
       "foreignKey": "regentId"
     },
+    "followeds": {
+      "type": "hasMany",
+      "model": "Follower",
+      "foreignKey": "followerId"
+    },
+    "followers": {
+      "type": "hasMany",
+      "model": "Follower",
+      "foreignKey": "followedId"
+    },
     "posts": {
       "type": "hasMany",
       "model": "Post",

@@ -49,7 +49,7 @@ module.exports = function(Model) {
     params.include=  {
       relation: 'member',
       scope: {
-        fields: ['id', 'fullName','userName','profileImage','avatar'],
+        fields: ['id', 'fullName','userKey','profileImage','avatar'],
         /*include: {
           relation: 'orders',
             scope: {
@@ -94,68 +94,7 @@ module.exports = function(Model) {
       },
     }
   );
-  Model.getUserPosts = function (params, callback) {
-    
-    const userName=params.userName ;
-    if(!userName){
-      callback(new Error('token expier'));
-      return
-    }
-   
-    params.where={userName:userName};
-    params.fields=['id','fullName','userName','profileImage','avatar'];
-    params.order='id DESC';
-    params.include=  {
-      relation: 'posts',
-      scope: {
-        fields: ['id','message','file'],
-        /*include: {
-          relation: 'comments',
-            scope: {
-            where: {orderId: 5}
-          }
-        }*/
-      }
-    }
-   
-
-    return  app.models.Member.find(params)
-      .then(res => {
-        console.log(res)
-      
-        callback(null,res);
-
-      }).then(err => {
-        callback(null, {
-          errorCode: 17,
-          lbError: err,
-          errorKey: 'server_post_error_get_my_posts',
-          errorMessage: 'خطا در بارگذاری پستها'
-        });
-        return err;
-      });
-  };
-
   
-  Model.remoteMethod(
-    'getUserPosts',
-    {
-      accepts: {
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      },
-      returns: {
-        arg: 'result',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/getUserPosts',
-        verb: 'POST',
-      },
-    }
-  );
 
   let parentIds=[];
   const getUserParentsIds= async(regentId)=>{
@@ -190,7 +129,7 @@ module.exports = function(Model) {
     params.include=  {
       relation: 'member',
       scope: {
-        fields: ['id', 'fullName','userName','dispplayName','profileImage','avatar'],
+        fields: ['id', 'fullName','userKey','dispplayName','profileImage','avatar'],
         /*include: {
           relation: 'orders',
             scope: {
