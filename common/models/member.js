@@ -727,7 +727,7 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/me/getSubsetList',
+        path: '/getSubsetList',
         verb: 'POST',
       },
     }
@@ -778,6 +778,7 @@ module.exports = function(Model) {
       relation: 'followeds',
       scope: {
         fields: ['id','followedId','followerId','isFollowing'],
+        where: {isFollowing: true},
         /*include: {
           relation: 'comments',
             scope: {

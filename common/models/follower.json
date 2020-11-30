@@ -26,10 +26,15 @@
   },
   "validations": [],
   "relations": {
-    "member": {
+    "follower": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "memberId"
+      "foreignKey": "followerId"
+    },
+    "followed": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "followedId"
     }
    
   },

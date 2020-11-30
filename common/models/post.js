@@ -120,11 +120,19 @@ module.exports = function(Model) {
     }
     
     
-    const user= await app.models.Member.findById(userId,{fields:["parentsList"]});
-    const parentsList=user.parentsList;
-    parentsList.push(userId);
-   
+    const parent= await app.models.Member.findById(userId,{fields:["parentsList"]});
+    const parentsList=parent.parentsList;
     
+    const followerParam={}
+    followerParam.where={and:[{followerId:userId},{isFollowing:true}]};
+    followerParam.fields=["followedId"];
+    let followers= await app.models.Follower.find(followerParam);
+    followers=followers.map(item=>item.followedId)
+    followers.push(userId);
+    //let userIdList=followers.concat(parentsList)
+    
+
+
     const params={}
     params.include=  {
       relation: 'member',
@@ -139,7 +147,17 @@ module.exports = function(Model) {
       }
     }
     
-    const orFilter=parentsList.map(parentId=>{return {memberId:parentId}});
+    const orFilter1=followers.map(parentId=>{return {memberId:parentId}});
+    const orFilter2=parentsList.map(parentId=>{return {and:[
+      {memberId:parentId},
+      {isSpecial:true},
+    ]}});
+    
+    const orFilter=orFilter1.concat(orFilter2);
+    console.log('orFilter1==',orFilter1)
+    console.log('orFilter2==',orFilter2)
+    console.log('orFilter==',orFilter)
+
     const filter={or:orFilter}
     params.where=filter;
     params.order='id DESC';
