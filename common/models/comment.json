@@ -9,18 +9,18 @@
     "memberId": {
       "type": "string"
     },
-    "message": {
+    "postId": {
       "type": "string"
     },
-    "file": {
+    "modelkey": {
+      "type": "string"
+    },
+    "text": {
       "type": "string"
     },
     "cdate": {
       "type": "date",
       "required": true
-    },
-    "receiver": {
-      "type": "string"
     },
     "likes": {
       "type": [
@@ -45,6 +45,11 @@
       "type": "belongsTo",
       "model": "Member",
       "foreignKey": "memberId"
+    },
+    "post": {
+      "type": "belongsTo",
+      "model": "Post",
+      "foreignKey": "postId"
     }
   },
   "acls": [],

@@ -40,6 +40,10 @@
     "dataSource": "treenetds",
     "public": true
   },
+  "Comment": {
+    "dataSource": "treenetds",
+    "public": true
+  },
   "Follower": {
     "dataSource": "treenetds",
     "public": true

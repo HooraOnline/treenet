@@ -2,13 +2,23 @@
 
 module.exports = function(Model) {
   Model.addComment = async (data, callback)=> {
-    console.log(data);
-    const userId=data.userId;
+    console.log('comment=',data);
+    const postId=data.postId;
+    const text=data.text;
+    const userId=data.userId ;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
-    let entity={memberId:userId,file:data.file,text:data.text};
+    if(!postId){
+      callback(new Error('postId is requier'));
+      return
+    }
+    if(!text){
+      callback(new Error('text is requier'));
+      return
+    }
+    let entity={memberId:userId,postId:postId,text:text};
     if(entity.id){
       entity.udate=new Date();
     }else{
@@ -33,11 +43,16 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/me/addComment',
+        path: '/addComment',
         verb: 'POST',
       },
     }
   );
+
+
+
+
+
 
   Model.getMyComments = function (params, callback) {
     console.log('4444444444=',params);

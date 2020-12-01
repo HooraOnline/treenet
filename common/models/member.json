@@ -97,6 +97,11 @@
       "type": "hasMany",
       "model": "Seen",
       "foreignKey": "memberId"
+    },
+    "comments": {
+      "type": "hasMany",
+      "model": "Comment",
+      "foreignKey": "memberId"
     }
   },
   "acls": [],

@@ -144,16 +144,124 @@ module.exports = function(Model) {
       return
     }
 
-    return Model.find({where: {invitationCode:data.invitationCode}})
+
+    let params={};
+    params.where={invitationCode:data.invitationCode};
+    params.fields=['id','fullName','userKey','profileImage','avatar'];
+    params.include=  [{
+      relation: 'followers',
+      scope: {
+        fields: ['id','followedId','followerId','isFollowing'],
+        where: {isFollowing: true},
+      }
+    },
+    {
+      relation: 'subsets',
+      scope: {
+        fields: ['id'],
+       include: {
+          relation: 'subsets',
+            scope: {
+              fields: ['id'],
+              include: {
+                 relation: 'subsets',
+                 fields: ['id'],
+                 include: {
+                    relation: 'subsets',
+                    fields: ['id'],
+                    include: {
+                       relation: 'subsets',
+                       fields: ['id'],
+                       include: {
+                          relation: 'subsets',
+                          fields: ['id'],
+                          include: {
+                             relation: 'subsets',
+                             fields: ['id'],
+                             include: {
+                                relation: 'subsets',
+                                fields: ['id'],
+                                include: {
+                                   relation: 'subsets',
+                                   fields: ['id'],
+                                   include: {
+                                      relation: 'subsets',
+                                      fields: ['id'],
+                                      include: {
+                                         relation: 'subsets',
+                                         fields: ['id'],
+                                         include: {
+                                            relation: 'subsets',
+                                            fields: ['id'],
+                                            include: {
+                                               relation: 'subsets',
+                                               fields: ['id'],
+                                               include: {
+                                                  relation: 'subsets',
+                                                  fields: ['id'],
+                                                  include: {
+                                                     relation: 'subsets',
+                                                     fields: ['id'],
+                                                     include: {
+                                                        relation: 'subsets',
+                                                        fields: ['id'],
+                                                        include: {
+                                                           relation: 'subsets',
+                                                           fields: ['id'],
+                                                           include: {
+                                                              relation: 'subsets',
+                                                              fields: ['id'],
+                                                              include: {
+                                                                 relation: 'subsets',
+                                                                 fields: ['id'],
+                                                                 include: {
+                                                                    relation: 'subsets',
+                                                                    fields: ['id'],
+                                                                    include: {
+                                                                       relation: 'subsets',
+                                                                         scope: {
+                                                                        
+                                                                         }
+                                                                     }
+                                                                  }
+                                                               }
+                                                            }
+                                                         }
+                                                      }
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+        }
+      }
+    }
+  //  {"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":"subsets"}}}}}}}}}}}}}}}}}}}}}
+  ]
+    return Model.find(params)
       .then(res=>{
+        console.log('getRegentInfogetRegentInfogetRegentInfo=',res[0])
         if(res && res[0]){
           let regent={
             fullName:res[0].fullName,
+            userKey:res[0].userKey,
             displayName: res[0].displayName,
             avatar: res[0].avatar,
             profileImage: res[0].profileImage,
+            followers: res[0].followers.length,
+            subsets: res[0].subsets,
           }
-          callback(null,regent);
+         
+          callback(null,res[0]);
         }
          
         else

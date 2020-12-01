@@ -110,8 +110,6 @@ module.exports = function(Model) {
   }
 
   Model.getFollowboardPosts = async function (data, callback) {
-   
-   
     const userId=data.userId ;
     console.log('aaaaaaaaaaaaaaaaaa===',userId);
     if(!userId){
@@ -154,9 +152,7 @@ module.exports = function(Model) {
     ]}});
     
     const orFilter=orFilter1.concat(orFilter2);
-    console.log('orFilter1==',orFilter1)
-    console.log('orFilter2==',orFilter2)
-    console.log('orFilter==',orFilter)
+   
 
     const filter={or:orFilter}
     params.where=filter;
@@ -242,6 +238,65 @@ module.exports = function(Model) {
       },
       http: {
         path: '/me/getLastSpecialedPost',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.geComments = function (params, callback) {
+    const postId=params.postId ;
+    if(!postId){
+      callback(new Error('postId is require'));
+      return
+    }
+    params.where={id:postId};
+    //params.order='id DESC';
+    params.include=  {
+      relation: 'comments',
+      scope: {
+        //fields: ['id', 'fullName','userKey','profileImage','avatar'],
+        include: {
+          relation: 'member',
+            scope: {
+              fields: ['id', 'fullName','userKey','profileImage','avatar'],
+              //where: {orderId: 5}
+          }
+        }
+      }
+    }
+    
+  
+
+   
+    return Model.find(params)
+      .then(res => {
+
+        callback(null, res);
+      }).then(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_get_post_comments',
+          errorMessage: 'خطا در بارگذاری کامنتها'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'geComments',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/geComments',
         verb: 'POST',
       },
     }
