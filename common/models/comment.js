@@ -19,6 +19,9 @@ module.exports = function(Model) {
       return
     }
     let entity={memberId:userId,postId:postId,text:text};
+    if(data.commentId){
+      entity.commentId=data.commentId;
+    }
     if(entity.id){
       entity.udate=new Date();
     }else{

@@ -263,7 +263,7 @@ module.exports = function(Model) {
           }
         },
         {
-          relation: 'replys',
+          relation: 'comments',
           scope: {
             include:{
               relation: 'member',

@@ -6,7 +6,7 @@
     "validateUpsert": true
   },
   "properties": {
-    "parentId": {
+    "commentId": {
       "type": "string"
     },
     "memberId": {
@@ -55,10 +55,10 @@
       "model": "Post",
       "foreignKey": "postId"
     },
-    "replys": {
+    "comments": {
       "type": "hasMany",
       "model": "Comment",
-      "foreignKey": "parentId"
+      "foreignKey": "commentId"
     }
   },
   "acls": [],
