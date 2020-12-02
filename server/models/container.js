@@ -153,33 +153,43 @@ module.exports = function(Files) {
             http: {verb: 'post'}
         }
     );
-    Files.deleteProfileImage = function (fileName,callback) {
-        Files.app.models.container.removeFile( 'member',fileName.fileName,function (err,res) {
-            if(err) {
-                 app.models.Bug.create({err:err}); callback(err);
-            } else {
 
-                callback(null, res);
-            }
-        });
-    };
-    Files.remoteMethod(
-        'deleteProfileImage',
+   
+
+   
+
+    Files.removeProfileImage = async (data, callback)=> {
+        console.log('image========',data);
+        const userId=data.userId;
+        // if(!userId){
+        //   callback(new Error('token expier'));
+        //   return
+        // }
+       const folder=(data.folder || 'member');
+        Files.app.models.container.removeFile(folder,data.file)
+        .then(res=>{
+            callback(null,res)
+          }).then(err=>{
+            //callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در ارسال کد دعوت'});
+            callback(err);
+            return err;
+          });
+      };
+      Files.remoteMethod(
+        'removeProfileImage',
         {
-            description: 'remove a file from member',
-            accepts: [
-                {
-                    arg: 'fileName',
-                    type: 'object',
-                    http: { source: 'body' }
-                }
-            ],
-            returns: {
-                arg: 'result',
-                type: 'object',
-                root: true
-            },
-            http: {verb: 'post'}
+          accepts: [{
+            arg: 'data',
+            type: 'object',
+            http: { source: 'body' }
+          }],
+          returns: {arg: 'result', type: 'object',root:true },
+          http: {
+            path: '/removeProfileImage',
+            verb: 'POST',
+          },
         }
-    );
+      );
+
+
 };

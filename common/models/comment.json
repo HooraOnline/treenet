@@ -6,12 +6,16 @@
     "validateUpsert": true
   },
   "properties": {
+    "parentId": {
+      "type": "string"
+    },
     "memberId": {
       "type": "string"
     },
     "postId": {
       "type": "string"
     },
+    
     "modelkey": {
       "type": "string"
     },
@@ -50,6 +54,11 @@
       "type": "belongsTo",
       "model": "Post",
       "foreignKey": "postId"
+    },
+    "replys": {
+      "type": "hasMany",
+      "model": "Comment",
+      "foreignKey": "parentId"
     }
   },
   "acls": [],

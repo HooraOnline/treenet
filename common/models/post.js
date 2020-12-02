@@ -251,24 +251,44 @@ module.exports = function(Model) {
     }
     params.where={id:postId};
     //params.order='id DESC';
-    params.include=  {
+    params.include=  [{
       relation: 'comments',
       scope: {
         //fields: ['id', 'fullName','userKey','profileImage','avatar'],
-        include: {
+        include:[ {
           relation: 'member',
             scope: {
               fields: ['id', 'fullName','userKey','profileImage','avatar'],
               //where: {orderId: 5}
           }
+        },
+        {
+          relation: 'replys',
+          scope: {
+            include:{
+              relation: 'member',
+                scope: {
+                  fields: ['id', 'fullName','userKey','profileImage','avatar'],
+                  //where: {orderId: 5}
+              }
+            }
+          }
         }
+      ],
+
       }
-    }
+    },
+    {
+      relation: 'member',
+      scope: {
+        fields: ['id', 'fullName','userKey','profileImage','avatar'],
+       
+      }
+    }]
+  
     
   
-
-   
-    return Model.find(params)
+  return Model.find(params)
       .then(res => {
 
         callback(null, res);
