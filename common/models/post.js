@@ -132,18 +132,68 @@ module.exports = function(Model) {
 
 
     const params={}
-    params.include=  {
+    params.include=  [{
       relation: 'member',
       scope: {
         fields: ['id', 'fullName','userKey','dispplayName','profileImage','avatar'],
-        include: {//for like by me
-          relation: 'likes',
+        // include: {//for like by me
+        //   relation: 'likes',
+        //     scope: {
+        //     where: {memberId: userId}
+        //   }
+        // }
+      }
+    },
+    {
+      relation: 'comments',
+          scope: {
+            fields: ['id'],
+            
+          }
+    },
+    {
+      relation: 'firstComment',
+      scope: {
+        //fields: ['id', 'text','member'],
+        limit:1,
+        include: {
+          relation: 'member',
             scope: {
-            where: {memberId: userId}
+              fields: ['id', 'fullName','userKey','profileImage','avatar'],
+              //where: {orderId: 5}
           }
         }
       }
+    },
+    {
+      relation: 'likes',
+          scope: {
+            fields: ['id'],
+            
+          }
+    },
+    {
+      relation: 'myLike',
+          scope: {
+            fields: ['id'],
+            where: {memberId: userId}
+          }
+    },
+    {
+      relation: 'seens',
+          scope: {
+            fields: ['id'],
+            
+          }
+    },
+    {
+      relation: 'mySeen',
+          scope: {
+            fields: ['id'],
+            where: {memberId: userId}
+          }
     }
+  ]
     
     const orFilter1=followers.map(parentId=>{return {memberId:parentId}});
     const orFilter2=parentsList.map(parentId=>{return {and:[

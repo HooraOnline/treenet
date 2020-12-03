@@ -46,14 +46,29 @@
       "model": "Member",
       "foreignKey": "memberId"
     },
+    "firstComment": {
+      "type": "hasMany",
+      "model": "Comment",
+      "foreignKey": "postId"
+    },
     "comments": {
       "type": "hasMany",
       "model": "Comment",
       "foreignKey": "postId"
     },
+    "myLike": {
+      "type": "hasMany",
+      "model": "Like",
+      "foreignKey": "postId"
+    },
     "likes": {
       "type": "hasMany",
       "model": "Like",
+      "foreignKey": "postId"
+    },
+    "mySeen": {
+      "type": "hasMany",
+      "model": "Seen",
       "foreignKey": "postId"
     },
     "seens": {

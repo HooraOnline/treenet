@@ -862,7 +862,7 @@ module.exports = function(Model) {
       scope: {
         fields: ['id','message','file'],
         include: {//for like by me
-          relation: 'likes',
+          relation: 'myLike',
             scope: {
                 where: {memberId: userId}
            }
