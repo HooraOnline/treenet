@@ -861,12 +861,12 @@ module.exports = function(Model) {
       relation: 'posts',
       scope: {
         fields: ['id','message','file'],
-        /*include: {
-          relation: 'comments',
+        include: {//for like by me
+          relation: 'likes',
             scope: {
-            where: {orderId: 5}
-          }
-        }*/
+                where: {memberId: userId}
+           }
+        }
       }
     },
     {

@@ -51,7 +51,7 @@
       "model": "Comment",
       "foreignKey": "postId"
     },
-    "liks": {
+    "likes": {
       "type": "hasMany",
       "model": "Like",
       "foreignKey": "postId"

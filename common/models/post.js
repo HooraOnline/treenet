@@ -136,12 +136,12 @@ module.exports = function(Model) {
       relation: 'member',
       scope: {
         fields: ['id', 'fullName','userKey','dispplayName','profileImage','avatar'],
-        /*include: {
-          relation: 'orders',
+        include: {//for like by me
+          relation: 'likes',
             scope: {
-            where: {orderId: 5}
+            where: {memberId: userId}
           }
-        }*/
+        }
       }
     }
     

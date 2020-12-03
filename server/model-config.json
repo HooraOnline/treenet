@@ -44,6 +44,14 @@
     "dataSource": "treenetds",
     "public": true
   },
+  "Like": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "Seen": {
+    "dataSource": "treenetds",
+    "public": true
+  },
   "Follower": {
     "dataSource": "treenetds",
     "public": true
