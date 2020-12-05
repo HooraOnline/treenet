@@ -859,8 +859,10 @@ module.exports = function(Model) {
     params.order='id DESC';
     params.include=  [{
       relation: 'posts',
+      
       scope: {
         fields: ['id','message','file'],
+        where:{isDeleted:{neq: true }},
         include: {//for like by me
           relation: 'myLike',
             scope: {

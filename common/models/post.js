@@ -40,6 +40,156 @@ module.exports = function(Model) {
     }
   );
 
+
+  Model.getById = function (params, callback) {
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+
+    const postId=params.postId ;
+    if(!postId){
+      callback(new Error('token expier'));
+      return
+    }
+
+    params.include=  [{
+      relation: 'member',
+      scope: {
+        fields: ['id', 'fullName','userKey','dispplayName','profileImage','avatar'],
+        // include: {//for like by me
+        //   relation: 'likes',
+        //     scope: {
+        //     where: {memberId: userId}
+        //   }
+        // }
+      }
+    },
+    {
+      relation: 'comments',
+          scope: {
+            fields: ['id'],
+            
+          }
+    },
+    {
+      relation: 'firstComment',
+      scope: {
+        //fields: ['id', 'text','member'],
+        limit:1,
+        include: {
+          relation: 'member',
+            scope: {
+              fields: ['id', 'fullName','userKey','profileImage','avatar'],
+              //where: {orderId: 5}
+          }
+        }
+      }
+    },
+    {
+      relation: 'likes',
+          scope: {
+            fields: ['id'],
+            
+          }
+    },
+    {
+      relation: 'myLike',
+          scope: {
+            fields: ['id'],
+            where: {memberId: userId}
+          }
+    },
+    {
+      relation: 'seens',
+          scope: {
+            fields: ['id'],
+            
+          }
+    },
+    {
+      relation: 'mySeen',
+          scope: {
+            fields: ['id'],
+            where: {memberId: userId}
+          }
+    }]
+    //params.where={postId:postId,isDeleted:{neq: true }};
+    return Model.findById(postId,params)
+      .then(res => {
+
+        callback(null, res);
+      }).then(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در بارگذاری پست'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'getById',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getById',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.removePost = async (data, callback)=> {
+    const userId=data.userId;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    if(!data.postId){
+      callback(new Error('postId not found'));
+      return
+    }
+    let postId=data.postId;
+
+    const where={id:postId,memberId:userId};
+    const entity={isDeleted:true,delteDate:new Date()};
+  
+    return Model.updateAll(where,entity)
+      .then(res=>{
+        callback(null,entity);
+      }).then(err=>{
+        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_remove_post',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
+        return err;
+      });
+  };
+
+  Model.remoteMethod(
+    'removePost',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/removePost',
+        verb: 'POST',
+      },
+    }
+  );
+
   Model.getMyPosts = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
@@ -59,7 +209,7 @@ module.exports = function(Model) {
       }
     }
 
-    params.where={memberId:userId};
+    params.where={memberId:userId,isDeleted:{neq: true }};
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
@@ -204,7 +354,7 @@ module.exports = function(Model) {
     const orFilter=orFilter1.concat(orFilter2);
    
 
-    const filter={or:orFilter}
+    const filter={and:[{isDeleted:{neq: true}},{or:orFilter}]}
     params.where=filter;
     params.order='id DESC';
     return Model.find(params)
