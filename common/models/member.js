@@ -939,6 +939,48 @@ module.exports = function(Model) {
     }
   );
 
+  Model.searchByKeyword = async (data, callback)=> {
+    if(!data.userId){
+      callback(new Error('token is require'));
+      return
+    }
+    if(!data.keyword || data.keyword.length<3){
+      callback(new Error('keyword is require or less than 3'));
+      return
+    }
+
+    const keyword=data.keyword.replace('@','').toLowerCase();
+    console.log(keyword)
+    const filter={where: {userKey: {
+      like: keyword,
+      options: "i" 
+    }}};
+    filter.fields=['id','userKey','fullName','profileImage'];
+
+    return Model.find(filter)
+      .then(res=>{
+           console.log(res);
+          callback(null,res);
+      }).then(err=>{
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_search_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'searchByKeyword',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/searchByKeyword',
+        verb: 'POST',
+      },
+    }
+  );
 
 
 };
