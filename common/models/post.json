@@ -75,6 +75,11 @@
       "type": "hasMany",
       "model": "Seen",
       "foreignKey": "postId"
+    },
+    "shares": {
+      "type": "hasMany",
+      "model": "Share",
+      "foreignKey": "postId"
     }
   },
   "acls": [],

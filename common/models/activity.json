@@ -1,0 +1,41 @@
+{
+  "name": "Activity",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "shareId": {
+      "type": "string"
+    },
+    "likeId": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    },
+    "isSeen": {
+       "type": "boolean"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "share": {
+      "type": "belongsTo",
+      "model": "Share",
+      "foreignKey": "shareId"
+    },
+    "like": {
+      "type": "belongsTo",
+      "model": "Like",
+      "foreignKey": "likeId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -1,0 +1,61 @@
+{
+  "name": "Share",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "postId": {
+      "type": "string"
+    },
+    "senderId": {
+      "type": "string"
+    },
+    "reciverId": {
+      "type": "string"
+    },
+    "modelkey": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    },
+    "isSeen": {
+      "type": "boolean"
+     
+    }
+    
+  },
+  "validations": [],
+  "relations": {
+    "activities": {
+      "type": "hasMany",
+      "model": "Activity",
+      "foreignKey": "shareId"
+    },
+    "post": {
+      "type": "belongsTo",
+      "model": "Post",
+      "foreignKey": "postId"
+    },
+    "sender": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "senderId"
+    },
+    "reciver": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "reciverId"
+    }
+   
+  
+  },
+  "acls": [],
+  "methods": {}
+}

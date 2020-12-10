@@ -1,10 +1,10 @@
 'use strict';
-
+var app = require('../../server/server');
 module.exports = function(Model) {
-  Model.addComment = async (data, callback)=> {
-    console.log('comment=',data);
+  Model.sharePost = async (data, callback)=> {
+    console.log('share=',data);
     const postId=data.postId;
-    const text=data.text;
+    const reciverList=data.reciverList;
     const userId=data.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -14,26 +14,33 @@ module.exports = function(Model) {
       callback(new Error('postId is requier'));
       return
     }
-    if(!text){
-      callback(new Error('text is requier'));
+    if(!reciverList){
+      callback(new Error('reciverList is requier'));
       return
     }
-    let entity={memberId:userId,postId:postId,text:text,modelkey:'post',cdate:new Date};
-    if(data.commentId){
-      entity.commentId=data.commentId;
-    }
-  
-    return Model.updateOrCreate(entity)
+    let shareList=[];
+ 
+    reciverList.map(reciver=>{
+      shareList.push({senderId:userId,postId:postId,reciverId:reciver,cdate:(new Date).toJSON(),modelkey:'post'});
+    })
+    
+    return Model.create(shareList)
       .then(res=>{
-        callback(null,entity);
+          console.log('res====',res);
+          let actovityList=[];
+          res.map(share=>{
+            actovityList.push({ shareId:share.id,reciverId:share.reciverId,action:'share',type:'share_post',cdate:(new Date).toJSON(),});
+          });
+          const activity= app.models.Activity.create(actovityList);
+          callback(null,shareList);
       }).then(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_comment_error_add_comment',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
-        return err;
+          callback(null,{errorCode:17, lbError:error, errorKey:'server_share_error_add_share',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
+          return err;
       });
   };
 
   Model.remoteMethod(
-    'addComment',
+    'sharePost',
     {
       accepts: [{
         arg: 'data',
@@ -42,7 +49,7 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/addComment',
+        path: '/sharePost',
         verb: 'POST',
       },
     }
@@ -53,7 +60,7 @@ module.exports = function(Model) {
 
 
 
-  Model.getMyComments = function (params, callback) {
+  Model.getMyShares = function (params, callback) {
     console.log('4444444444=',params);
     const userId=params.userId ;
     if(!userId){
@@ -83,14 +90,14 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_comment_error_get_my_comments',
+          errorKey: 'server_share_error_get_my_shares',
           errorMessage: 'خطا در بارگذاری کامنتها'
         });
         return err;
       });
   };
   Model.remoteMethod(
-    'getMyComments',
+    'getMyShares',
     {
       accepts: {
         arg: 'data',
@@ -103,7 +110,7 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/me/getComments',
+        path: '/me/getShares',
         verb: 'POST',
       },
     }

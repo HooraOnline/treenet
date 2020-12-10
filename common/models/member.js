@@ -951,15 +951,24 @@ module.exports = function(Model) {
 
     const keyword=data.keyword.replace('@','').toLowerCase();
     console.log(keyword)
-    const filter={where: {userKey: {
-      like: keyword,
-      options: "i" 
-    }}};
+    const filter={where: {or:[
+      {fullName: {
+        like: keyword,
+        options: "i" 
+      }},
+      {displayName: {
+        like: keyword,
+        options: "i" 
+      }},
+      {userKey: {
+        like: keyword,
+        options: "i" 
+      }}]}};
     filter.fields=['id','userKey','fullName','profileImage'];
 
     return Model.find(filter)
       .then(res=>{
-           console.log(res);
+           
           callback(null,res);
       }).then(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_search_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
