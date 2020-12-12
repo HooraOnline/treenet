@@ -50,6 +50,11 @@
       "model": "Member",
       "foreignKey": "memberId"
     },
+    "parent": {
+      "type": "belongsTo",
+      "model": "Comment",
+      "foreignKey": "commentId"
+    },
     "post": {
       "type": "belongsTo",
       "model": "Post",
@@ -60,6 +65,7 @@
       "model": "Comment",
       "foreignKey": "commentId"
     }
+   
   },
   "acls": [],
   "methods": {}

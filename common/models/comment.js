@@ -1,5 +1,5 @@
 'use strict';
-
+var app = require('../../server/server');
 module.exports = function(Model) {
   Model.addComment = async (data, callback)=> {
     console.log('comment=',data);
@@ -24,7 +24,11 @@ module.exports = function(Model) {
     }
   
     return Model.updateOrCreate(entity)
-      .then(res=>{
+      .then(comment=>{
+        if(data.reciverId){
+          const activity={replayId:comment.id,reciverId:('_'+data.reciverId),action:'replay',type:'replay_comment',cdate:(new Date()).toJSON()};
+          app.models.Activity.create(activity);
+        }
         callback(null,entity);
       }).then(err=>{
         callback(null,{errorCode:17, lbError:error, errorKey:'server_comment_error_add_comment',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
@@ -47,10 +51,6 @@ module.exports = function(Model) {
       },
     }
   );
-
-
-
-
 
 
   Model.getMyComments = function (params, callback) {

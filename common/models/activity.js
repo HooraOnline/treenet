@@ -10,7 +10,24 @@ module.exports = function(Model) {
     }
     params.where={reciverId:'_'+userId};
     params.order='id DESC';
-    params.include=  [{
+    params.include=  [
+      {
+        relation: 'follow',
+          scope: {
+            //fields: ['id',],
+              include: [
+              {
+                relation: 'follower',
+                  scope: {
+                    fields: ['id', 'displayName','userKey','profileImage'],
+                    //where: {orderId: 5}
+                  }
+              }
+            ]
+        }
+      },
+      
+      {
       relation: 'share',
         scope: {
           //fields: ['id',],
@@ -68,21 +85,34 @@ module.exports = function(Model) {
       }
     },
     {
-      relation: 'follow',
+      relation: 'replay',
         scope: {
           //fields: ['id',],
-            include: [
-            {
-              relation: 'follower',
+            include: [{
+              relation: 'post',
                 scope: {
-                  fields: ['id', 'displayName','userKey','profileImage'],
+                  //fields: ['id',],
+                  include: {
+                    relation: 'member',
+                    fields: ['id', 'displayName','userKey','profileImage','avatar'],
+                      scope: {
+                        //fields: ['id',],
+                        //where: {orderId: 5}
+                      }
+                  }
+                }
+            },
+            
+            {
+              relation: 'member',
+                scope: {
+                  fields: ['id', 'displayName','userKey','profileImage','avatar'],
                   //where: {orderId: 5}
                 }
             }
           ]
       }
-    }
-    
+    },
   ]
     
 

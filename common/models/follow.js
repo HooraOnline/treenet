@@ -26,7 +26,6 @@ module.exports = function(Model) {
     }
 
     console.log('entity====',entity);
-    
     return Model.updateOrCreate(entity)
       .then(follow=>{
         console.log(follow)

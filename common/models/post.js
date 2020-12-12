@@ -462,16 +462,31 @@ module.exports = function(Model) {
               //where: {orderId: 5}
           }
         },
+       
         {
           relation: 'comments',
           scope: {
-            include:{
+            include:[{
               relation: 'member',
                 scope: {
                   fields: ['id', 'fullName','userKey','profileImage','avatar'],
                   //where: {orderId: 5}
               }
-            }
+            },
+            {
+              relation: 'parent',
+              scope: {
+                //fields: ['id','commentId','memberId','postId','text','cdate',],
+                include:{
+                  relation: 'member',
+                    scope: {
+                      fields: ['userKey'],
+                      //where: {orderId: 5}
+                  }
+                }
+              }
+            },
+          ]
           }
         }
       ],
@@ -490,7 +505,7 @@ module.exports = function(Model) {
   
   return Model.find(params)
       .then(res => {
-
+        console.log(res);
         callback(null, res);
       }).then(err => {
         callback(null, {

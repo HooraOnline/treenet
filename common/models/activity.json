@@ -39,6 +39,11 @@
       "type": "belongsTo",
       "model": "Follow",
       "foreignKey": "followId"
+    },
+    "replay": {
+      "type": "belongsTo",
+      "model": "Comment",
+      "foreignKey": "replayId"
     }
   },
   "acls": [],
