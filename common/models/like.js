@@ -13,16 +13,16 @@ module.exports = function(Model) {
       callback(new Error('postId is requer'));
       return
     }
-    const entity={memberId:userId,postId:data.postId,cdate:new Date()}
-
+    const entity={memberId:userId,postId:data.postId,reciverId:data.reciverId,cdate:new Date()}
     console.log('entity====',entity);
-    
     return Model.updateOrCreate(entity)
-      .then(res=>{
-        callback(null,entity);
+      .then(like=>{
+          const activity={likeId:like.id,reciverId:('_'+data.reciverId),action:'like',type:'like_post',cdate:(new Date()).toJSON()};
+          app.models.Activity.create(activity);
+          callback(null,entity);
       }).then(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_like',errorMessage:'خطا در لایک کردن. دوباره سعی کنید.'});
-        return err;
+          callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_like',errorMessage:'خطا در لایک کردن. دوباره سعی کنید.'});
+          return err;
       });
   };
 

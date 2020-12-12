@@ -121,6 +121,7 @@ module.exports = function(Model) {
         return err;
       })
   };
+  
   Model.remoteMethod(
     'checkMobileExist',
     {
@@ -760,11 +761,41 @@ module.exports = function(Model) {
       callback(new Error('token expier'));
       return
     }
-    return Model.findById(userId,params.filter, function (err, res) {
+    params.include=  [
+    {
+      relation: 'followers',
+      scope: {
+        fields: ['id','followedId','followerId','isFollowing'],
+        where: {isFollowing: true},
+        /*include: {
+          relation: 'comments',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    },
+    {
+      relation: 'followeds',
+      scope: {
+        fields: ['id','followedId','followerId','isFollowing'],
+        where: {isFollowing: true},
+        /*include: {
+          relation: 'comments',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    }
+  ]
+    return Model.findById(userId,params, function (err, res) {
       if (err) {
+      
          callback(err);
       }
       else if(!res || !res.username) {
+        console.log(res);
         callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
       }
       else {

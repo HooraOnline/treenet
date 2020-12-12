@@ -28,7 +28,10 @@ module.exports = function(Model) {
     console.log('entity====',entity);
     
     return Model.updateOrCreate(entity)
-      .then(res=>{
+      .then(follow=>{
+        console.log(follow)
+        const activity={followId:follow.id,reciverId:('_'+followedId),action:'follow',type:entity.isFollowing?'unfollow_you':'follow_you',cdate:(new Date()).toJSON()};
+        app.models.Activity.create(activity);
         callback(null,entity);
       }).then(err=>{
         callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_follow',errorMessage:'خطا در دنبال کردن. دوباره سعی کنید.'});

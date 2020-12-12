@@ -9,7 +9,7 @@
     "postId": {
       "type": "string"
     },
-    "senderId": {
+    "memberId": {
       "type": "string"
     },
     "reciverId": {
@@ -27,34 +27,31 @@
     },
     "isSeen": {
       "type": "boolean"
-     
     }
     
   },
   "validations": [],
   "relations": {
-    "activities": {
-      "type": "hasMany",
-      "model": "Activity",
-      "foreignKey": "shareId"
-    },
     "post": {
       "type": "belongsTo",
       "model": "Post",
       "foreignKey": "postId"
     },
-    "sender": {
+    "member": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "senderId"
+      "foreignKey": "memberId"
+    },
+    "activities": {
+      "type": "hasMany",
+      "model": "Activity",
+      "foreignKey": "shareId"
     },
     "reciver": {
       "type": "belongsTo",
       "model": "Member",
       "foreignKey": "reciverId"
     }
-   
-  
   },
   "acls": [],
   "methods": {}

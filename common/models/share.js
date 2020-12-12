@@ -21,7 +21,7 @@ module.exports = function(Model) {
     let shareList=[];
  
     reciverList.map(reciver=>{
-      shareList.push({senderId:userId,postId:postId,reciverId:reciver,cdate:(new Date).toJSON(),modelkey:'post'});
+      shareList.push({memberId:userId,postId:postId,reciverId:reciver,cdate:(new Date()).toJSON(),modelkey:'post'});
     })
     
     return Model.create(shareList)
@@ -29,7 +29,8 @@ module.exports = function(Model) {
           console.log('res====',res);
           let actovityList=[];
           res.map(share=>{
-            actovityList.push({ shareId:share.id,reciverId:share.reciverId,action:'share',type:'share_post',cdate:(new Date).toJSON(),});
+            actovityList.push({ shareId:share.id,reciverId:'_'+share.reciverId,action:'share',type:'share_post',cdate:(new Date()).toJSON(),});
+            actovityList.push({shareId:share.id,reciverId:'_'+userId,action:'share',type:'share_your_post',cdate:(new Date()).toJSON(),});
           });
           const activity= app.models.Activity.create(actovityList);
           callback(null,shareList);

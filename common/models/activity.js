@@ -3,14 +3,14 @@
 module.exports = function(Model) {
   
   Model.getUserAnnounce = function (params, callback) {
-    console.log('4444444444=',params);
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
-      return
+      return;
     }
-    params.where={reciverId:userId};
-    params.include=  {
+    params.where={reciverId:'_'+userId};
+    params.order='id DESC';
+    params.include=  [{
       relation: 'share',
         scope: {
           //fields: ['id',],
@@ -29,7 +29,7 @@ module.exports = function(Model) {
                 }
             },
             {
-              relation: 'sender',
+              relation: 'member',
                 scope: {
                   fields: ['id', 'displayName','userKey','profileImage','avatar'],
                   //where: {orderId: 5}
@@ -37,10 +37,57 @@ module.exports = function(Model) {
             }
           ]
       }
+    },
+    
+    {
+      relation: 'like',
+        scope: {
+          //fields: ['id',],
+            include: [{
+              relation: 'post',
+                scope: {
+                  //fields: ['id',],
+                  include: {
+                    relation: 'member',
+                    fields: ['id', 'displayName','userKey','profileImage','avatar'],
+                      scope: {
+                        //fields: ['id',],
+                        //where: {orderId: 5}
+                      }
+                  }
+                }
+            },
+            {
+              relation: 'member',
+                scope: {
+                  fields: ['id', 'displayName','userKey','profileImage','avatar'],
+                  //where: {orderId: 5}
+                }
+            }
+          ]
+      }
+    },
+    {
+      relation: 'follow',
+        scope: {
+          //fields: ['id',],
+            include: [
+            {
+              relation: 'follower',
+                scope: {
+                  fields: ['id', 'displayName','userKey','profileImage'],
+                  //where: {orderId: 5}
+                }
+            }
+          ]
+      }
     }
+    
+  ]
+    
 
-   // params.where={memberId:userId};
-    params.order='id DESC';
+   
+    
     return Model.find(params)
       .then(res => {
         console.log('announce======',res);
@@ -74,7 +121,6 @@ module.exports = function(Model) {
       },
     }
   );
-
 };
 
 

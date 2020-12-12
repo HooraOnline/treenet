@@ -56,7 +56,7 @@
     "dataSource": "treenetds",
     "public": true
   },
-  "Follower": {
+  "Follow": {
     "dataSource": "treenetds",
     "public": true
   },

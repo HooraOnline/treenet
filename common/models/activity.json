@@ -34,6 +34,11 @@
       "type": "belongsTo",
       "model": "Like",
       "foreignKey": "likeId"
+    },
+    "follow": {
+      "type": "belongsTo",
+      "model": "Follow",
+      "foreignKey": "followId"
     }
   },
   "acls": [],

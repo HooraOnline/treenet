@@ -12,26 +12,40 @@
     "memberId": {
       "type": "string"
     },
+    "reciverId": {
+      "type": "string"
+    },
+    "modelkey": {
+      "type": "string"
+    },
    
     "cdate": {
       "type": "date",
       "required": true
     }
-    
   },
   "validations": [],
   "relations": {
+    "post": {
+      "type": "belongsTo",
+      "model": "Post",
+      "foreignKey": "postId"
+    },
     "member": {
       "type": "belongsTo",
       "model": "Member",
       "foreignKey": "memberId"
     },
-    "post": {
+    "activities": {
+      "type": "hasMany",
+      "model": "Activity",
+      "foreignKey": "likeId"
+    },
+    "reciver": {
       "type": "belongsTo",
-      "model": "Post",
-      "foreignKey": "postId"
+      "model": "Member",
+      "foreignKey": "reciverId"
     }
-   
   },
   "acls": [],
   "methods": {}

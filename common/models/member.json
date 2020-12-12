@@ -75,12 +75,12 @@
     },
     "followeds": {
       "type": "hasMany",
-      "model": "Follower",
+      "model": "Follow",
       "foreignKey": "followerId"
     },
     "followers": {
       "type": "hasMany",
-      "model": "Follower",
+      "model": "Follow",
       "foreignKey": "followedId"
     },
     "posts": {
