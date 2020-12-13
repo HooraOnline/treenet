@@ -12,6 +12,13 @@ module.exports = function(Model) {
     params.order='id DESC';
     params.include=  [
       {
+        relation: 'join',
+          scope: {
+            fields: ['id', 'displayName','userKey','profileImage'],
+            
+        }
+      },
+      {
         relation: 'follow',
           scope: {
             //fields: ['id',],

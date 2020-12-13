@@ -29,7 +29,7 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(follow=>{
         console.log(follow)
-        const activity={followId:follow.id,reciverId:('_'+followedId),action:'follow',type:entity.isFollowing?'unfollow_you':'follow_you',cdate:(new Date()).toJSON()};
+        const activity={followId:follow.id,reciverId:('_'+followedId),action:'follow',type:follow.isFollowing?'follow_you':'unfollow_you',cdate:(new Date()).toJSON()};
         app.models.Activity.create(activity);
         callback(null,entity);
       }).then(err=>{

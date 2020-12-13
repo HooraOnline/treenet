@@ -312,24 +312,32 @@ module.exports = function(Model) {
     user.host=data.host;
     return Model.updateOrCreate(user)
       .then(res=>{
-       
         const token = jwtRun.sign({userId: user.id});
         console.log(token)
         res.token=token;
         let inviteProfileImage=regent.inviteProfileImage;
-        if(!inviteProfileImage || inviteProfileImage=='defaultProfileImage.png')
+        if(!inviteProfileImage || inviteProfileImage=='defaultProfileImage.png'){
           inviteProfileImage=regent.profileImage;
+        }
         res.regent={
           id:regent.id,
           username:regent.username,
           name:(regent.firstName || '')+' '+(regent.lastName || ''),
           inviteProfileImage:inviteProfileImage,
           avatar:regent.avatar,
-          
         };
+        //start add activity**********
+         console.log('res.parentsList===',res.parentsList);
+         let activity={joinId:regent.id,reciverId:('_'+res.id),action:'join',type:'join_to_network',cdate:(new Date()).toJSON()};
+         app.models.Activity.create(activity);
+         res.parentsList.map((parentId,index)=>{
+           activity={joinId:res.id,reciverId:('_'+parentId),action:'join',type:index==0?'join_to_your_braches':'join_to_your_leaves',cdate:(new Date()).toJSON()};
+           app.models.Activity.create(activity);
+         });
+        //end add activity************
         callback(null,res);
       }).then(err=>{
-        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});;
+        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
       })
 
   };
@@ -624,6 +632,7 @@ module.exports = function(Model) {
       firstName:data.firstName,
       lastName:data.lastName,
       fullName:data.firstName+' '+data.lastName,
+     
       gender:data.gender,
       age:data.age,
       birthDate:birthDate ,
@@ -641,6 +650,8 @@ module.exports = function(Model) {
     }
     if(data.displayName){
       entity.displayName=data.displayName;
+    }else{
+      entity.displayName=entity.fullName;
     }
     console.log(entity);
     return Model.updateOrCreate(entity)

@@ -44,6 +44,11 @@
       "type": "belongsTo",
       "model": "Comment",
       "foreignKey": "replayId"
+    },
+    "join": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "joinId"
     }
   },
   "acls": [],

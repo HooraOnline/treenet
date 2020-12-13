@@ -261,7 +261,7 @@ module.exports = function(Model) {
 
   Model.getFollowboardPosts = async function (data, callback) {
     const userId=data.userId ;
-    console.log('aaaaaaaaaaaaaaaaaa===',userId);
+    console.log('data===',data);
     if(!userId){
       callback(new Error('token expier'));
       return
@@ -270,11 +270,11 @@ module.exports = function(Model) {
     
     const parent= await app.models.Member.findById(userId,{fields:["parentsList"]});
     const parentsList=parent.parentsList;
-    
+   
     const followerParam={}
     followerParam.where={and:[{followerId:userId},{isFollowing:true}]};
     followerParam.fields=["followedId"];
-    let followers= await app.models.Follower.find(followerParam);
+    let followers= await app.models.Follow.find(followerParam);
     followers=followers.map(item=>item.followedId)
     followers.push(userId);
     //let userIdList=followers.concat(parentsList)
@@ -355,8 +355,10 @@ module.exports = function(Model) {
    
 
     const filter={and:[{isDeleted:{neq: true}},{or:orFilter}]}
+    console.log('filter======',filter)
     params.where=filter;
     params.order='id DESC';
+    
     return Model.find(params)
       .then(res => {
         callback(null, res);
