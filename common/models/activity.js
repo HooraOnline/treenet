@@ -158,6 +158,50 @@ module.exports = function(Model) {
       },
     }
   );
+
+  Model.getNewAnnounceCount = function (params, callback) {
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return;
+    }
+    params.where={reciverId:'_'+userId};
+    return Model.count(params)
+      .then(res => {
+        console.log('announce======',res);
+        callback(null, res);
+      }).then(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_share_error_get_my_shares',
+          errorMessage: 'خطا در بارگذاری تعداد اعلان ها'
+        });
+        return err;
+      });
+  };
+  
+  Model.remoteMethod(
+    'getNewAnnounceCount',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getNewAnnounceCount',
+        verb: 'POST',
+      },
+    }
+  );
+
+
 };
 
 

@@ -99,6 +99,7 @@ module.exports = function(Model) {
       user.emailVerify=false;
       user.role='normalUser'
       user.notChangePassword=true,
+      user.changedDefaultUserKey=false;
       user.cdate = new Date().toJSON();
       user.udate = new Date().toJSON();
       console.log(user)
@@ -499,7 +500,46 @@ module.exports = function(Model) {
     }
   );
 
-  
+  Model.updateUserKey = async (data, callback)=> {
+    const userId=data.userId;
+    if(!userId){
+      callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
+      return
+    }
+    if(!data.userKey){
+      callback(new Error('userKey is require'));
+      return
+    }
+    let entity={
+      id:userId,
+      userKey:data.userKey,
+      state:'updateUserKey',
+      changedDefaultUserKey:true,
+      udate:new Date(),
+    };
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        callback(null,res)
+      }).then(err=>{
+        callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
+        return err;
+      })
+  };
+  Model.remoteMethod(
+    'updateUserKey',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/updateUserKey',
+        verb: 'POST',
+      },
+    }
+  );
   Model.updatePassword = async (data, callback)=> {
     const userId=data.userId;
     if(!userId){
