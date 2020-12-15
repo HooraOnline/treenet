@@ -125,9 +125,10 @@ module.exports = function(Model) {
 
    
     
-    return Model.find(params)
+  return Model.find(params)
       .then(res => {
         console.log('announce======',res);
+        Model.updateAll({isSeen:{neq: true }},{isSeen:true});
         callback(null, res);
       }).then(err => {
         callback(null, {
@@ -165,11 +166,14 @@ module.exports = function(Model) {
       callback(new Error('token expier'));
       return;
     }
-    params.where={reciverId:'_'+userId};
-    return Model.count(params)
+    params.where={reciverId:'_'+userId,isSeen:{neq: true }};
+    params.field='id'
+    console.log(params)
+   // return Model.count(params)
+   return Model.find(params)
       .then(res => {
         console.log('announce======',res);
-        callback(null, res);
+        callback(null, res.length);
       }).then(err => {
         callback(null, {
           errorCode: 17,
