@@ -1,5 +1,5 @@
 {
-  "APAMAN": {
+  "TREENET": {
     "dbConfig": {
       "user": "ApartmentApp",
       "password": "12983476",
@@ -17,23 +17,7 @@
       "stream": false,
       "parseJSON": true
     },
-    "dbConfigTest": {
-      "user": "ApartmentApp",
-      "password": "12983476",
-      "server": "10.1.1.80",
-      "port": 2575,
-      "database": "Apartment-New-Test",
-      "pool": {
-        "max": 10000,
-        "min": 1,
-        "idleTimeoutMillis": 30000
-      },
-      "options": {
-        "encrypt": true
-      },
-      "stream": false,
-      "parseJSON": true
-    },
+   
     "serverConfig": {
       "testPort": 5000,
       "productPort": 4000,

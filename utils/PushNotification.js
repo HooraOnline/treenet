@@ -1,5 +1,5 @@
 const config = require('config');
-const fcmConfig = config.get('APAMAN.fcmConfig');
+const fcmConfig = config.get('TREENET.fcmConfig');
 
 var http = require("http");
 

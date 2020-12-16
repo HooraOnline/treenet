@@ -9,7 +9,7 @@ const fs = require('fs');
 const logger = require('../utils/winstonLogger');
 
 const config = require('config');
-const fileConfig = config.get('APAMAN.fileConfig');
+const fileConfig = config.get('TREENET.fileConfig');
 const uploadPath = process.env.PWD + fileConfig.uploadPath;
 
 const unit = require('../controllers/unit');

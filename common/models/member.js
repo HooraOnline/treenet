@@ -313,7 +313,7 @@ module.exports = function(Model) {
     user.host=data.host;
     return Model.updateOrCreate(user)
       .then(res=>{
-        const token = jwtRun.sign({userId: user.id});
+        const token = jwtRun.sign({userId: user.id,userPermissions:member.permissions});
         console.log(token)
         res.token=token;
         let inviteProfileImage=regent.inviteProfileImage;
@@ -395,7 +395,7 @@ module.exports = function(Model) {
           //'اکانت شما توسط مدیر سیستم غیر فعال شده است'
           if (member.disable)
             return callback(new Error("ورود ناموفق2"));
-          const token = jwtRun.sign({userId: member.id});
+          const token = jwtRun.sign({userId: member.id,userPermissions:member.permissions});
           let tokenObj={token:token};
           console.log(tokenObj);
           callback(err2,tokenObj );

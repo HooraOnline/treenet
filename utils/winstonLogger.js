@@ -14,8 +14,8 @@ const logger = createLogger({
 	),
 	transports: [
 		new transports.Console({colorize : true}),
-		new transports.File({ filename: 'log/MontaApartment.log', maxsize: 27485760}),
-		new transports.File({ filename: 'log/MontaApartmentError.log', level: 'error', maxsize: 52428800}),
+		new transports.File({ filename: 'log/Treenet.log', maxsize: 27485760}),
+		new transports.File({ filename: 'log/TreenetError.log', level: 'error', maxsize: 52428800}),
 	]
 });
 

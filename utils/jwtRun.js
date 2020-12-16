@@ -9,14 +9,8 @@ const privateKEY = fs.readFileSync(__dirname + '/private.key', 'utf8');
 const publicKEY = fs.readFileSync(__dirname + '/public.key', 'utf8');
 module.exports = {
 
-  havePermision: (req,res,permission) => {
-    if(req.user.permissions && req.user.permissions.find(p=>p==permission)){
-      return true;
-    }
-    return res.status(401).send('access denied!!!');
-    return false;
-  },
-  tokenValidation: (req, callBack) => {
+
+    tokenValidation: (req, callBack) => {
         let token = req.headers['authorization']; // Express headers are auto converted to lowercase
         if (token && token.startsWith('Bearer ')) {
             // Remove Bearer from string
@@ -24,10 +18,11 @@ module.exports = {
         }
         if (token) {
             let tokenObj = verify(token);
-          if (!tokenObj) {
+            console.log('tokenObj====',tokenObj);
+            if (!tokenObj) {
                 return callBack(false)
             } else {
-            return callBack(true, tokenObj.userId)
+                return callBack(true, tokenObj)
             }
 
         } else {
@@ -55,7 +50,7 @@ module.exports = {
     },
 
     decode: (token) => {
-        return jwt.decode(token, {complete: true});
+        return jwt.decode(token, { complete: true });
         //returns null if token is invalid
     }
 };

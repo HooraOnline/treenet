@@ -2,7 +2,7 @@ const logger = require('./winstonLogger');
 const jwtRun = require('./jwtRun');
 
 const config = require('config');
-const serverConfig = config.get('APAMAN.serverConfig');
+const serverConfig = config.get('TREENET.serverConfig');
 
 function verifyToken(req, res, next) {
   //next();
@@ -12,11 +12,23 @@ function verifyToken(req, res, next) {
   let openApiList=[
       '/members/getRegentInfo',
       '/members/checkMobileExist',
-      '/members/me/checkUserNameExist',
       '/members/me/register',
       '/members/me/login',
       '/pay/result',
     ];
+    let publicRolePermission=[
+      '/members/checkMobileExist',
+      '/members/getRegentInfo',
+      '/members/me/checkUserNameExist',
+      '/members/me/register',
+      '/members/me/login',
+      '/pay/result',
+      '/members/me/checkUserKeyExist',
+      '/members/me/getProfile',
+      '/members/getsubsetlist',
+      '/activities/getNewAnnounceCount',
+      '/members/getUserPage',
+    ].map(m=>m.toLowerCase());
   //let apiPath=req.originalUrl.toLowerCase().replace('/api','');
   let apiPath=req._parsedUrl.pathname.toLowerCase().replace('/api','');
   console.log('apiPath=',apiPath);
@@ -24,15 +36,24 @@ function verifyToken(req, res, next) {
     if (openPath || apiPath.search('containers')>-1 || apiPath.search('explorer')>-1) {
         next();
     }else {
-
-      jwtRun.tokenValidation(req, (state, id) => {
-        
+      jwtRun.tokenValidation(req, (state, tokenObj) => {
         if (state) {
-               logger.info('Verify Token API: %s', req.originalUrl);
-               console.log('66666666======',id)
-               if(id){
-                 req.params.userId=id;
-                 req.userId = id;
+              
+                const permissionKey=apiPath;
+               
+                
+                console.log('jwt tokenObj======',tokenObj);
+                let userPermissions=tokenObj.userPermissions.concat(publicRolePermission);
+                const havePermission=userPermissions.includes(permissionKey);
+                console.log('permissionKey=', permissionKey);
+                console.log('jwtuserPermissions======',userPermissions);
+                console.log('havePermission======',havePermission);
+                if(!havePermission ){
+                  // return res.status(401).send('access denied!!!');
+                }
+               if(tokenObj.userId){
+                 req.params.userId=tokenObj.userId;
+                 req.userId = tokenObj.userId;
                }
                next();
             } else {

@@ -14,7 +14,7 @@ module.exports = function(Model) {
       {
         relation: 'join',
           scope: {
-            fields: ['id', 'displayName','userKey','profileImage'],
+            fields: ['id', 'displayName','userKey','profileImage','username'],
             
         }
       },

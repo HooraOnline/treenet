@@ -1,6 +1,6 @@
 var soap = require('soap');
 const config = require('config');
-const asanPardakht = config.get('APAMAN.asanPardakhtConfig');
+const asanPardakht = config.get('TREENET.asanPardakhtConfig');
 
 var CryptoJS = require('crypto-js');
 

@@ -1,11 +1,11 @@
 var soap = require('soap');
 const config = require('config');
-const pecPardakht = config.get('APAMAN.payPecConfig');
+const pecPardakht = config.get('TREENET.payPecConfig');
 const logger = require('./winstonLogger');
 const payment = require("../controllers/payment");
 
 module.exports = {
-    createPaymentRequest: (params, callBackUrl = 'https://www.monta.ir/apaman/apaman198/pay/result') => {
+    createPaymentRequest: (params, callBackUrl = 'https://treenetgram/api/pay/result') => {
         return {
             requestData: {
                 LoginAccount: pecPardakht.LOGIN_ACCOUNT,
@@ -18,7 +18,7 @@ module.exports = {
         }
     },
 
-    createMultiplexRequest: (params, multiplex, callBackUrl = 'https://www.monta.ir/apaman/apaman198/pay/result') => {
+    createMultiplexRequest: (params, multiplex, callBackUrl = 'https://treenetgram/api/pay/result') => {
         return {
             requestData: {
                 LoginAccount: pecPardakht.LOGIN_ACCOUNT,
