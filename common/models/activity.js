@@ -17,6 +17,7 @@ module.exports = function(Model) {
             fields: ['id', 'displayName','userKey','profileImage','username'],
             
         }
+        
       },
       {
         relation: 'follow',
