@@ -65,9 +65,7 @@ module.exports = function(Model) {
   };
 
     const initNewUser =  (data,regent)=> {
-      console.log('regentId========',regent.id);
       console.log('regent========',regent)
-
       const countryCode=data.countryCode || '98';
       const user={geo:data.geo,geoInfo:data.geoInfo};
       let userKey=getUniqId('xxxxxxxxxxxxxxxx');
@@ -80,7 +78,7 @@ module.exports = function(Model) {
       const userPassword =data.password || Math.random().toString().substring(2,8);
       user.password =userPassword;
       user.tempPassword = userPassword;
-
+      
       user.state = 'register';
       user.regentCode=regent.invitationCode;
       user.regentId=regent.id;
@@ -124,7 +122,7 @@ module.exports = function(Model) {
         return err;
       })
   };
-
+  
   Model.remoteMethod(
     'checkMobileExist',
     {
@@ -224,7 +222,7 @@ module.exports = function(Model) {
                                                                     include: {
                                                                        relation: 'subsets',
                                                                          scope: {
-
+                                                                        
                                                                          }
                                                                      }
                                                                   }
@@ -264,10 +262,10 @@ module.exports = function(Model) {
             followers: res[0].followers.length,
             subsets: res[0].subsets,
           }
-
+         
           callback(null,res[0]);
         }
-
+         
         else
           callback(null,false);
       }).then(err=>{
@@ -292,11 +290,11 @@ module.exports = function(Model) {
   );
 
   Model.registerUser = async (data, callback)=> {
-
+  
     if(!data.regentCode){
       return callback(null,{errorCode:1,errorKey:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
     }
-
+    
     const regentList=await Model.find({where: {invitationCode: data.regentCode}});
     if(!regentList){
       callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
@@ -306,17 +304,16 @@ module.exports = function(Model) {
       callback(null,{errorCode:3,errorKey:'server_member_invalid_invitation_link',errorMessage:'این لینک دعوت معتبر نیست'});
       return ;
     }
-
+    
     const regent=regentList[0];
-
-
+   
     let user=initNewUser(data,regent);
-
+    
    // user.forTest=1
     user.host=data.host;
     return Model.updateOrCreate(user)
       .then(res=>{
-        const token = jwtRun.sign({userId: user.id,userPermissions:user.permissions});
+        const token = jwtRun.sign({userId: user.id,userPermissions:member.permissions});
         console.log(token)
         res.token=token;
         let inviteProfileImage=regent.inviteProfileImage;
@@ -386,7 +383,7 @@ module.exports = function(Model) {
         console.log(22222);
         return callback(null,{isError:true,errorCode:5,errorKey:'server_login_unsuccess',errorMessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
       }
-
+    
       delete unsucsessLoginNumber[data.username];
       delete unsucsessLoginTime[data.username];
       console.log(3333);
@@ -675,7 +672,7 @@ module.exports = function(Model) {
       firstName:data.firstName,
       lastName:data.lastName,
       fullName:data.firstName+' '+data.lastName,
-
+     
       gender:data.gender,
       age:data.age,
       birthDate:birthDate ,
@@ -845,7 +842,7 @@ module.exports = function(Model) {
   ]
     return Model.findById(userId,params, function (err, res) {
       if (err) {
-
+      
          callback(err);
       }
       else if(!res || !res.username) {
@@ -853,7 +850,7 @@ module.exports = function(Model) {
         callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
       }
       else {
-
+        
         let user=res;
         let birthYear=user.birthDate?new Date(user.birthDate).getFullYear():'';
         user. invitationLink=`https://treenetgram.com/?invitationCode=${res.invitationCode}`;
@@ -884,9 +881,9 @@ module.exports = function(Model) {
     }
   );
 
+ 
 
-
-
+  
   Model.getSubsetList = function (params, callback) {
     console.log('11111111111getSubset=',params);
     let userId=params.userId ;
@@ -944,7 +941,7 @@ module.exports = function(Model) {
     params.order='id DESC';
     params.include=  [{
       relation: 'posts',
-
+      
       scope: {
         fields: ['id','message','file'],
         where:{isDeleted:{neq: true }},
@@ -983,15 +980,15 @@ module.exports = function(Model) {
       }
     }
   ]
-
+   
 
     return  Model.find(params)
       .then(res => {
         console.log(res)
-        res.cUserId=userId;
+        res.cUserId=userId; 
         const useers=Object.assign({cUserId:userId},res)
         callback(null,useers);
-
+      
       }).then(err => {
         callback(null, {
           errorCode: 17,
@@ -1003,7 +1000,7 @@ module.exports = function(Model) {
       });
   };
 
-
+  
   Model.remoteMethod(
     'getUserPage',
     {
@@ -1039,21 +1036,21 @@ module.exports = function(Model) {
     const filter={where: {or:[
       {fullName: {
         like: keyword,
-        options: "i"
+        options: "i" 
       }},
       {displayName: {
         like: keyword,
-        options: "i"
+        options: "i" 
       }},
       {userKey: {
         like: keyword,
-        options: "i"
+        options: "i" 
       }}]}};
     filter.fields=['id','userKey','fullName','profileImage'];
 
     return Model.find(filter)
       .then(res=>{
-
+           
           callback(null,res);
       }).then(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_search_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});

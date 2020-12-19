@@ -15,9 +15,8 @@ function verifyToken(req, res, next) {
       '/members/me/register',
       '/members/me/login',
       '/pay/result',
-      '/members/me/checkusernameexist',
     ];
-  let publicRolePermission=[
+    let publicRolePermission=[
       '/members/checkMobileExist',
       '/members/getRegentInfo',
       '/members/me/checkUserNameExist',
@@ -30,7 +29,7 @@ function verifyToken(req, res, next) {
       '/activities/getNewAnnounceCount',
       '/members/getUserPage',
     ].map(m=>m.toLowerCase());
-  // let apiPath=req.originalUrl.toLowerCase().replace('/api','');
+  //let apiPath=req.originalUrl.toLowerCase().replace('/api','');
   let apiPath=req._parsedUrl.pathname.toLowerCase().replace('/api','');
   console.log('apiPath=',apiPath);
   let openPath=openApiList.find(path=>path.toLowerCase()==apiPath);
@@ -39,7 +38,10 @@ function verifyToken(req, res, next) {
     }else {
       jwtRun.tokenValidation(req, (state, tokenObj) => {
         if (state) {
+              
                 const permissionKey=apiPath;
+               
+                
                 console.log('jwt tokenObj======',tokenObj);
                 let userPermissions=tokenObj.userPermissions.concat(publicRolePermission);
                 const havePermission=userPermissions.includes(permissionKey);
