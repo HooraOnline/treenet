@@ -5,8 +5,8 @@
   },
   "treenetds": {
 
-    "url": "mongodb://user2:hoora434343@cluster0-shard-00-00.jm46r.mongodb.net:27017,cluster0-shard-00-01.jm46r.mongodb.net:27017,cluster0-shard-00-02.jm46r.mongodb.net:27017/test?authSource=admin&replicaSet=atlas-beg2a9-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true",
-
+    "url": "mongodb://user2:hoora434343@cluster0-shard-00-00.jm46r.mongodb.net:27017,cluster0-shard-00-01.jm46r.mongodb.net:27017,cluster0-shard-00-02.jm46r.mongodb.net:27017/treenetdb?authSource=admin&replicaSet=atlas-beg2a9-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true",
+    "database": "treenetdb",
     "name": "treenetds",
     "connector": "mongodb"
   },

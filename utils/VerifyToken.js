@@ -15,6 +15,7 @@ function verifyToken(req, res, next) {
       '/members/me/register',
       '/members/me/login',
       '/pay/result',
+      '/members/me/checkusernameexist',
     ];
     let publicRolePermission=[
       '/members/checkMobileExist',
@@ -38,10 +39,10 @@ function verifyToken(req, res, next) {
     }else {
       jwtRun.tokenValidation(req, (state, tokenObj) => {
         if (state) {
-              
+
                 const permissionKey=apiPath;
-               
-                
+
+
                 console.log('jwt tokenObj======',tokenObj);
                 let userPermissions=tokenObj.userPermissions.concat(publicRolePermission);
                 const havePermission=userPermissions.includes(permissionKey);
