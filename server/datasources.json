@@ -8,7 +8,7 @@
     "port": 13134,
     "url": "",
     "database": "treenetdb",
-    "username": "user2",
+    "username": "treenet_user1",
     "password": "hoora434343",
     "name": "treenetds",
     "connector": "mongodb"
