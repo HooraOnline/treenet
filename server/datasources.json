@@ -4,12 +4,10 @@
     "connector": "memory"
   },
   "treenetds": {
-    "host": "ds113134.mlab.com",
-    "port": 13134,
+    "host": "localhost",
+    "port": 27017,
     "url": "",
     "database": "treenetdb",
-    "username": "user2",
-    "password": "hoora434343",
     "name": "treenetds",
     "connector": "mongodb"
   },
