@@ -4,9 +4,9 @@
     "connector": "memory"
   },
   "treenetds": {
-    "port": 27017,
-    "url": "mongodb+srv://user2:hoora434343@cluster0.jm46r.mongodb.net",
-    "database": "treenetdb",
+
+    "url": "mongodb://user2:hoora434343@cluster0-shard-00-00.jm46r.mongodb.net:27017,cluster0-shard-00-01.jm46r.mongodb.net:27017,cluster0-shard-00-02.jm46r.mongodb.net:27017/test?authSource=admin&replicaSet=atlas-beg2a9-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true",
+
     "name": "treenetds",
     "connector": "mongodb"
   },
