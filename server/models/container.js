@@ -126,7 +126,6 @@ module.exports = function(Files) {
                     callback(null, fileInfo);
                 }
                 else {
-
                     Files.app.models.container.removeFile( ctx.req.params.container,fileInfo.name,function (err,res) {
 
                     });
@@ -154,9 +153,9 @@ module.exports = function(Files) {
         }
     );
 
-   
 
-   
+
+
 
     Files.removeProfileImage = async (data, callback)=> {
         console.log('image========',data);
