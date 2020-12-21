@@ -126,6 +126,7 @@ module.exports = function(Files) {
                     callback(null, fileInfo);
                 }
                 else {
+
                     Files.app.models.container.removeFile( ctx.req.params.container,fileInfo.name,function (err,res) {
 
                     });
@@ -154,6 +155,9 @@ module.exports = function(Files) {
     );
 
 
+
+
+
     Files.removeProfileImage = async (data, callback)=> {
         console.log('image========',data);
         const userId=data.userId;
@@ -161,12 +165,14 @@ module.exports = function(Files) {
         //   callback(new Error('token expier'));
         //   return
         // }
+      callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در حذف فایل'});
+      return
        const folder=(data.folder || 'member');
         Files.app.models.container.removeFile(folder,data.file)
         .then(res=>{
             callback(null,res)
           }).then(err=>{
-            //callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در ارسال کد دعوت'});
+            //callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در خطا در حذف فایل'});
             callback(err);
             return err;
           });
