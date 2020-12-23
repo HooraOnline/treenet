@@ -98,8 +98,6 @@ module.exports = function(Files) {
         if(!options) options = {};
         let fileSize=Number(ctx.req.headers['content-length']);
 
-
-
         if(fileSize>500000)
             return   callback(new Error("حجم فایل شما نباید بیشتر از 500 کیلو بایت باشد."));
 
@@ -156,6 +154,8 @@ module.exports = function(Files) {
 
 
 
+
+
     Files.removeProfileImage = async (data, callback)=> {
         console.log('image========',data);
         const userId=data.userId;
@@ -163,14 +163,12 @@ module.exports = function(Files) {
         //   callback(new Error('token expier'));
         //   return
         // }
-      callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در حذف فایل'});
-      return
        const folder=(data.folder || 'member');
         Files.app.models.container.removeFile(folder,data.file)
         .then(res=>{
             callback(null,res)
           }).then(err=>{
-            //callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در خطا در حذف فایل'});
+            //callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در ارسال کد دعوت'});
             callback(err);
             return err;
           });
