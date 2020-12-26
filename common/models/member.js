@@ -106,7 +106,7 @@ module.exports = function(Model) {
       return user;
   };
 
-  Model.checkMobileExist = async (data, callback)=> {
+  Model.checkMobileExist =  (data, callback)=> {
     if(!data.mobile){
       callback(new Error('mobile is require'));
       return
@@ -117,7 +117,7 @@ module.exports = function(Model) {
           callback(null,true);
         else
           callback(null,false);
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',pMessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })
@@ -140,7 +140,7 @@ module.exports = function(Model) {
   );
 
 
-  Model.getRegentInfo = async (data, callback)=> {
+  Model.getRegentInfo =  (data, callback)=> {
     if(!data.invitationCode){
       callback(new Error('invitationCode is require'));
       return
@@ -268,7 +268,7 @@ module.exports = function(Model) {
 
         else
           callback(null,false);
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })
@@ -289,18 +289,12 @@ module.exports = function(Model) {
     }
   );
 
-  Model.registerUser = async (data, callback)=> {
-
-    if(!data.regentCode){
-      return callback(null,{errorCode:1,errorKey:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
-    }
-
-    const regentList=await Model.find({where: {invitationCode: data.regentCode}});
+  const registerUserFunc=(data,regentList,callback)=>{
     if(!regentList){
       callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
       return
     }
-    if(regentList.length==0){
+    if(regentList.length===0){
       callback(null,{errorCode:3,errorKey:'server_member_invalid_invitation_link',errorMessage:'این لینک دعوت معتبر نیست'});
       return ;
     }
@@ -309,7 +303,7 @@ module.exports = function(Model) {
 
     let user=initNewUser(data,regent);
 
-   // user.forTest=1
+    // user.forTest=1
     user.host=data.host;
     return Model.updateOrCreate(user)
       .then(res=>{
@@ -317,7 +311,7 @@ module.exports = function(Model) {
         console.log(token)
         res.token=token;
         let inviteProfileImage=regent.inviteProfileImage;
-        if(!inviteProfileImage || inviteProfileImage=='defaultProfileImage.png'){
+        if(!inviteProfileImage || inviteProfileImage==='defaultProfileImage.png'){
           inviteProfileImage=regent.profileImage;
         }
         res.regent={
@@ -328,19 +322,34 @@ module.exports = function(Model) {
           avatar:regent.avatar,
         };
         //start add activity**********
-         console.log('res.parentsList===',res.parentsList);
-         let activity={joinId:regent.id,reciverId:('_'+res.id),action:'join',type:'join_to_network',cdate:(new Date()).toJSON()};
-         app.models.Activity.create(activity);
-         res.parentsList.map((parentId,index)=>{
-           activity={joinId:res.id,reciverId:('_'+parentId),action:'join',type:index==0?'join_to_your_braches':'join_to_your_leaves',cdate:(new Date()).toJSON()};
-           app.models.Activity.create(activity);
-         });
+        console.log('res.parentsList===',res.parentsList);
+        let activity={joinId:regent.id,receiverId:('_'+res.id),action:'join',type:'join_to_network',cdate:(new Date()).toJSON()};
+        app.models.Activity.create(activity);
+        res.parentsList.map((parentId,index)=>{
+          activity={joinId:res.id,receiverId:('_'+parentId),action:'join',type:index===0?'join_to_your_braches':'join_to_your_leaves',cdate:(new Date()).toJSON()};
+          app.models.Activity.create(activity);
+        });
         //end add activity************
         callback(null,res);
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
       })
+  }
 
+  Model.registerUser =  (data, callback)=> {
+
+    if(!data.regentCode){
+      return callback(null,{errorCode:1,errorKey:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
+    }
+
+    Model.find({where: {invitationCode: data.regentCode}})
+      .then(regentList=>{
+        return registerUserFunc(data,regentList,callback)
+      })
+      .catch(err=>{
+        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+        return err;
+      });
   };
   Model.remoteMethod(
     'registerUser',
@@ -374,9 +383,10 @@ module.exports = function(Model) {
       return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
 
     }
+    console.log('userlogin==',data);
     Model.login({username:data.username,password:data.password}, function(err, res) {
       console.log(err);
-      console.log(data);
+
       if (err){
         unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
         unsucsessLoginTime[data.username]=new Date();
@@ -428,7 +438,7 @@ module.exports = function(Model) {
   });
 
 
-  Model.checkUserNameExist = async (data, callback)=> {
+  Model.checkUserNameExist =  (data, callback)=> {
     if(!data.username){
       callback(new Error('username is require'));
       return
@@ -443,7 +453,7 @@ module.exports = function(Model) {
           callback(null,true);
         else
           callback(null,false);
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })
@@ -464,7 +474,7 @@ module.exports = function(Model) {
     }
   );
 
-  Model.checkUserKeyExist = async (data, callback)=> {
+  Model.checkUserKeyExist =  (data, callback)=> {
     if(!data.userKey){
       callback(new Error('userKey is require'));
       return
@@ -479,7 +489,7 @@ module.exports = function(Model) {
           callback(null,true);
         else
           callback(null,false);
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })
@@ -500,7 +510,7 @@ module.exports = function(Model) {
     }
   );
 
-  Model.updateUserKey = async (data, callback)=> {
+  Model.updateUserKey =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
       callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
@@ -520,7 +530,7 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,res)
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
         return err;
       })
@@ -540,7 +550,7 @@ module.exports = function(Model) {
       },
     }
   );
-  Model.updatePassword = async (data, callback)=> {
+  Model.updatePassword =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
       callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
@@ -560,7 +570,7 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,res)
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
         return err;
       })
@@ -581,7 +591,7 @@ module.exports = function(Model) {
     }
   );
 
-  Model.setProfileImage = async (data, callback)=> {
+  Model.setProfileImage =  (data, callback)=> {
     console.log('image========',data.userId);
     const userId=data.userId;
     if(!userId){
@@ -598,7 +608,7 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,entity);
-      }).then(err=>{
+      }).catch(err=>{
 
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
         return err;
@@ -619,7 +629,7 @@ module.exports = function(Model) {
       },
     }
   );
-  Model.setInviteProfileImage = async (data, callback)=> {
+  Model.setInviteProfileImage =  (data, callback)=> {
     console.log('image========',data.userId);
     const userId=data.userId;
     if(!userId){
@@ -636,7 +646,7 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,entity);
-      }).then(err=>{
+      }).catch(err=>{
 
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
         return err;
@@ -657,7 +667,7 @@ module.exports = function(Model) {
       },
     }
   );
-  Model.editProfile = async (data, callback)=> {
+  Model.editProfile =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -697,7 +707,7 @@ module.exports = function(Model) {
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,res)
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_on_send_ivitation_code',message:'Error on send ivitation errorCode',errorMessage:'خطا در ارسال کد دعوت'});
         return err;
       });
@@ -781,7 +791,7 @@ module.exports = function(Model) {
 
   //برای لینکهای دعوتی که بدون اجازه صاحب موبایل توسط دوست او در ترینت ثبت شده
   //این لینک به موبایل کاربر ارسال می شود و کاربر با کلیک آن وارد پنل خود می شود
-  Model.confirmMeByLink = async (data, callback)=> {
+  Model.confirmMeByLink =  (data, callback)=> {
     /* if(helper.isXssScripts(data))
        return  callback(new Error("not secure"));*/
 
@@ -989,7 +999,7 @@ module.exports = function(Model) {
         const useers=Object.assign({cUserId:userId},res)
         callback(null,useers);
 
-      }).then(err => {
+      }).catch(err => {
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -1021,7 +1031,7 @@ module.exports = function(Model) {
     }
   );
 
-  Model.searchByKeyword = async (data, callback)=> {
+  Model.searchByKeyword =  (data, callback)=> {
     if(!data.userId){
       callback(new Error('token is require'));
       return
@@ -1052,7 +1062,7 @@ module.exports = function(Model) {
       .then(res=>{
 
           callback(null,res);
-      }).then(err=>{
+      }).catch(err=>{
         callback(null,{errorCode:7, lbError:error, errorKey:'server_member_search_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
         return err;
       })

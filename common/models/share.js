@@ -1,10 +1,10 @@
 'use strict';
 var app = require('../../server/server');
 module.exports = function(Model) {
-  Model.sharePost = async (data, callback)=> {
+  Model.sharePost =  (data, callback)=> {
     console.log('share=',data);
     const postId=data.postId;
-    const reciverList=data.reciverList;
+    const receiverList=data.receiverList;
     const userId=data.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -14,23 +14,23 @@ module.exports = function(Model) {
       callback(new Error('postId is requier'));
       return
     }
-    if(!reciverList){
-      callback(new Error('reciverList is requier'));
+    if(!receiverList){
+      callback(new Error('receiverList is requier'));
       return
     }
     let shareList=[];
- 
-    reciverList.map(reciver=>{
-      shareList.push({memberId:userId,postId:postId,reciverId:reciver,cdate:(new Date()).toJSON(),modelkey:'post'});
+
+    receiverList.map(receiver=>{
+      shareList.push({memberId:userId,postId:postId,receiverId:receiver,cdate:(new Date()).toJSON(),modelkey:'post'});
     })
-    
+
     return Model.create(shareList)
       .then(res=>{
           console.log('res====',res);
           let actovityList=[];
           res.map(share=>{
-            actovityList.push({ shareId:share.id,reciverId:'_'+share.reciverId,action:'share',type:'share_post',cdate:(new Date()).toJSON(),});
-            actovityList.push({shareId:share.id,reciverId:'_'+userId,action:'share',type:'share_your_post',cdate:(new Date()).toJSON(),});
+            actovityList.push({ shareId:share.id,receiverId:'_'+share.receiverId,action:'share',type:'share_post',cdate:(new Date()).toJSON(),});
+            actovityList.push({shareId:share.id,receiverId:'_'+userId,action:'share',type:'share_your_post',cdate:(new Date()).toJSON(),});
           });
           const activity= app.models.Activity.create(actovityList);
           callback(null,shareList);

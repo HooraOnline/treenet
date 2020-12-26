@@ -12,7 +12,7 @@
     "memberId": {
       "type": "string"
     },
-    "reciverId": {
+    "receiverId": {
       "type": "string"
     },
     "modelkey": {
@@ -28,7 +28,7 @@
     "isSeen": {
       "type": "boolean"
     }
-    
+
   },
   "validations": [],
   "relations": {
@@ -47,10 +47,10 @@
       "model": "Activity",
       "foreignKey": "shareId"
     },
-    "reciver": {
+    "receiver": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "reciverId"
+      "foreignKey": "receiverId"
     }
   },
   "acls": [],

@@ -1,8 +1,8 @@
 'use strict';
 var app = require('../../server/server');
 module.exports = function(Model) {
-  Model.addComment = async (data, callback)=> {
-    console.log('comment=',data);
+  Model.addComment =  (data, callback)=> {
+
     const postId=data.postId;
     const text=data.text;
     const userId=data.userId ;
@@ -22,18 +22,19 @@ module.exports = function(Model) {
     if(data.commentId){
       entity.commentId=data.commentId;
     }
-  
-    return Model.updateOrCreate(entity)
-      .then(comment=>{
-        if(data.reciverId){
-          const activity={replayId:comment.id,reciverId:('_'+data.reciverId),action:'replay',type:'replay_comment',cdate:(new Date()).toJSON()};
+
+    return Model.updateOrCreate(entity, function(error, comment) {
+      if(error){
+        callback(null,{errorCode:17, lbError:error, errorKey:'server_comment_error_add_comment',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
+      }else{
+        if(data.receiverId){
+          const activity={replayId:comment.id,receiverId:('_'+data.receiverId),action:'replay',type:'replay_comment',cdate:(new Date()).toJSON()};
           app.models.Activity.create(activity);
         }
         callback(null,entity);
-      }).then(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_comment_error_add_comment',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
-        return err;
-      });
+      }
+    })
+
   };
 
   Model.remoteMethod(
@@ -79,7 +80,7 @@ module.exports = function(Model) {
       .then(res => {
         console.log(res);
         callback(null, res);
-      }).then(err => {
+      }).catch(err => {
         callback(null, {
           errorCode: 17,
           lbError: err,

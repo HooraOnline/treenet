@@ -1,9 +1,9 @@
 'use strict';
 var app = require('../../server/server');
-var ObjectId = require('mongodb').ObjectId; 
+var ObjectId = require('mongodb').ObjectId;
 module.exports = function(Model) {
-  
-  Model.seenPost = async (data, callback)=> {
+
+  Model.seenPost =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -16,7 +16,7 @@ module.exports = function(Model) {
     const entity={memberId:userId,postId:data.postId,cdate:new Date()}
 
     console.log('entity====',entity);
-    
+
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,entity);
@@ -42,9 +42,9 @@ module.exports = function(Model) {
     }
   );
 
- 
 
- 
+
+
 
   Model.getPostSeen = function (params, callback) {
     const userId=params.userId ;
@@ -102,9 +102,9 @@ module.exports = function(Model) {
       },
     }
   );
-  
 
- 
+
+
 
 };
 

@@ -1,137 +1,134 @@
 'use strict';
 
-module.exports = function(Model) {
-  
+module.exports = function (Model) {
   Model.getUserAnnounce = function (params, callback) {
-    const userId=params.userId ;
-    if(!userId){
+    const userId = params.userId;
+    if (!userId) {
       callback(new Error('token expier'));
       return;
     }
-    params.where={reciverId:'_'+userId};
-    params.order='id DESC';
-    params.include=  [
+    params.where = {receiverId: '_' + userId};
+    params.order = 'id DESC';
+    params.include = [
       {
         relation: 'join',
-          scope: {
-            fields: ['id', 'displayName','userKey','profileImage','username'],
-            
-        }
-        
+        scope: {
+          fields: ['id', 'displayName', 'userKey', 'profileImage', 'username'],
+
+        },
+
       },
       {
         relation: 'follow',
-          scope: {
-            //fields: ['id',],
-              include: [
-              {
-                relation: 'follower',
-                  scope: {
-                    fields: ['id', 'displayName','userKey','profileImage'],
-                    //where: {orderId: 5}
-                  }
+        scope: {
+          // fields: ['id',],
+          include: [
+            {
+              relation: 'follower',
+              scope: {
+                fields: ['id', 'displayName', 'userKey', 'profileImage'],
+                //where: {orderId: 5}
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        relation: 'share',
+        scope: {
+          // fields: ['id',],
+          include: [{
+            relation: 'post',
+            scope: {
+              // fields: ['id',],
+              include: {
+                relation: 'member',
+                fields: ['id', 'displayName', 'userKey', 'profileImage', 'avatar'],
+                scope: {
+                  //fields: ['id',],
+                  //where: {orderId: 5}
+                }
               }
-            ]
+            }
+          },
+            {
+              relation: 'member',
+              scope: {
+                fields: ['id', 'displayName', 'userKey', 'profileImage', 'avatar'],
+                //where: {orderId: 5}
+              }
+            }
+          ]
         }
       },
-      
-      {
-      relation: 'share',
-        scope: {
-          //fields: ['id',],
-            include: [{
-              relation: 'post',
-                scope: {
-                  //fields: ['id',],
-                  include: {
-                    relation: 'member',
-                    fields: ['id', 'displayName','userKey','profileImage','avatar'],
-                      scope: {
-                        //fields: ['id',],
-                        //where: {orderId: 5}
-                      }
-                  }
-                }
-            },
-            {
-              relation: 'member',
-                scope: {
-                  fields: ['id', 'displayName','userKey','profileImage','avatar'],
-                  //where: {orderId: 5}
-                }
-            }
-          ]
-      }
-    },
-    
-    {
-      relation: 'like',
-        scope: {
-          //fields: ['id',],
-            include: [{
-              relation: 'post',
-                scope: {
-                  //fields: ['id',],
-                  include: {
-                    relation: 'member',
-                    fields: ['id', 'displayName','userKey','profileImage','avatar'],
-                      scope: {
-                        //fields: ['id',],
-                        //where: {orderId: 5}
-                      }
-                  }
-                }
-            },
-            {
-              relation: 'member',
-                scope: {
-                  fields: ['id', 'displayName','userKey','profileImage','avatar'],
-                  //where: {orderId: 5}
-                }
-            }
-          ]
-      }
-    },
-    {
-      relation: 'replay',
-        scope: {
-          //fields: ['id',],
-            include: [{
-              relation: 'post',
-                scope: {
-                  //fields: ['id',],
-                  include: {
-                    relation: 'member',
-                    fields: ['id', 'displayName','userKey','profileImage','avatar'],
-                      scope: {
-                        //fields: ['id',],
-                        //where: {orderId: 5}
-                      }
-                  }
-                }
-            },
-            
-            {
-              relation: 'member',
-                scope: {
-                  fields: ['id', 'displayName','userKey','profileImage','avatar'],
-                  //where: {orderId: 5}
-                }
-            }
-          ]
-      }
-    },
-  ]
-    
 
-   
-    
-  return Model.find(params)
+      {
+        relation: 'like',
+        scope: {
+          //fields: ['id',],
+          include: [{
+            relation: 'post',
+            scope: {
+              //fields: ['id',],
+              include: {
+                relation: 'member',
+                fields: ['id', 'displayName', 'userKey', 'profileImage', 'avatar'],
+                scope: {
+                  //fields: ['id',],
+                  //where: {orderId: 5}
+                }
+              }
+            }
+          },
+            {
+              relation: 'member',
+              scope: {
+                fields: ['id', 'displayName', 'userKey', 'profileImage', 'avatar'],
+                //where: {orderId: 5}
+              }
+            }
+          ]
+        }
+      },
+      {
+        relation: 'replay',
+        scope: {
+          //fields: ['id',],
+          include: [{
+            relation: 'post',
+            scope: {
+              //fields: ['id',],
+              include: {
+                relation: 'member',
+                fields: ['id', 'displayName', 'userKey', 'profileImage', 'avatar'],
+                scope: {
+                  //fields: ['id',],
+                  //where: {orderId: 5}
+                }
+              }
+            }
+          },
+
+            {
+              relation: 'member',
+              scope: {
+                fields: ['id', 'displayName', 'userKey', 'profileImage', 'avatar'],
+                //where: {orderId: 5}
+              }
+            }
+          ]
+        }
+      },
+    ]
+
+
+    return Model.find(params)
       .then(res => {
-        console.log('announce======',res);
-        Model.updateAll({isSeen:{neq: true }},{isSeen:true});
+        console.log('announce======', res);
+        Model.updateAll({isSeen: {neq: true}}, {isSeen: true});
         callback(null, res);
-      }).then(err => {
+      }).catch(err => {
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -147,7 +144,7 @@ module.exports = function(Model) {
       accepts: {
         arg: 'data',
         type: 'object',
-        http: { source: 'body' }
+        http: {source: 'body'}
       },
       returns: {
         arg: 'result',
@@ -162,20 +159,20 @@ module.exports = function(Model) {
   );
 
   Model.getNewAnnounceCount = function (params, callback) {
-    const userId=params.userId ;
-    if(!userId){
+    const userId = params.userId;
+    if (!userId) {
       callback(new Error('token expier'));
       return;
     }
-    params.where={reciverId:'_'+userId,isSeen:{neq: true }};
-    params.field='id'
+    params.where = {receiverId: '_' + userId, isSeen: {neq: true}};
+    params.field = 'id'
     console.log(params)
-   // return Model.count(params)
-   return Model.find(params)
+    // return Model.count(params)
+    return Model.find(params)
       .then(res => {
-        console.log('announce======',res);
+        console.log('announce======', res);
         callback(null, res.length);
-      }).then(err => {
+      }).catch(err => {
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -185,14 +182,14 @@ module.exports = function(Model) {
         return err;
       });
   };
-  
+
   Model.remoteMethod(
     'getNewAnnounceCount',
     {
       accepts: {
         arg: 'data',
         type: 'object',
-        http: { source: 'body' }
+        http: {source: 'body'}
       },
       returns: {
         arg: 'result',

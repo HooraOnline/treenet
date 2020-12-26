@@ -1,9 +1,8 @@
 'use strict';
 var app = require('../../server/server');
-var ObjectId = require('mongodb').ObjectId; 
+var ObjectId = require('mongodb').ObjectId;
 module.exports = function(Model) {
-  Model.addPost = async (data, callback)=> {
-
+  Model.addPost =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -15,13 +14,14 @@ module.exports = function(Model) {
     }else{
       entity.cdate=new Date();
     }
-    return Model.updateOrCreate(entity)
-      .then(res=>{
-        callback(null,entity);
-      }).then(err=>{
+    return Model.updateOrCreate(entity, function(err, res) {
+      if(err){
         callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_post',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
-        return err;
-      });
+      }else{
+        callback(null,res);
+      }
+    })
+
   };
 
   Model.remoteMethod(
@@ -70,7 +70,7 @@ module.exports = function(Model) {
       relation: 'comments',
           scope: {
             fields: ['id'],
-            
+
           }
     },
     {
@@ -91,7 +91,7 @@ module.exports = function(Model) {
       relation: 'likes',
           scope: {
             fields: ['id'],
-            
+
           }
     },
     {
@@ -105,7 +105,7 @@ module.exports = function(Model) {
       relation: 'seens',
           scope: {
             fields: ['id'],
-            
+
           }
     },
     {
@@ -116,19 +116,19 @@ module.exports = function(Model) {
           }
     }]
     //params.where={postId:postId,isDeleted:{neq: true }};
-    return Model.findById(postId,params)
-      .then(res => {
-
-        callback(null, res);
-      }).then(err => {
+    return Model.findById(postId,params, function(err, res) {
+      if(err){
         callback(null, {
           errorCode: 17,
           lbError: err,
           errorKey: 'server_post_error_get_my_posts',
           errorMessage: 'خطا در بارگذاری پست'
         });
-        return err;
-      });
+      }else{
+        callback(null, res);
+      }
+    })
+
   };
   Model.remoteMethod(
     'getById',
@@ -150,7 +150,7 @@ module.exports = function(Model) {
     }
   );
 
-  Model.removePost = async (data, callback)=> {
+  Model.removePost =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -164,11 +164,12 @@ module.exports = function(Model) {
 
     const where={id:postId,memberId:userId};
     const entity={isDeleted:true,delteDate:new Date()};
-  
+
     return Model.updateAll(where,entity)
       .then(res=>{
         callback(null,entity);
-      }).then(err=>{
+      })
+      .catch(err=>{
         callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_remove_post',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
         return err;
       });
@@ -215,7 +216,8 @@ module.exports = function(Model) {
       .then(res => {
 
         callback(null, res);
-      }).then(err => {
+      })
+      .catch(err => {
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -244,43 +246,26 @@ module.exports = function(Model) {
       },
     }
   );
-  
+
 
   let parentIds=[];
   const getUserParentsIds= async(regentId)=>{
       let query={where:{invitationCode:regentId},fields:["id","regentId"]};
       let parentList=await app.models.Member.find(query);
-      
+
       if(parentList && parentList[0] && parentList[0].regentId!=='null'){
         parentIds.push(res[0]);
         await getUserParentsIds(res[0].regentId)
       }else{
-       
+
       }
   }
 
-  Model.getFollowboardPosts = async function (data, callback) {
-    const userId=data.userId ;
-    console.log('data===',data);
-    if(!userId){
-      callback(new Error('token expier'));
-      return
-    }
-    
-    
-    const parent= await app.models.Member.findById(userId,{fields:["parentsList"]});
-    const parentsList=parent.parentsList;
-   
-    const followerParam={}
-    followerParam.where={and:[{followerId:userId},{isFollowing:true}]};
-    followerParam.fields=["followedId"];
-    let followers= await app.models.Follow.find(followerParam);
+  const getParentPosts= (parentsList,followers,userId,callback,)=>{
+
     followers=followers.map(item=>item.followedId)
     followers.push(userId);
     //let userIdList=followers.concat(parentsList)
-    
-
-
     const params={}
     params.include=  [{
       relation: 'member',
@@ -294,75 +279,76 @@ module.exports = function(Model) {
         // }
       }
     },
-    {
-      relation: 'comments',
-          scope: {
-            fields: ['id'],
-            
-          }
-    },
-    {
-      relation: 'firstComment',
-      scope: {
-        //fields: ['id', 'text','member'],
-        limit:1,
-        include: {
-          relation: 'member',
+      {
+        relation: 'comments',
+        scope: {
+          fields: ['id'],
+
+        }
+      },
+      {
+        relation: 'firstComment',
+        scope: {
+          //fields: ['id', 'text','member'],
+          limit:1,
+          include: {
+            relation: 'member',
             scope: {
               fields: ['id', 'fullName','userKey','profileImage','avatar'],
               //where: {orderId: 5}
+            }
           }
         }
+      },
+      {
+        relation: 'likes',
+        scope: {
+          fields: ['id'],
+
+        }
+      },
+      {
+        relation: 'myLike',
+        scope: {
+          fields: ['id'],
+          where: {memberId: userId}
+        }
+      },
+      {
+        relation: 'seens',
+        scope: {
+          fields: ['id'],
+
+        }
+      },
+      {
+        relation: 'mySeen',
+        scope: {
+          fields: ['id'],
+          where: {memberId: userId}
+        }
       }
-    },
-    {
-      relation: 'likes',
-          scope: {
-            fields: ['id'],
-            
-          }
-    },
-    {
-      relation: 'myLike',
-          scope: {
-            fields: ['id'],
-            where: {memberId: userId}
-          }
-    },
-    {
-      relation: 'seens',
-          scope: {
-            fields: ['id'],
-            
-          }
-    },
-    {
-      relation: 'mySeen',
-          scope: {
-            fields: ['id'],
-            where: {memberId: userId}
-          }
-    }
-  ]
-    
+    ]
+
     const orFilter1=followers.map(parentId=>{return {memberId:parentId}});
     const orFilter2=parentsList.map(parentId=>{return {and:[
-      {memberId:parentId},
-      {isSpecial:true},
-    ]}});
-    
-    const orFilter=orFilter1.concat(orFilter2);
-   
+        {memberId:parentId},
+        {isSpecial:true},
+      ]}});
 
+    const orFilter=orFilter1.concat(orFilter2);
     const filter={and:[{isDeleted:{neq: true}},{or:orFilter}]}
     console.log('filter======',filter)
     params.where=filter;
     params.order='id DESC';
-    
+
+
+
     return Model.find(params)
       .then(res => {
+        console.log(res);
         callback(null, res);
-      }).then(err => {
+      }).catch(err => {
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -371,6 +357,45 @@ module.exports = function(Model) {
         });
         return err;
       });
+
+  }
+
+  Model.getFollowboardPosts =  function (data, callback) {
+    const userId=data.userId ;
+    console.log('data===',data);
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    app.models.Member.findById(userId,{fields:["parentsList"]},function(error, parent) {
+      if(error){
+        callback(null, {
+          errorCode: 17,
+          lbError: error,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در بارگذاری پستها'
+        });
+      }else{
+        const parentsList=parent.parentsList;
+        const followerParam={}
+        followerParam.where={and:[{followerId:userId},{isFollowing:true}]};
+        followerParam.fields=["followedId"];
+        app.models.Follow.find(followerParam,function(error, followers) {
+          if(error){
+            callback(null, {
+              errorCode: 17,
+              lbError: error,
+              errorKey: 'server_post_error_get_my_posts',
+              errorMessage: 'خطا در بارگذاری پستها'
+            });
+          }else{
+            return getParentPosts(parentsList,followers,userId,callback);
+          }
+        });
+
+      }
+    });
+
   };
   Model.remoteMethod(
     'getFollowboardPosts',
@@ -392,30 +417,25 @@ module.exports = function(Model) {
     }
   );
 
-  Model.getLastSpecialedPost = function (params, callback) {
-    const userId=params.userId ;
+  Model.getSpecializedPostIn24h = function (data, callback) {
+    const userId=data.userId ;
     if(!userId){
       callback(new Error('token expier'));
-      return
+      return;
     }
+    let nowtime=new Date();
+    nowtime.setDate(nowtime.getDate()-1);
+    const params={};
+    params.where={and:[{memberId:userId},{isSpecial:true},{cdate:{gt:nowtime}}]};
 
-    params.where={and:[{memberId:userId},{isSpecial:true}]};
-    params.order='id DESC';
-    params.limit=1;
 
+    console.log(params);
     return Model.find(params)
       .then(res => {
- 
-        if(res.length>0){
-          let post=res[0];
-          let secend=(new Date()-new Date(post.cdate))/1000;
-          post.time=secend;
-          callback(null, post);
-        }else{
-          callback(null, null);
-        }
-
-      }).then(err => {
+        console.log('postList===',res);
+        callback(null, res);
+      }).catch(err => {
+        console.log(err);
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -425,8 +445,10 @@ module.exports = function(Model) {
         return err;
       });
   };
+
+
   Model.remoteMethod(
-    'getLastSpecialedPost',
+    'getSpecializedPostIn24h',
     {
       accepts: {
         arg: 'data',
@@ -439,7 +461,61 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/me/getLastSpecialedPost',
+        path: '/me/getSpecializedPostIn24h',
+        verb: 'POST',
+      },
+    }
+  );
+  Model.getLastSpecializedPost = function (data, callback) {
+    const userId=data.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+
+    const params={};
+    params.where={and:[{memberId:userId},{isSpecial:true}]};
+    params.order='id DESC';
+    params.limit=1;
+
+    console.log(params);
+    return Model.find(params)
+      .then(res => {
+        console.log(res);
+        if(res.length>0){
+          let post=res[0];
+          let second=(new Date()-new Date(post.cdate))/1000;
+          post.time=second;
+          callback(null, post);
+        }else{
+          callback(null, {});
+        }
+      }).catch(err => {
+        console.log(err);
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در یافتن آخرین پست منتشر شده'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'getLastSpecializedPost',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/me/getLastSpecializedPost',
         verb: 'POST',
       },
     }
@@ -464,7 +540,7 @@ module.exports = function(Model) {
               //where: {orderId: 5}
           }
         },
-       
+
         {
           relation: 'comments',
           scope: {
@@ -499,17 +575,17 @@ module.exports = function(Model) {
       relation: 'member',
       scope: {
         fields: ['id', 'fullName','userKey','profileImage','avatar'],
-       
+
       }
     }]
-  
-    
-  
+
+
+
   return Model.find(params)
       .then(res => {
         console.log(res);
         callback(null, res);
-      }).then(err => {
+      }).catch(err => {
         callback(null, {
           errorCode: 17,
           lbError: err,

@@ -1,8 +1,8 @@
 {
   "restApiRoot": "/api",
   "host": "0.0.0.0",
-  "port": 443,
-  "url": "http://localhost:443/",
+  "port": 80,
+  "url": "http://localhost:80/",
   "swagger": {
     "protocol": "http"
   },

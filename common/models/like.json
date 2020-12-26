@@ -12,13 +12,13 @@
     "memberId": {
       "type": "string"
     },
-    "reciverId": {
+    "receiverId": {
       "type": "string"
     },
     "modelkey": {
       "type": "string"
     },
-   
+
     "cdate": {
       "type": "date",
       "required": true
@@ -41,10 +41,10 @@
       "model": "Activity",
       "foreignKey": "likeId"
     },
-    "reciver": {
+    "receiver": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "reciverId"
+      "foreignKey": "receiverId"
     }
   },
   "acls": [],

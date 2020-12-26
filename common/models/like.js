@@ -1,29 +1,41 @@
 'use strict';
 var app = require('../../server/server');
-var ObjectId = require('mongodb').ObjectId; 
+var ObjectId = require('mongodb').ObjectId;
 module.exports = function(Model) {
-  
-  Model.likePost = async (data, callback)=> {
-    const userId=data.userId;
-    if(!userId){
+  Model.likePost = (data, callback) => {
+    const userId = data.userId;
+    if (!userId) {
       callback(new Error('token expier'));
-      return
+      return;
     }
-    if(!data.postId){
+    if (!data.postId) {
       callback(new Error('postId is requer'));
-      return
+      return;
     }
-    const entity={memberId:userId,postId:data.postId,reciverId:data.reciverId,cdate:new Date()}
-    console.log('entity====',entity);
-    return Model.updateOrCreate(entity)
-      .then(like=>{
-          const activity={likeId:like.id,reciverId:('_'+data.reciverId),action:'like',type:'like_post',cdate:(new Date()).toJSON()};
-          app.models.Activity.create(activity);
-          callback(null,entity);
-      }).then(err=>{
-          callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_like',errorMessage:'خطا در لایک کردن. دوباره سعی کنید.'});
-          return err;
-      });
+    // eslint-disable-next-line max-len
+    const entity = {memberId: userId, postId: data.postId, receiverId: data.receiverId, cdate: new Date()};
+    console.log('entity====', entity);
+    return Model.updateOrCreate(entity, function(err, like) {
+      if (err) {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_add_like',
+          errorMessage: 'خطا در لایک کردن. دوباره سعی کنید.'
+        });
+      } else {
+        const activity = {
+          likeId: like.id,
+          receiverId: ('_' + data.receiverId),
+          action: 'like',
+          type: 'like_post',
+          cdate: (new Date()).toJSON(),
+        };
+        app.models.Activity.create(activity);
+        callback(null, entity);
+      }
+    });
+
   };
 
   Model.remoteMethod(
@@ -32,9 +44,9 @@ module.exports = function(Model) {
       accepts: [{
         arg: 'data',
         type: 'object',
-        http: { source: 'body' }
+        http: {source: 'body'},
       }],
-      returns: {arg: 'result', type: 'object',root:true },
+      returns: {arg: 'result', type: 'object', root: true},
       http: {
         path: '/likePost',
         verb: 'POST',
@@ -42,25 +54,31 @@ module.exports = function(Model) {
     }
   );
 
-  Model.unlikePost = async (data, callback)=> {
-    const userId=data.userId;
-    if(!userId){
+  Model.unlikePost = (data, callback) => {
+    const userId = data.userId;
+    if (!userId) {
       callback(new Error('token expier'));
-      return
+      return;
     }
-    if(!data.postId){
+    if (!data.postId) {
       callback(new Error('postId is requer'));
-      return
+      return;
     }
-    const filter={memberId:userId,postId:data.postId}
-    console.log('entity====',filter);
-    return Model.deleteAll(filter)
-      .then(res=>{
-        callback(null,res);
-      }).then(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_unlike',errorMessage:'خطا در آنلایک کردن. دوباره سعی کنید.'});
-        return err;
-      });
+    const filter = {memberId: userId, postId: data.postId}
+    console.log('entity====', filter);
+    return Model.deleteAll(filter, function(err, res) {
+      if (err) {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_unlike',
+          errorMessage: 'خطا در آنلایک کردن. دوباره سعی کنید.'
+        });
+      } else {
+        callback(null, res);
+      }
+    })
+
   };
 
   Model.remoteMethod(
@@ -69,9 +87,9 @@ module.exports = function(Model) {
       accepts: [{
         arg: 'data',
         type: 'object',
-        http: { source: 'body' }
+        http: {source: 'body'}
       }],
-      returns: {arg: 'result', type: 'object',root:true },
+      returns: {arg: 'result', type: 'object', root: true},
       http: {
         path: '/unlikePost',
         verb: 'POST',
@@ -80,17 +98,17 @@ module.exports = function(Model) {
   );
 
   Model.getUserLikes = function (params, callback) {
-    const userId=params.userId ;
-    const memberId=params.memberId ;
-    if(!userId){
+    const userId = params.userId;
+    const memberId = params.memberId;
+    if (!userId) {
       callback(new Error('token expier'));
       return
     }
 
-    params.where={memberId:memberId};
+    params.where = {memberId: memberId};
     //params.fields=['id'],
-    params.order='id DESC';
-    params.include=  {
+    params.order = 'id DESC';
+    params.include = {
       relation: 'post',
       scope: {
         //fields: ['id', 'fullName','userKey','profileImage','avatar'],
@@ -122,7 +140,7 @@ module.exports = function(Model) {
       accepts: {
         arg: 'data',
         type: 'object',
-        http: { source: 'body' }
+        http: {source: 'body'}
       },
       returns: {
         arg: 'result',
@@ -135,9 +153,7 @@ module.exports = function(Model) {
       },
     }
   );
-  
 
- 
 
 };
 
