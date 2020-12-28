@@ -17,7 +17,7 @@ function verifyToken(req, res, next) {
       '/pay/result',
       '/members/me/checkusernameexist',
     ];
-    let publicRolePermission=[
+    let memberPermission=[
       '/members/checkMobileExist',
       '/members/getRegentInfo',
       '/members/me/checkUserNameExist',
@@ -29,7 +29,24 @@ function verifyToken(req, res, next) {
       '/members/getsubsetlist',
       '/activities/getNewAnnounceCount',
       '/members/getUserPage',
+      '/members/searchByKeyword',
     ].map(m=>m.toLowerCase());
+  let postPermission=[
+    '/posts/me/addPost',
+    '/posts/getById',
+    '/posts/removePost',
+    '/posts/me/getPosts',
+    '/posts/me/getFollowboardPosts',
+    '/posts/me/getSpecializedPostIn24h',
+    '/posts/me/getLastSpecializedPost',
+    '/posts/geComments',
+
+  ].map(m=>m.toLowerCase());
+  let activityPermission=[
+    '/activities/getUserAnnounce',
+    '/activities/getNewAnnounceCount',
+  ].map(m=>m.toLowerCase());
+  let publicRolePermission=memberPermission.concat(postPermission).concat(activityPermission)
   //let apiPath=req.originalUrl.toLowerCase().replace('/api','');
   let apiPath=req._parsedUrl.pathname.toLowerCase().replace('/api','');
   console.log('apiPath=',apiPath);

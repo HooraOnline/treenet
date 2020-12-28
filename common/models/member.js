@@ -10,11 +10,11 @@ module.exports = function(Model) {
   Model.disableRemoteMethod("upsertWithWhere", true);
   Model.disableRemoteMethod("exists", true);
   Model.disableRemoteMethod("findById", true);
-  //Model.disableRemoteMethod("find", true);
+  Model.disableRemoteMethod("find", true);
   Model.disableRemoteMethod("findOne", true);
   Model.disableRemoteMethod("updateAll", true);
   Model.disableRemoteMethod("deleteById", true);
-  //Model.disableRemoteMethod("count", true);
+  Model.disableRemoteMethod("count", true);
   Model.disableRemoteMethod("updateAttributes", true);
   Model.disableRemoteMethod("createChangeStream", true);
   Model.disableRemoteMethod("confirm", true);
@@ -40,7 +40,8 @@ module.exports = function(Model) {
   //Model.validatesUniquenessOf('email', {message: 'Email already exists'});
 
   const getUniqId =(mask)=> {
-    return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
+    //return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
+    return Date.now().toString().replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l').replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l');
   }
   const checkMobileExist =async (mobile)=> {
     const res= await Model.find({where: {mobile: mobile}})
@@ -68,16 +69,21 @@ module.exports = function(Model) {
       console.log('regent========',regent)
       const countryCode=data.countryCode || '98';
       const user={geo:data.geo,geoInfo:data.geoInfo};
+
       let userKey=getUniqId('xxxxxxxxxxxxxxxx');
       userKey=userKey.toLowerCase();
       const username=countryCode+data.mobile || userKey;
+      user.ip=user.geoInfo?user.geoInfo.ip:'noip';
       user.countryCode=countryCode;
+      user.computerIp=data.computerIp;
+      user.browser=data.browser;
+      user.os=data.os;
       user.mobile=data.mobile || '';
       user.username =username.toLowerCase();
       user.userKey=userKey;
       const userPassword =data.password || Math.random().toString().substring(2,8);
       user.password =userPassword;
-      user.tempPassword = userPassword;
+      //user.tempPassword = userPassword;
 
       user.state = 'register';
       user.regentCode=regent.invitationCode;
@@ -98,7 +104,7 @@ module.exports = function(Model) {
       user.mobileVerify=false;
       user.emailVerify=false;
       user.role='normalUser'
-      user.notChangePassword=true,
+      user.notChangePassword=true;
       user.changedDefaultUserKey=false;
       user.cdate = new Date().toJSON();
       user.udate = new Date().toJSON();
@@ -149,7 +155,7 @@ module.exports = function(Model) {
 
     let params={};
     params.where={invitationCode:data.invitationCode};
-    params.fields=['id','fullName','userKey','profileImage','avatar'];
+    params.fields=['id','fullName','userKey','profileImage','avatar','displayName'];
     params.include=  [{
       relation: 'followers',
       scope: {
@@ -287,6 +293,7 @@ module.exports = function(Model) {
         verb: 'POST',
       },
     }
+
   );
 
   const registerUserFunc=(data,regentList,callback)=>{
@@ -342,6 +349,10 @@ module.exports = function(Model) {
       return callback(null,{errorCode:1,errorKey:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.',message:'required regent Code',errorMessage:'برای ثبت نام باید از طریق لینک دعوت وارد شوید.'});
     }
 
+    if(!data.os || !data.browser || !data.computerIp || !data.mobile || !data.countryCode || !data.password){
+      callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+    }
+
     Model.find({where: {invitationCode: data.regentCode}})
       .then(regentList=>{
         return registerUserFunc(data,regentList,callback)
@@ -372,17 +383,17 @@ module.exports = function(Model) {
   const unsucsessLoginTime={};
   Model.loginMember = function(data, callback) {
     //data.username=data.username.toLowerCase();
-    if(unsucsessLoginNumber[data.username] && unsucsessLoginNumber[data.username]>2){
-      if(!unsucsessLoginNumberFlag[data.username]){
-        setTimeout(()=>{
-          delete unsucsessLoginNumberFlag[data.username];
-          delete  unsucsessLoginNumber[data.username];
-        },180000);
-      }
-      unsucsessLoginNumberFlag[data.username]=true;
-      return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
-
-    }
+    // if(unsucsessLoginNumber[data.username] && unsucsessLoginNumber[data.username]>2){
+    //   if(!unsucsessLoginNumberFlag[data.username]){
+    //     setTimeout(()=>{
+    //       delete unsucsessLoginNumberFlag[data.username];
+    //       delete  unsucsessLoginNumber[data.username];
+    //     },180000);
+    //   }
+    //   unsucsessLoginNumberFlag[data.username]=true;
+    //   return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
+    //
+    // }
     console.log('userlogin==',data);
     Model.login({username:data.username,password:data.password}, function(err, res) {
       console.log(err);
@@ -390,13 +401,12 @@ module.exports = function(Model) {
       if (err){
         unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
         unsucsessLoginTime[data.username]=new Date();
-        console.log(22222);
         return callback(null,{isError:true,errorCode:5,errorKey:'server_login_unsuccess',errorMessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
       }
 
       delete unsucsessLoginNumber[data.username];
       delete unsucsessLoginTime[data.username];
-      console.log(3333);
+
       if (res.id) {
         return Model.findById(res.userId, {}, function(err2, member) {
           //خطا در لود اطلاعات کاربر'
@@ -415,7 +425,6 @@ module.exports = function(Model) {
             user.username=data.mobile;
           }
           Model.updateOrCreate(user);
-
         });
       }
     });
@@ -479,7 +488,7 @@ module.exports = function(Model) {
       callback(new Error('userKey is require'));
       return
     }
-    if(data.currentUserKey==data.userKey){
+    if(data.currentUserKey===data.userKey.toLowerCase()){
       callback(null,false);
       return
     }
@@ -522,7 +531,7 @@ module.exports = function(Model) {
     }
     let entity={
       id:userId,
-      userKey:data.userKey,
+      userKey:data.userKey.toLowerCase(),
       state:'updateUserKey',
       changedDefaultUserKey:true,
       udate:new Date(),
@@ -690,7 +699,7 @@ module.exports = function(Model) {
       story:data.story ,
     };
     if(data.userKey){
-      entity.userKey=data.userKey;
+      entity.userKey=data.userKey.toLowerCase();
     }
     if(data.mobile){
       entity.mobile=data.mobile;
@@ -947,7 +956,7 @@ module.exports = function(Model) {
     }
     userKey=userKey.toLowerCase();
     params.where={userKey:userKey};
-    params.fields=['id','fullName','userKey','profileImage','avatar'];
+    params.fields=['id','fullName','userKey','profileImage','avatar','displayName'];
     params.order='id DESC';
     params.include=  [{
       relation: 'posts',
@@ -1056,7 +1065,7 @@ module.exports = function(Model) {
         like: keyword,
         options: "i"
       }}]}};
-    filter.fields=['id','userKey','fullName','profileImage'];
+    filter.fields=['id','userKey','fullName','profileImage','displayName'];
 
     return Model.find(filter)
       .then(res=>{
