@@ -79,7 +79,7 @@ module.exports = function(Model) {
 
 
   Model.getMyComments = function (params, callback) {
-    console.log('4444444444=',params);
+
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -102,7 +102,7 @@ module.exports = function(Model) {
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
-        console.log(res);
+
         callback(null, res);
       }).catch(err => {
         callback(null, {

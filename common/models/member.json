@@ -73,6 +73,11 @@
       "model": "Member",
       "foreignKey": "regentId"
     },
+    "unConfirmSubsets": {
+      "type": "hasMany",
+      "model": "Member",
+      "foreignKey": "regentId"
+    },
     "followeds": {
       "type": "hasMany",
       "model": "Follow",

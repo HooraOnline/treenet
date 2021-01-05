@@ -15,11 +15,11 @@ const MongoClient = require('mongodb').MongoClient;
 const app = module.exports = loopback();
 
 app.get('/file/post', function (req, res) {
-  console.log(req.query)
+
   res.sendFile(__dirname + "/storage/post/"+req.query.f);
 });
 app.get('/file/member', function (req, res) {
-  console.log(req.query)
+
   res.sendFile(__dirname + "/storage/member/"+req.query.f);
 });
 

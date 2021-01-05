@@ -38,7 +38,7 @@ module.exports = function(Model) {
     }
     const entity={memberId:userId,postId:data.postId,cdate:new Date()}
 
-    console.log('entity====',entity);
+
 
     return Model.updateOrCreate(entity)
       .then(res=>{

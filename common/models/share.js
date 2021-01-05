@@ -26,7 +26,7 @@ module.exports = function(Model) {
     Model.disableRemoteMethod('__findById__accessTokens', true);
     Model.disableRemoteMethod('__get__accessTokens', true);
     Model.disableRemoteMethod('__updateById__accessTokens', true);
-    console.log('share=',data);
+
     const postId=data.postId;
     const receiverList=data.receiverList;
     const userId=data.userId ;
@@ -50,7 +50,7 @@ module.exports = function(Model) {
 
     return Model.create(shareList)
       .then(res=>{
-          console.log('res====',res);
+
           let actovityList=[];
           res.map(share=>{
             actovityList.push({ shareId:share.id,receiverId:'_'+share.receiverId,action:'share',type:'share_post',cdate:(new Date()).toJSON(),});
@@ -86,7 +86,7 @@ module.exports = function(Model) {
 
 
   Model.getMyShares = function (params, callback) {
-    console.log('4444444444=',params);
+
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -109,7 +109,7 @@ module.exports = function(Model) {
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
-        console.log(res);
+
         callback(null, res);
       }).then(err => {
         callback(null, {

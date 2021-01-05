@@ -75,5 +75,9 @@
   "Activity": {
     "dataSource": "treenetds",
     "public": true
+  },
+  "Whitenumber": {
+    "dataSource": "treenetds",
+    "public": true
   }
 }

@@ -1,6 +1,7 @@
 'use strict';
 var app = require('../../server/server');
 var ObjectId = require('mongodb').ObjectId;
+
 module.exports = function(Model) {
   Model.disableRemoteMethod("create", true);
   Model.disableRemoteMethod("upsert", true);
@@ -26,13 +27,16 @@ module.exports = function(Model) {
   Model.disableRemoteMethod('__findById__accessTokens', true);
   Model.disableRemoteMethod('__get__accessTokens', true);
   Model.disableRemoteMethod('__updateById__accessTokens', true);
+
+
+
   Model.addPost =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
-    let entity={memberId:userId,file:data.file,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
+    let entity={memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
     if(entity.id){
       entity.udate=new Date();
     }else{
@@ -362,7 +366,7 @@ module.exports = function(Model) {
 
     const orFilter=orFilter1.concat(orFilter2);
     const filter={and:[{isDeleted:{neq: true}},{or:orFilter}]}
-    console.log('filter======',filter)
+
     params.where=filter;
     params.order='id DESC';
 
@@ -370,7 +374,11 @@ module.exports = function(Model) {
 
     return Model.find(params)
       .then(res => {
-        console.log(res);
+        //Model.updateAll({isSeen: {neq: true}}, {isSeen: true});
+        if(res[0]){
+          app.models.Member.update({id:userId,lastSeenPostDate:res[0].cdate})
+        }
+
         callback(null, res);
       }).catch(err => {
         callback(null, {
@@ -386,7 +394,8 @@ module.exports = function(Model) {
 
   Model.getFollowboardPosts =  function (data, callback) {
     const userId=data.userId ;
-    console.log('data===',data);
+
+
     if(!userId){
       callback(new Error('token expier'));
       return
@@ -450,16 +459,16 @@ module.exports = function(Model) {
     let nowtime=new Date();
     nowtime.setDate(nowtime.getDate()-1);
     const params={};
-    params.where={and:[{memberId:userId},{isSpecial:true},{cdate:{gt:nowtime}}]};
+    params.where={and:[{memberId:userId},{isSpecial:true},{cdate:{lt:nowtime}}]};
 
 
-    console.log(params);
+
     return Model.find(params)
       .then(res => {
-        console.log('postList===',res);
+
         callback(null, res);
       }).catch(err => {
-        console.log(err);
+
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -502,10 +511,10 @@ module.exports = function(Model) {
     params.order='id DESC';
     params.limit=1;
 
-    console.log(params);
+
     return Model.find(params)
       .then(res => {
-        console.log(res);
+
         if(res.length>0){
           let post=res[0];
           let second=(new Date()-new Date(post.cdate))/1000;
@@ -515,7 +524,7 @@ module.exports = function(Model) {
           callback(null, {});
         }
       }).catch(err => {
-        console.log(err);
+
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -607,7 +616,7 @@ module.exports = function(Model) {
 
   return Model.find(params)
       .then(res => {
-        console.log(res);
+
         callback(null, res);
       }).catch(err => {
         callback(null, {
@@ -634,6 +643,106 @@ module.exports = function(Model) {
       },
       http: {
         path: '/geComments',
+        verb: 'POST',
+      },
+    }
+  );
+
+
+  const getParentPostsCounts= (parentsList,followers,userId,lastSeenPostDate,callback,)=>{
+
+    followers=followers.map(item=>item.followedId)
+    followers.push(userId);
+    //let userIdList=followers.concat(parentsList)
+    const params={}
+
+    const orFilter1=followers.map(parentId=>{return {memberId:parentId}});
+    const orFilter2=parentsList.map(parentId=>{return {and:[
+        {memberId:parentId},
+        {isSpecial:true},
+      ]}});
+
+    const orFilter=orFilter1.concat(orFilter2);
+    let andFilter=[{memberId:{neq: userId}, isDeleted:{neq: true}},{or:orFilter}];
+    if(lastSeenPostDate){andFilter.push({cdate: {gt:lastSeenPostDate}})}
+    const filter={and:andFilter}
+
+    params.where=filter;
+    params.fields=['id'];
+
+    return Model.find(params)
+      .then(res => {
+
+
+        callback(null, res.length);
+      }).catch(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در بارگذاری تعداد پستها'
+        });
+        return err;
+      });
+
+  }
+  Model.getUserNewPostCount = function (params, callback) {
+
+    const userId = params.userId;
+    if (!userId) {
+      callback(new Error('token expier'));
+      return;
+    }
+
+    app.models.Member.findById(userId,{fields:["parentsList","lastSeenPostDate"]},function(error, member) {
+      if(error){
+        callback(null, {
+          errorCode: 17,
+          lbError: error,
+          errorKey: 'server_post_error_get_my_posts',
+          errorMessage: 'خطا در بارگذاری تعداد پستها'
+        });
+      }else{
+
+        const parentsList=member.parentsList;
+        const followerParam={};
+        followerParam.where={and:[{followerId:userId},{isFollowing:true}]};
+        followerParam.fields=["followedId"];
+        app.models.Follow.find(followerParam,function(error, followers) {
+          if(error){
+            callback(null, {
+              errorCode: 17,
+              lbError: error,
+              errorKey: 'server_post_error_get_my_posts',
+              errorMessage: 'خطا در بارگذاری تعداد پستها'
+            });
+          }else{
+            return getParentPostsCounts(parentsList,followers,userId,member.lastSeenPostDate,callback);
+          }
+        });
+
+      }
+    });
+
+
+
+  };
+
+  Model.remoteMethod(
+    'getUserNewPostCount',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: {source: 'body'}
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getUserNewPostCount',
         verb: 'POST',
       },
     }

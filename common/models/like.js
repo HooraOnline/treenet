@@ -38,7 +38,7 @@ module.exports = function(Model) {
     }
     // eslint-disable-next-line max-len
     const entity = {memberId: userId, postId: data.postId, receiverId: data.receiverId, cdate: new Date()};
-    console.log('entity====', entity);
+
     return Model.updateOrCreate(entity, function(err, like) {
       if (err) {
         callback(null, {
@@ -89,7 +89,7 @@ module.exports = function(Model) {
       return;
     }
     const filter = {memberId: userId, postId: data.postId}
-    console.log('entity====', filter);
+
     return Model.deleteAll(filter, function(err, res) {
       if (err) {
         callback(null, {

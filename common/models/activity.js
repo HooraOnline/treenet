@@ -147,10 +147,9 @@ module.exports = function (Model) {
       },
     ]
 
-
     return Model.find(params)
       .then(res => {
-        console.log('announce======', res);
+
         Model.updateAll({isSeen: {neq: true}}, {isSeen: true});
         callback(null, res);
       }).catch(err => {
@@ -191,11 +190,11 @@ module.exports = function (Model) {
     }
     params.where = {receiverId: '_' + userId, isSeen: {neq: true}};
     params.field = 'id'
-    console.log(params)
+
     // return Model.count(params)
     return Model.find(params)
       .then(res => {
-        console.log('announce======', res);
+
         callback(null, res.length);
       }).catch(err => {
         callback(null, {

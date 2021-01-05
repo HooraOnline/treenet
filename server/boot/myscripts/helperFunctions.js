@@ -105,7 +105,7 @@ module.exports = {
                 '*': '{{columnHeader}}'
             }
         });
-        //console.log(info);
+
         return info;
     }
 };

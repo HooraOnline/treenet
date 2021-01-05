@@ -12,13 +12,14 @@ module.exports = {
 
     tokenValidation: (req, callBack) => {
         let token = req.headers['authorization']; // Express headers are auto converted to lowercase
-        if (token && token.startsWith('Bearer ')) {
+      console.log(token);
+      if (token && token.startsWith('Bearer ')) {
             // Remove Bearer from string
             token = token.slice(7, token.length);
         }
         if (token) {
             let tokenObj = verify(token);
-            console.log('tokenObj====',tokenObj);
+
             if (!tokenObj) {
                 return callBack(false)
             } else {

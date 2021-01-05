@@ -3,6 +3,144 @@ var app = require('../../server/server');
 const jwtRun = require('../../utils/jwtRun');
 const uuidV4 = require('uuid/v4')
 const request = require('request');
+const subsetinclude=[
+  {
+    relation: 'followers',
+    scope: {
+      fields: ['id','followedId','followerId','isFollowing'],
+      where: {isFollowing: true},
+    }
+  },
+  {
+    relation: 'subsets',
+    scope: {
+      fields: ['id'],
+
+      include:{
+        relation: 'subsets',
+        scope: {
+          fields: ['id'],
+          include:{relation: 'subsets',
+            scope: {
+              fields: ['id'],
+              include:{relation: 'subsets',
+                scope: {
+                  fields: ['id'],
+                  include:{relation: 'subsets',
+                    scope: {
+                      fields: ['id'],
+                      include:{relation: 'subsets',
+                        scope: {
+                          fields: ['id'],
+                          include:{relation: 'subsets',
+                            scope: {
+                              fields: ['id'],
+                              include:{relation: 'subsets',
+                                scope: {
+                                  fields: ['id'],
+                                  include:{relation: 'subsets',
+                                    scope: {
+                                      fields: ['id'],
+                                      include:{relation: 'subsets',
+                                        scope: {
+                                          fields: ['id'],
+                                          include:{relation: 'subsets',
+                                            scope: {
+                                              fields: ['id'],
+                                              include:{relation: 'subsets',
+                                                scope: {
+                                                  fields: ['id'],
+                                                  include:{relation: 'subsets',
+                                                    scope: {
+                                                      fields: ['id'],
+                                                      include:{relation: 'subsets',
+                                                        scope: {
+                                                          fields: ['id'],
+
+                                                        }}
+                                                    }}
+                                                }}
+                                            }}
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }
+      }
+    }
+  }
+]
+const includeFields=['id','cdate','displayName','profileImage','gender','userKey','avatar'];
+const subsetincludeFull=[
+  {
+    relation: 'subsets',
+    scope: {
+      fields: includeFields,
+
+      include:{
+        relation: 'subsets',
+        scope: {
+          fields: includeFields,
+          include:{relation: 'subsets',
+            scope: {
+              fields: includeFields,
+              include:{relation: 'subsets',
+                scope: {
+                  fields: includeFields,
+                  include:{relation: 'subsets',
+                    scope: {
+                      fields: includeFields,
+                      include:{relation: 'subsets',
+                        scope: {
+                          fields: includeFields,
+                          include:{relation: 'subsets',
+                            scope: {
+                              fields: includeFields,
+                              include:{relation: 'subsets',
+                                scope: {
+                                  fields: includeFields,
+                                  include:{relation: 'subsets',
+                                    scope: {
+                                      fields: includeFields,
+                                      include:{relation: 'subsets',
+                                        scope: {
+                                          fields: includeFields,
+                                          include:{relation: 'subsets',
+                                            scope: {
+                                              fields: includeFields,
+                                              include:{relation: 'subsets',
+                                                scope: {
+                                                  fields: includeFields,
+                                                  include:{relation: 'subsets',
+                                                    scope: {
+                                                      fields: includeFields,
+                                                      include:{relation: 'subsets',
+                                                        scope: {
+                                                          fields: includeFields,
+
+                                                        }}
+                                                    }}
+                                                }}
+                                            }}
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }
+      }
+    }
+  }
+]
+
+
 module.exports = function(Model) {
   Model.disableRemoteMethod("create", true);
   Model.disableRemoteMethod("upsert", true);
@@ -66,7 +204,7 @@ module.exports = function(Model) {
   };
 
     const initNewUser =  (data,regent)=> {
-      console.log('regent========',regent)
+
       const countryCode=data.countryCode || '98';
       const user={geo:data.geo,geoInfo:data.geoInfo};
 
@@ -93,7 +231,7 @@ module.exports = function(Model) {
       parentsList.push(regent.id);
       user.parentsList=parentsList;
 
-      user.invitationCode=getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
+      user.invitationCode=  getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
       user.profileImage = 'defaultProfileImage.png';
       user.inviteProfileImage= 'defaultProfileImage.png';
       user.avatar='عضو فعال ترینتگرام';
@@ -106,9 +244,9 @@ module.exports = function(Model) {
       user.role='normalUser'
       user.notChangePassword=true;
       user.changedDefaultUserKey=false;
+
       user.cdate = new Date().toJSON();
       user.udate = new Date().toJSON();
-      console.log(user)
       return user;
   };
 
@@ -156,108 +294,12 @@ module.exports = function(Model) {
     let params={};
     params.where={invitationCode:data.invitationCode};
     params.fields=['id','fullName','userKey','profileImage','avatar','displayName'];
-    params.include=  [{
-      relation: 'followers',
-      scope: {
-        fields: ['id','followedId','followerId','isFollowing'],
-        where: {isFollowing: true},
-      }
-    },
-    {
-      relation: 'subsets',
-      scope: {
-        fields: ['id'],
-       include: {
-          relation: 'subsets',
-            scope: {
-              fields: ['id'],
-              include: {
-                 relation: 'subsets',
-                 fields: ['id'],
-                 include: {
-                    relation: 'subsets',
-                    fields: ['id'],
-                    include: {
-                       relation: 'subsets',
-                       fields: ['id'],
-                       include: {
-                          relation: 'subsets',
-                          fields: ['id'],
-                          include: {
-                             relation: 'subsets',
-                             fields: ['id'],
-                             include: {
-                                relation: 'subsets',
-                                fields: ['id'],
-                                include: {
-                                   relation: 'subsets',
-                                   fields: ['id'],
-                                   include: {
-                                      relation: 'subsets',
-                                      fields: ['id'],
-                                      include: {
-                                         relation: 'subsets',
-                                         fields: ['id'],
-                                         include: {
-                                            relation: 'subsets',
-                                            fields: ['id'],
-                                            include: {
-                                               relation: 'subsets',
-                                               fields: ['id'],
-                                               include: {
-                                                  relation: 'subsets',
-                                                  fields: ['id'],
-                                                  include: {
-                                                     relation: 'subsets',
-                                                     fields: ['id'],
-                                                     include: {
-                                                        relation: 'subsets',
-                                                        fields: ['id'],
-                                                        include: {
-                                                           relation: 'subsets',
-                                                           fields: ['id'],
-                                                           include: {
-                                                              relation: 'subsets',
-                                                              fields: ['id'],
-                                                              include: {
-                                                                 relation: 'subsets',
-                                                                 fields: ['id'],
-                                                                 include: {
-                                                                    relation: 'subsets',
-                                                                    fields: ['id'],
-                                                                    include: {
-                                                                       relation: 'subsets',
-                                                                         scope: {
+    params.include= subsetinclude;
 
-                                                                         }
-                                                                     }
-                                                                  }
-                                                               }
-                                                            }
-                                                         }
-                                                      }
-                                                   }
-                                                }
-                                             }
-                                          }
-                                       }
-                                    }
-                                 }
-                              }
-                           }
-                        }
-                     }
-                  }
-               }
-            }
-        }
-      }
-    }
   //  {"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":"subsets"}}}}}}}}}}}}}}}}}}}}}
-  ]
     return Model.find(params)
       .then(res=>{
-        console.log('getRegentInfogetRegentInfogetRegentInfo=',res[0])
+
         if(res && res[0]){
           let regent={
             fullName:res[0].fullName,
@@ -315,7 +357,7 @@ module.exports = function(Model) {
     return Model.updateOrCreate(user)
       .then(res=>{
         const token = jwtRun.sign({userId: user.id,userPermissions:user.permissions});
-        console.log(token)
+
         res.token=token;
         let inviteProfileImage=regent.inviteProfileImage;
         if(!inviteProfileImage || inviteProfileImage==='defaultProfileImage.png'){
@@ -329,7 +371,7 @@ module.exports = function(Model) {
           avatar:regent.avatar,
         };
         //start add activity**********
-        console.log('res.parentsList===',res.parentsList);
+
         let activity={joinId:regent.id,receiverId:('_'+res.id),action:'join',type:'join_to_network',cdate:(new Date()).toJSON()};
         app.models.Activity.create(activity);
         res.parentsList.map((parentId,index)=>{
@@ -378,6 +420,70 @@ module.exports = function(Model) {
     }
   );
 
+  const transferMySubset=(member,callback)=>{
+   Model.find({fields:['id','invitationCode',''], limit:1})
+     .then((root)=>{
+       const rootUser=root[0];
+       member.regentCodeOld= member.regentCode;
+       member.regentIdOld= member.regentId;
+       member.regentCode=rootUser.invitationCode;
+       member.regentId=rootUser.id;
+       const activity={joinId:member.id,receiverId:('_'+rootUser.id),action:'join',type:'join_to_your_braches',cdate:(new Date()).toJSON()};
+       Model.updateOrCreate(member)
+         .then((res)=>{
+           callback({})
+           app.models.Activity.create(activity)
+         })
+         .catch(err=>{
+           callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+           return err;
+         });
+     })
+     .catch(err=>{
+       callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+       return err;
+     });
+  }
+
+  Model.transferMySubset =  (data, callback)=> {
+
+    const userId = data.userId;
+    const memberId = data.memberId;
+
+    if (!userId || !memberId) {
+      callback(new Error('token expier'));
+      return;
+    }
+
+    Model.findById(memberId, {fields:['id','regentId']})
+      .then(member=>{
+        if(userId!==member.regentId){
+          callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد.'});
+        }else{
+          transferMySubset(member,callback);
+        }
+      })
+      .catch(err=>{
+        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'transferMySubset',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/transferMySubset',
+        verb: 'POST',
+      },
+    }
+  );
+
   const unsucsessLoginNumber={};
   const unsucsessLoginNumberFlag={};
   const unsucsessLoginTime={};
@@ -394,11 +500,12 @@ module.exports = function(Model) {
     //   return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
     //
     // }
-    console.log('userlogin==',data);
+    console.log(data);
     Model.login({username:data.username,password:data.password}, function(err, res) {
       console.log(err);
-
+      console.log(res);
       if (err){
+
         unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
         unsucsessLoginTime[data.username]=new Date();
         return callback(null,{isError:true,errorCode:5,errorKey:'server_login_unsuccess',errorMessage:'ورود ناموفق، نام کاربری یا پسورد اشتباه است.'});
@@ -417,7 +524,7 @@ module.exports = function(Model) {
             return callback(new Error("ورود ناموفق2"));
           const token = jwtRun.sign({userId: member.id,userPermissions:member.permissions});
           let tokenObj={token:token};
-          console.log(tokenObj);
+
           callback(err2,tokenObj );
 
           let user={id:res.userId,beforloginDate:member.loginDate,loginDate: new Date().toJSON(),succeesLogin:true, isLogin:true,}
@@ -456,10 +563,12 @@ module.exports = function(Model) {
       callback(null,false);
       return
     }
-    return Model.find({where: {username:data.username}})
+    return Model.find({where: {username:data.username,}})
       .then(res=>{
-        if(res && res[0])
+        if(res && res[0] && res[0]){
           callback(null,true);
+        }
+
         else
           callback(null,false);
       }).catch(err=>{
@@ -601,7 +710,7 @@ module.exports = function(Model) {
   );
 
   Model.setProfileImage =  (data, callback)=> {
-    console.log('image========',data.userId);
+
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -639,7 +748,7 @@ module.exports = function(Model) {
     }
   );
   Model.setInviteProfileImage =  (data, callback)=> {
-    console.log('image========',data.userId);
+
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -712,7 +821,7 @@ module.exports = function(Model) {
     }else{
       entity.displayName=entity.fullName;
     }
-    console.log(entity);
+
     return Model.updateOrCreate(entity)
       .then(res=>{
         callback(null,res)
@@ -826,12 +935,25 @@ module.exports = function(Model) {
 
   Model.getProfile = function (cUser,params={}, callback) {
     const userId=cUser.userId;
-    console.log('9999 userId==',userId);
+    //return callback(null,{isError:true,errorCode:5,errorKey:'server_lockSite',errorMessage:'به دلیل تغییرات ساختاری فعلا امکان ورود وجود ندارد، لطفا چند روز دیگر مراجعه فرمایید.'});
     if(!userId){
       callback(new Error('token expier'));
       return
     }
     params.include=  [
+      {
+        relation: 'unConfirmSubsets',
+        scope: {
+          fields: ['id','fullName','userKey','profileImage','avatar','displayName'],
+
+          /*include: {
+            relation: 'comments',
+              scope: {
+              where: {orderId: 5}
+            }
+          }*/
+        }
+      },
     {
       relation: 'followers',
       scope: {
@@ -865,7 +987,7 @@ module.exports = function(Model) {
          callback(err);
       }
       else if(!res || !res.username) {
-        console.log(res);
+
         callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
       }
       else {
@@ -904,16 +1026,16 @@ module.exports = function(Model) {
 
 
   Model.getSubsetList = function (params, callback) {
-    console.log('11111111111getSubset=',params);
+
     let userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
     userId=params.memberId || userId;
-    params.include= {"subsets":{"subsets":{"subsets":"subsets"}}};
+    params.include= subsetincludeFull;
     //params.include= {"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":"subsets"}}}}}}
-    params.where={regentId:userId};
+    params.where={regentId:userId,} ;
     return Model.find(params, function (err, res) {
       if (err) {
          callback(err);
@@ -942,7 +1064,43 @@ module.exports = function(Model) {
     }
   );
 
-
+  Model.getUnconfirmSubsetList = function (params, callback) {
+    let userId=params.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    userId=params.memberId || userId;
+    //params.include= {"subsets":{"subsets":{"subsets":{"subsets":{"subsets":{"subsets":"subsets"}}}}}}
+    params.where={regentId:userId};
+    params.fields=['id','fullName','userKey','profileImage','avatar','displayName','cdate'];
+    return Model.find(params, function (err, res) {
+      if (err) {
+        callback(err);
+      } else {
+        callback(err, res);
+      }
+    });
+  };
+  Model.remoteMethod(
+    'getUnconfirmSubsetList',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getUnconfirmSubsetList',
+        verb: 'POST',
+      },
+    }
+  );
   Model.getUserPage = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
@@ -962,7 +1120,7 @@ module.exports = function(Model) {
       relation: 'posts',
 
       scope: {
-        fields: ['id','message','file'],
+        fields: ['id','message','file','fileType'],
         where:{isDeleted:{neq: true }},
         include: {//for like by me
           relation: 'myLike',
@@ -1003,7 +1161,7 @@ module.exports = function(Model) {
 
     return  Model.find(params)
       .then(res => {
-        console.log(res)
+
         res.cUserId=userId;
         const useers=Object.assign({cUserId:userId},res)
         callback(null,useers);
@@ -1051,7 +1209,7 @@ module.exports = function(Model) {
     }
 
     const keyword=data.keyword.replace('@','').toLowerCase();
-    console.log(keyword)
+
     const filter={where: {or:[
       {fullName: {
         like: keyword,
@@ -1093,4 +1251,62 @@ module.exports = function(Model) {
   );
 
 
+  const confirmSubset=(member,isConfirm,callback)=>{
+    member.regentConfirmState=isConfirm?'confirm':'unconfirm';
+    Model.updateOrCreate(member)
+      .then((res)=>{
+
+        callback(null,{});
+      })
+      .catch(err=>{
+
+        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+        return err;
+      });
+  }
+
+  Model.confirmSubset =  (data, callback)=> {
+
+    const userId = data.userId;
+    const memberId = data.memberId;
+
+    if (!userId || !memberId) {
+      callback(new Error('token expier'));
+      return;
+    }
+
+    Model.findById(memberId, {fields:['id','regentId']})
+      .then(member=>{
+
+        const isRegent=userId.toString().trim()===member.regentId.toString().trim();
+
+        if(isRegent){
+
+          confirmSubset(member,data.isConfirm,callback);
+        }else{
+
+          callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد.'});
+        }
+      })
+      .catch(err=>{
+        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+        return err;
+      });
+  };
+
+  Model.remoteMethod(
+    'confirmSubset',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/confirmSubset',
+        verb: 'POST',
+      },
+    }
+  );
 };

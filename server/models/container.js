@@ -157,7 +157,7 @@ module.exports = function(Files) {
 
 
     Files.removeProfileImage = async (data, callback)=> {
-        console.log('image========',data);
+
         const userId=data.userId;
         // if(!userId){
         //   callback(new Error('token expier'));

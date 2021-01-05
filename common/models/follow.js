@@ -36,10 +36,10 @@ module.exports = function (Model) {
       entity = {followerId: userId, followedId: followedId, isFollowing: true, cdate: new Date(), udate: new Date()};
     }
 
-    console.log('entity====', entity);
+
     return Model.updateOrCreate(entity)
       .then(follow => {
-        console.log(follow);
+
         const activity = {
           followId: follow.id,
           receiverId: ('_' + followedId),

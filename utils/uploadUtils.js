@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, callback) {
         logger.info('API: UploadFile filename %j', {name: file.originalname});
-        console.log(file);
+
 
         // Check if the file exists in the current directory.
         fs.access(uploadPath + '/' + file.originalname, fs.constants.F_OK, (err) => {
@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
             } else {
                 fileName = file.originalname;
             }
-            console.log(fileName);
+
             callback(null, fileName)
         });
     }

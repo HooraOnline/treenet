@@ -17,7 +17,7 @@ module.exports = function (app) {
         });
        /* Model.sharedClass.methods().forEach(function(method) {
             if(m=="member"){
-                console.log(method.name);
+
                 //Model.disableRemoteMethod(method.name, method.isStatic);
             }
 
@@ -79,7 +79,7 @@ module.exports = function (app) {
         //     if(ctx.instance && ctx.instance.getbypost)
         //         return Model.find({ where: { cc: 12 } }, function (err, res) {
         //             //next();
-        //             console.log('saeed',ctx.rearqu);
+
         //             // return ctx.res.send(res);
         //             //return Promise.resolve();
         //             //return res //Promise.resolve();
