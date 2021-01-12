@@ -52,7 +52,7 @@ function verifyToken(req, res, next) {
   let apiPath=req._parsedUrl.pathname.toLowerCase().replace('/api','');
   console.log('apiPath=',apiPath);
   let openPath=openApiList.find(path=>path.toLowerCase()===apiPath);
-    if (openPath || apiPath.search('containers')>-1 || apiPath.search('explorer')>-1) {
+    if (openPath ||  apiPath.search('explorer')>-1) {
         next();
     }else {
       jwtRun.tokenValidation(req, (state, tokenObj) => {

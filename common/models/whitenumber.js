@@ -73,7 +73,7 @@ module.exports = function(Model) {
         callback(null,res);
       })
       .catch(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_public_error',errorMessage:'خطا در حذف شماره. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در حذف شماره. دوباره سعی کنید.'});
         return err;
       });
   };

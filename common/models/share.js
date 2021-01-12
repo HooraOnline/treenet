@@ -54,7 +54,7 @@ module.exports = function(Model) {
           let actovityList=[];
           res.map(share=>{
             actovityList.push({ shareId:share.id,receiverId:'_'+share.receiverId,action:'share',type:'share_post',cdate:(new Date()).toJSON(),});
-            actovityList.push({shareId:share.id,receiverId:'_'+userId,action:'share',type:'share_your_post',cdate:(new Date()).toJSON(),});
+            actovityList.push({shareId:share.id,receiverId:'_'+data.postMemeberId,action:'share',type:'share_your_post',cdate:(new Date()).toJSON(),});
           });
           const activity= app.models.Activity.create(actovityList);
           callback(null,shareList);

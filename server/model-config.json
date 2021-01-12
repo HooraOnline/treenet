@@ -79,5 +79,9 @@
   "Whitenumber": {
     "dataSource": "treenetds",
     "public": true
+  },
+  "Basket": {
+    "dataSource": "treenetds",
+    "public": true
   }
 }

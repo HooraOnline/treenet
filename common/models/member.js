@@ -709,11 +709,29 @@ module.exports = function(Model) {
     }
   );
 
-  Model.setProfileImage =  (data, callback)=> {
+  const setProfileImage=(userId,data,oldProfileImage,callback)=>{
 
+    let entity={id:userId,profileImage:data.profileImage};
+
+    return Model.updateOrCreate(entity)
+      .then(res=>{
+        console.log('oldProfileImage',oldProfileImage);
+        if(oldProfileImage){
+          Model.app.models.container.removeFile('member',oldProfileImage);
+        }
+
+        callback(null,entity);
+      }).catch(err=>{
+
+        callback(null,{errorCode:7, lbError:err, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
+        return err;
+      })
+  }
+
+  Model.setProfileImage =  (data, callback)=> {
     const userId=data.userId;
-    if(!userId){
-      callback(new Error('token expier'));
+      if(!userId){
+        callback(new Error('token expier'));
       return
     }
 
@@ -722,15 +740,15 @@ module.exports = function(Model) {
       return
     }
 
-    let entity={id:userId,profileImage:data.profileImage};
-    return Model.updateOrCreate(entity)
-      .then(res=>{
-        callback(null,entity);
-      }).catch(err=>{
-
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
-        return err;
+    Model.findById(userId,{fields:['profileImage']})
+      .then((res)=>{
+        setProfileImage(userId,data,res.profileImage,callback);
       })
+      .catch((err)=>{
+        console.log(err);
+        callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
+      })
+
   };
   Model.remoteMethod(
     'setProfileImage',
@@ -1203,11 +1221,11 @@ module.exports = function(Model) {
       callback(new Error('token is require'));
       return
     }
-    if(!data.keyword || data.keyword.length<3){
-      callback(new Error('keyword is require or less than 3'));
-      return
-    }
-
+    // if(!data.keyword || data.keyword.length<3){
+    //   callback(new Error('keyword is require or less than 3'));
+    //   return
+    // }
+    data.keyword=data.keyword || '';
     const keyword=data.keyword.replace('@','').toLowerCase();
 
     const filter={where: {or:[

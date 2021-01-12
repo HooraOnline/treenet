@@ -107,6 +107,11 @@
       "type": "hasMany",
       "model": "Comment",
       "foreignKey": "memberId"
+    },
+    "basketProducts": {
+      "type": "hasMany",
+      "model": "Basket",
+      "foreignKey": "memberId"
     }
   },
   "acls": [],

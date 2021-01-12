@@ -36,7 +36,7 @@ module.exports = function(Model) {
       callback(new Error('token expier'));
       return
     }
-    let entity={memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
+    let entity={type:'post',memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
     if(entity.id){
       entity.udate=new Date();
     }else{
@@ -63,6 +63,55 @@ module.exports = function(Model) {
       returns: {arg: 'result', type: 'object',root:true },
       http: {
         path: '/me/addPost',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.addProduct =  (data, callback)=>{
+    const userId=data.userId;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    let entity={
+      type:'product',
+      memberId:userId,
+      file:data.file,
+      fileType:data.fileType,
+      text:data.text,
+      price:data.price,
+      title:data.title,
+      isSpecial:data.isSpecial,
+      cdate:new Date(),
+      udate:new Date()
+    };
+    if(entity.id){
+      entity.udate=new Date();
+    }else{
+      entity.cdate=new Date();
+    }
+    console.log(entity);
+    return Model.updateOrCreate(entity, function(err, res) {
+      if(err){
+        callback(null,{errorCode:17, lbError:error, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
+      }else{
+        callback(null,res);
+      }
+    });
+  };
+
+  Model.remoteMethod(
+    'addProduct',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/me/addProduct',
         verb: 'POST',
       },
     }
@@ -179,6 +228,7 @@ module.exports = function(Model) {
   );
 
   Model.removePost =  (data, callback)=> {
+    console.log(data);
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -192,9 +242,11 @@ module.exports = function(Model) {
 
     const where={id:postId,memberId:userId};
     const entity={isDeleted:true,delteDate:new Date()};
-
-    return Model.updateAll(where,entity)
+    return Model.deleteAll({and:[{id:postId},{memberId:userId},{file:data.file}]})
       .then(res=>{
+        const folder=data.fileType.toLocaleLowerCase()==='video/mp4'?'post_video':'post_image';
+        Model.app.models.container.removeFile(folder,data.file);
+        Model.app.models.container.removeFile(folder,data.file);
         callback(null,entity);
       })
       .catch(err=>{
@@ -238,7 +290,11 @@ module.exports = function(Model) {
       }
     }
 
-    params.where={memberId:userId,isDeleted:{neq: true }};
+    params.where={
+      memberId:userId,
+      type:'product',
+      //isDeleted:{neq: true }
+    };
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
@@ -274,6 +330,65 @@ module.exports = function(Model) {
       },
     }
   );
+
+  Model.getStoreProducts = function (params, callback) {
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('token expier'));
+      return
+    }
+    params.include=  {
+      relation: 'member',
+      scope: {
+        fields: ['id', 'fullName','userKey','profileImage','avatar','displayName'],
+        /*include: {
+          relation: 'orders',
+            scope: {
+            where: {orderId: 5}
+          }
+        }*/
+      }
+    }
+
+    params.where={memberId:userId,type:'product'};
+    params.order='id DESC';
+    return Model.find(params)
+      .then(res => {
+
+        callback(null, res);
+      })
+      .catch(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'خطا در بارگذاری کالاها',
+          errorMessage: 'خطا در بارگذاری کالاها'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'getStoreProducts',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getStoreProducts',
+        verb: 'POST',
+      },
+    }
+  );
+
+
+
 
 
   let parentIds=[];
