@@ -1,0 +1,89 @@
+{
+  "name": "Memberproduct",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "memberId": {
+      "type": "string"
+    },
+    "productId": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    },
+    "receiver": {
+      "type": "string"
+    },
+    "likes": {
+      "type": [
+        "object"
+      ]
+    },
+    "comments": {
+      "type": [
+        "object"
+      ]
+
+    },
+    "views": {
+      "type": [
+        "object"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "member": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "memberId"
+    },
+    "product": {
+      "type": "belongsTo",
+      "model": "Post",
+      "foreignKey": "productId"
+    },
+    "firstComment": {
+      "type": "hasMany",
+      "model": "Comment",
+      "foreignKey": "postId"
+    },
+    "comments": {
+      "type": "hasMany",
+      "model": "Comment",
+      "foreignKey": "postId"
+    },
+    "myLike": {
+      "type": "hasMany",
+      "model": "Like",
+      "foreignKey": "postId"
+    },
+    "likes": {
+      "type": "hasMany",
+      "model": "Like",
+      "foreignKey": "postId"
+    },
+    "mySeen": {
+      "type": "hasMany",
+      "model": "Seen",
+      "foreignKey": "postId"
+    },
+    "seens": {
+      "type": "hasMany",
+      "model": "Seen",
+      "foreignKey": "postId"
+    },
+    "shares": {
+      "type": "hasMany",
+      "model": "Share",
+      "foreignKey": "postId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

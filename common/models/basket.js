@@ -113,7 +113,7 @@ module.exports = function(Model) {
     }
 
     params.where={memberId:userId};
-    params.order='cdate DESC';
+    //params.order='cdate DESC';
     params.include=  {
       relation: 'product',
       scope: {
@@ -198,7 +198,7 @@ module.exports = function(Model) {
       .then(res => {
         console.log(res,data.number);
         let white=res.find(item=>item.number===data.number.trim())
-        console.log(333333333333333,white);
+
         if(white)
          callback(null, true);
         else

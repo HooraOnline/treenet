@@ -83,5 +83,18 @@
   "Basket": {
     "dataSource": "treenetds",
     "public": true
+  },
+  "Product": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "Memberproduct": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "Contactus": {
+    "dataSource": "treenetds",
+    "public": true
   }
+
 }

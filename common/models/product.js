@@ -30,43 +30,6 @@ module.exports = function(Model) {
 
 
 
-  Model.addPost =  (data, callback)=>{
-    const userId=data.userId;
-    if(!userId){
-      callback(new Error('token expier'));
-      return
-    }
-    let entity={type:'post',memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
-    if(entity.id){
-      entity.udate=new Date();
-    }else{
-      entity.cdate=new Date();
-    }
-    return Model.updateOrCreate(entity, function(err, res) {
-      if(err){
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_post',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
-      }else{
-        callback(null,res);
-      }
-    })
-
-  };
-
-  Model.remoteMethod(
-    'addPost',
-    {
-      accepts: [{
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      }],
-      returns: {arg: 'result', type: 'object',root:true },
-      http: {
-        path: '/me/addPost',
-        verb: 'POST',
-      },
-    }
-  );
 
 
   Model.addProduct =  (data, callback)=>{
@@ -83,9 +46,7 @@ module.exports = function(Model) {
       text:data.text,
       price:data.price,
       title:data.title,
-      commission:30 || data.commission,
-      isParticipatory:true,
-      isSpecial:data.isSpecial,//مشارکت در فروش
+      isSpecial:data.isSpecial,
       cdate:new Date(),
       udate:new Date()
     };
@@ -99,8 +60,6 @@ module.exports = function(Model) {
       if(err){
         callback(null,{errorCode:17, lbError:error, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
       }else{
-        let memberProduct={memberId:userId,productId:res.id,cdate:new Date(), };
-        app.models.Memberproduct.create(memberProduct);
         callback(null,res);
       }
     });
@@ -130,8 +89,8 @@ module.exports = function(Model) {
       return
     }
 
-    const postId=params.postId ;
-    if(!postId){
+    const productId=params.productId ;
+    if(!productId){
       callback(new Error('token expier'));
       return
     }
@@ -197,13 +156,13 @@ module.exports = function(Model) {
             where: {memberId: userId}
           }
     }]
-    //params.where={postId:postId,isDeleted:{neq: true }};
-    return Model.findById(postId,params, function(err, res) {
+    //params.where={productId:productId,isDeleted:{neq: true }};
+    return Model.findById(productId,params, function(err, res) {
       if(err){
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در بارگذاری پست'
         });
       }else{
@@ -232,36 +191,36 @@ module.exports = function(Model) {
     }
   );
 
-  Model.removePost =  (data, callback)=> {
+  Model.removeProduct =  (data, callback)=> {
     console.log(data);
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
-    if(!data.postId){
-      callback(new Error('postId not found'));
+    if(!data.productId){
+      callback(new Error('productId not found'));
       return
     }
-    let postId=data.postId;
+    let productId=data.productId;
 
-    const where={id:postId,memberId:userId};
+    const where={id:productId,memberId:userId};
     const entity={isDeleted:true,delteDate:new Date()};
-    return Model.deleteAll({and:[{id:postId},{memberId:userId},{file:data.file}]})
+    return Model.deleteAll({and:[{id:productId},{memberId:userId},{file:data.file}]})
       .then(res=>{
-        const folder=data.fileType.toLocaleLowerCase()==='video/mp4'?'post_video':'post_image';
+        const folder=data.fileType.toLocaleLowerCase()==='video/mp4'?'product_video':'product_image';
         Model.app.models.container.removeFile(folder,data.file);
         Model.app.models.container.removeFile(folder,data.file);
         callback(null,entity);
       })
       .catch(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_remove_post',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:error, errorKey:'server_product_error_remove_product',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
         return err;
       });
   };
 
   Model.remoteMethod(
-    'removePost',
+    'removeProduct',
     {
       accepts: [{
         arg: 'data',
@@ -270,13 +229,13 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/removePost',
+        path: '/removeProduct',
         verb: 'POST',
       },
     }
   );
 
-  Model.getMyPosts = function (params, callback) {
+  Model.getMyProducts = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -310,14 +269,14 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در بارگذاری پستها'
         });
         return err;
       });
   };
   Model.remoteMethod(
-    'getMyPosts',
+    'getMyProducts',
     {
       accepts: {
         arg: 'data',
@@ -330,7 +289,7 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/me/getPosts',
+        path: '/me/getProducts',
         verb: 'POST',
       },
     }
@@ -355,8 +314,7 @@ module.exports = function(Model) {
       }
     }
 
-
-    params.where={memberId:userId,type:'product'};
+    params.where={type:'product'};
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
@@ -393,63 +351,6 @@ module.exports = function(Model) {
     }
   );
 
-  Model.getParticipatoryProduct = function (params, callback) {
-    const userId=params.userId ;
-    if(!userId){
-      callback(new Error('token expier'));
-      return
-    }
-    params.include=  {
-      relation: 'member',
-      scope: {
-        fields: ['id', 'fullName','userKey','profileImage','avatar','displayName'],
-        /*include: {
-          relation: 'orders',
-            scope: {
-            where: {orderId: 5}
-          }
-        }*/
-      }
-    }
-
-
-    params.where={isParticipatory:true,type:'product'};
-    params.order='id DESC';
-    return Model.find(params)
-      .then(res => {
-
-        callback(null, res);
-      })
-      .catch(err => {
-        callback(null, {
-          errorCode: 17,
-          lbError: err,
-          errorKey: 'خطا در بارگذاری کالاها',
-          errorMessage: 'خطا در بارگذاری کالاها'
-        });
-        return err;
-      });
-  };
-  Model.remoteMethod(
-    'getParticipatoryProduct',
-    {
-      accepts: {
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      },
-      returns: {
-        arg: 'result',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/getParticipatoryProduct',
-        verb: 'POST',
-      },
-    }
-  );
-
 
 
 
@@ -467,7 +368,7 @@ module.exports = function(Model) {
       }
   }
 
-  const getParentPosts= (parentsList,followers,userId,callback,)=>{
+  const getParentProducts= (parentsList,followers,userId,callback,)=>{
 
     followers=followers.map(item=>item.followedId)
     followers.push(userId);
@@ -554,7 +455,7 @@ module.exports = function(Model) {
       .then(res => {
         //Model.updateAll({isSeen: {neq: true}}, {isSeen: true});
         if(res[0]){
-          app.models.Member.update({id:userId,lastSeenPostDate:res[0].cdate})
+          app.models.Member.update({id:userId,lastSeenProductDate:res[0].cdate})
         }
 
         callback(null, res);
@@ -562,7 +463,7 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در بارگذاری پستها'
         });
         return err;
@@ -570,7 +471,7 @@ module.exports = function(Model) {
 
   }
 
-  Model.getFollowboardPosts =  function (data, callback) {
+  Model.getFollowboardProducts =  function (data, callback) {
     const userId=data.userId ;
 
 
@@ -583,7 +484,7 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: error,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در بارگذاری پستها'
         });
       }else{
@@ -596,11 +497,11 @@ module.exports = function(Model) {
             callback(null, {
               errorCode: 17,
               lbError: error,
-              errorKey: 'server_post_error_get_my_posts',
+              errorKey: 'server_product_error_get_my_products',
               errorMessage: 'خطا در بارگذاری پستها'
             });
           }else{
-            return getParentPosts(parentsList,followers,userId,callback);
+            return getParentProducts(parentsList,followers,userId,callback);
           }
         });
 
@@ -609,7 +510,7 @@ module.exports = function(Model) {
 
   };
   Model.remoteMethod(
-    'getFollowboardPosts',
+    'getFollowboardProducts',
     {
       accepts: {
         arg: 'data',
@@ -622,13 +523,13 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/getFollowboardPosts',
+        path: '/getFollowboardProducts',
         verb: 'POST',
       },
     }
   );
 
-  Model.getSpecializedPostIn24h = function (data, callback) {
+  Model.getSpecializedProductIn24h = function (data, callback) {
     const userId=data.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -650,7 +551,7 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در یافتن آخرین پست منتشر شده'
         });
         return err;
@@ -659,7 +560,7 @@ module.exports = function(Model) {
 
 
   Model.remoteMethod(
-    'getSpecializedPostIn24h',
+    'getSpecializedProductIn24h',
     {
       accepts: {
         arg: 'data',
@@ -672,12 +573,12 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/me/getSpecializedPostIn24h',
+        path: '/me/getSpecializedProductIn24h',
         verb: 'POST',
       },
     }
   );
-  Model.getLastSpecializedPost = function (data, callback) {
+  Model.getLastSpecializedProduct = function (data, callback) {
     const userId=data.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -694,10 +595,10 @@ module.exports = function(Model) {
       .then(res => {
 
         if(res.length>0){
-          let post=res[0];
-          let second=(new Date()-new Date(post.cdate))/1000;
-          post.time=second;
-          callback(null, post);
+          let product=res[0];
+          let second=(new Date()-new Date(product.cdate))/1000;
+          product.time=second;
+          callback(null, product);
         }else{
           callback(null, {});
         }
@@ -706,14 +607,14 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در یافتن آخرین پست منتشر شده'
         });
         return err;
       });
   };
   Model.remoteMethod(
-    'getLastSpecializedPost',
+    'getLastSpecializedProduct',
     {
       accepts: {
         arg: 'data',
@@ -726,19 +627,19 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/me/getLastSpecializedPost',
+        path: '/me/getLastSpecializedProduct',
         verb: 'POST',
       },
     }
   );
 
   Model.geComments = function (params, callback) {
-    const postId=params.postId ;
-    if(!postId){
-      callback(new Error('postId is require'));
+    const productId=params.productId ;
+    if(!productId){
+      callback(new Error('productId is require'));
       return
     }
-    params.where={id:postId};
+    params.where={id:productId};
     //params.order='id DESC';
     params.include=  [{
       relation: 'comments',
@@ -765,7 +666,7 @@ module.exports = function(Model) {
             {
               relation: 'parent',
               scope: {
-                //fields: ['id','commentId','memberId','postId','text','cdate',],
+                //fields: ['id','commentId','memberId','productId','text','cdate',],
                 include:{
                   relation: 'member',
                     scope: {
@@ -800,7 +701,7 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_post_error_get_post_comments',
+          errorKey: 'server_product_error_get_product_comments',
           errorMessage: 'خطا در بارگذاری کامنتها'
         });
         return err;
@@ -827,7 +728,7 @@ module.exports = function(Model) {
   );
 
 
-  const getParentPostsCounts= (parentsList,followers,userId,lastSeenPostDate,callback,)=>{
+  const getParentProductsCounts= (parentsList,followers,userId,lastSeenProductDate,callback,)=>{
 
     followers=followers.map(item=>item.followedId)
     followers.push(userId);
@@ -842,7 +743,7 @@ module.exports = function(Model) {
 
     const orFilter=orFilter1.concat(orFilter2);
     let andFilter=[{memberId:{neq: userId}, isDeleted:{neq: true}},{or:orFilter}];
-    if(lastSeenPostDate){andFilter.push({cdate: {gt:lastSeenPostDate}})}
+    if(lastSeenProductDate){andFilter.push({cdate: {gt:lastSeenProductDate}})}
     const filter={and:andFilter}
 
     params.where=filter;
@@ -857,14 +758,14 @@ module.exports = function(Model) {
         callback(null, {
           errorCode: 17,
           lbError: err,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در بارگذاری تعداد پستها'
         });
         return err;
       });
 
   }
-  Model.getUserNewPostCount = function (params, callback) {
+  Model.getUserNewProductCount = function (params, callback) {
 
     const userId = params.userId;
     if (!userId) {
@@ -872,12 +773,12 @@ module.exports = function(Model) {
       return;
     }
 
-    app.models.Member.findById(userId,{fields:["parentsList","lastSeenPostDate"]},function(error, member) {
+    app.models.Member.findById(userId,{fields:["parentsList","lastSeenProductDate"]},function(error, member) {
       if(error){
         callback(null, {
           errorCode: 17,
           lbError: error,
-          errorKey: 'server_post_error_get_my_posts',
+          errorKey: 'server_product_error_get_my_products',
           errorMessage: 'خطا در بارگذاری تعداد پستها'
         });
       }else{
@@ -891,11 +792,11 @@ module.exports = function(Model) {
             callback(null, {
               errorCode: 17,
               lbError: error,
-              errorKey: 'server_post_error_get_my_posts',
+              errorKey: 'server_product_error_get_my_products',
               errorMessage: 'خطا در بارگذاری تعداد پستها'
             });
           }else{
-            return getParentPostsCounts(parentsList,followers,userId,member.lastSeenPostDate,callback);
+            return getParentProductsCounts(parentsList,followers,userId,member.lastSeenProductDate,callback);
           }
         });
 
@@ -907,7 +808,7 @@ module.exports = function(Model) {
   };
 
   Model.remoteMethod(
-    'getUserNewPostCount',
+    'getUserNewProductCount',
     {
       accepts: {
         arg: 'data',
@@ -920,7 +821,7 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/getUserNewPostCount',
+        path: '/getUserNewProductCount',
         verb: 'POST',
       },
     }

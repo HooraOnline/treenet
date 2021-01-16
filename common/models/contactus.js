@@ -27,26 +27,25 @@ module.exports = function(Model) {
   Model.disableRemoteMethod('__get__accessTokens', true);
   Model.disableRemoteMethod('__updateById__accessTokens', true);
 
-  Model.addNumber =  (data, callback)=>{
+  Model.addMessage =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
       return
     }
-    let entity={name:data.name,memberId:userId,invitationCode:data.invitationCode,number:data.number,type:'mobile',cdate:new Date(),udate:new Date()};
+    let entity={title:data.title,memberId:userId,text:data.text,type:'sellContact',cdate:new Date()};
 
     return Model.updateOrCreate(entity, function(err, res) {
       if(err){
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_public_error',errorMessage:'خطا در اضافه کردن شماره. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در اضافه کردن درخواست. دوباره سعی کنید.'});
       }else{
         callback(null,res);
       }
     })
-
   };
 
   Model.remoteMethod(
-    'addNumber',
+    'addMessage',
     {
       accepts: [{
         arg: 'data',
@@ -55,7 +54,7 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/addNumber',
+        path: '/addMessage',
         verb: 'POST',
       },
     }
