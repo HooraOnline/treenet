@@ -36,12 +36,16 @@ module.exports = function(Model) {
       callback(new Error('token expier'));
       return
     }
-    let entity={type:'post',memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
+    let entity={type:'post',postType:data.postType,memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
+    if(data.productId){
+      entity.productId=data.productId;
+    }
     if(entity.id){
       entity.udate=new Date();
     }else{
       entity.cdate=new Date();
     }
+
     return Model.updateOrCreate(entity, function(err, res) {
       if(err){
         callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_post',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
@@ -354,7 +358,6 @@ module.exports = function(Model) {
         }*/
       }
     }
-
 
     params.where={memberId:userId,type:'product'};
     params.order='id DESC';

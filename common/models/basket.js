@@ -33,6 +33,10 @@ module.exports = function(Model) {
       callback(new Error('token expier'));
       return
     }
+    Model.find({where:{memberId:userId,productId:data.productId }})
+      .then(()=>{
+
+      })
     let entity={id:data.id,memberId:userId,productId:data.productId,number:(data.number || 1),cdate:new Date(),udate:new Date()};
     Model.updateOrCreate(entity, function(err, res) {
       if(err){
@@ -41,8 +45,6 @@ module.exports = function(Model) {
         callback(null,res);
       }
     })
-
-
   };
 
   Model.remoteMethod(

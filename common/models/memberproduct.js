@@ -131,7 +131,6 @@ module.exports = function(Model) {
   );
 
   Model.getMyProducts = function (params, callback) {
-    console.log(1111111111);
     const userId=params.userId ;
     if(!userId){
       callback(new Error('token expier'));
@@ -140,7 +139,7 @@ module.exports = function(Model) {
     params.include=  {
       relation: 'product',
       scope: {
-        fields: ['id', 'title','text','file','fileType','price','commission'],
+        fields: ['id','memberId', 'title','text','file','fileType','price','commission'],
         /*include: {
           relation: 'orders',
             scope: {
@@ -192,16 +191,20 @@ module.exports = function(Model) {
 
 
   Model.removeProductAndSelivery = function (data, callback) {
-    const userId=params.userId ;
+    const userId=data.userId ;
     if(!userId){
       callback(new Error('token expier'));
       return
+    }
+    if(userId!==data.memberId){
+      callback(null,{errorCode:17,  errorKey:'شما نمی توانید این کالا را حذف کنید.',errorMessage:'خطا در حذف، دوباره سعی کنید.'});
+      return;
     }
 
     app.models.Post.destroyById(data.productId)
       .then(res=>{
         //حذف مشارکت کنندگان
-        return Model.deleteAll({productId: data.productId})
+        Model.deleteAll({productId: data.productId})
         callback(null,res);
       })
       .catch(err=>{

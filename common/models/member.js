@@ -1138,7 +1138,7 @@ module.exports = function(Model) {
       relation: 'posts',
 
       scope: {
-        fields: ['id','message','file','fileType'],
+        fields: ['id','message','file','fileType','type'],
         where:{isDeleted:{neq: true }},
         include: {//for like by me
           relation: 'myLike',
