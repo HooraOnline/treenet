@@ -59,7 +59,7 @@ module.exports = function(Model) {
           const activity= app.models.Activity.create(actovityList);
           callback(null,shareList);
       }).then(err=>{
-          callback(null,{errorCode:17, lbError:error, errorKey:'server_share_error_add_share',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
+          callback(null,{errorCode:17, lbError:err, errorKey:'server_share_error_add_share',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
           return err;
       });
   };

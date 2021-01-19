@@ -262,7 +262,13 @@ module.exports = function(Model) {
         else
           callback(null,false);
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',pMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_member_error_tryAgain',
+          message: 'Error,Pleas try again.',
+          pMessage: 'خطایی رخ داد. دوباره تلاش کنید'
+        });
         return err;
       })
   };
@@ -317,7 +323,13 @@ module.exports = function(Model) {
         else
           callback(null,false);
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_member_error_tryAgain',
+          message: 'Error,Pleas try again.',
+          errorMessage: 'خطایی رخ داد. دوباره تلاش کنید'
+        });
         return err;
       })
   };
@@ -500,10 +512,9 @@ module.exports = function(Model) {
     //   return callback(null,{errorCode:5,errorKey:'server_login_multi_login',errorMessage:'لاگین ناموفق بصورت پی در پی، حداقل 3 دقیقه صبر کرده و دوباره امتحان کنید'});
     //
     // }
-    console.log(data);
+
     Model.login({username:data.username,password:data.password}, function(err, res) {
-      console.log(err);
-      console.log(res);
+
       if (err){
 
         unsucsessLoginNumber[data.username]=unsucsessLoginNumber[data.username]?++unsucsessLoginNumber[data.username]:1;
@@ -572,7 +583,13 @@ module.exports = function(Model) {
         else
           callback(null,false);
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_member_error_tryAgain',
+          message: 'Error,Pleas try again.',
+          errorMessage: 'خطایی رخ داد. دوباره تلاش کنید'
+        });
         return err;
       })
   };
@@ -608,7 +625,13 @@ module.exports = function(Model) {
         else
           callback(null,false);
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_member_error_tryAgain',
+          message: 'Error,Pleas try again.',
+          errorMessage: 'خطایی رخ داد. دوباره تلاش کنید'
+        });
         return err;
       })
   };
@@ -631,7 +654,11 @@ module.exports = function(Model) {
   Model.updateUserKey =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
-      callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
+      callback(null, {
+        errorCode: 7,
+        errorKey: 'server_your_token_expier',
+        errorMessage: 'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'
+      });
       return
     }
     if(!data.userKey){
@@ -649,7 +676,12 @@ module.exports = function(Model) {
       .then(res=>{
         callback(null,res)
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_public_error',
+          errorMessage: 'خطایی رخ داد. دوباره تلاش کنید.'
+        });
         return err;
       })
   };
@@ -671,7 +703,11 @@ module.exports = function(Model) {
   Model.updatePassword =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
-      callback(null,{errorCode:7, lbError:error, errorKey:'server_your_token_expier',errorMessage:'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'});
+      callback(null, {
+        errorCode: 7,
+        errorKey: 'server_your_token_expier',
+        errorMessage: 'کد امنیتی شما منقضی شده است. دوباره لاگین کنید.'
+      });
       return
     }
     if(!data.password){
@@ -689,7 +725,12 @@ module.exports = function(Model) {
       .then(res=>{
         callback(null,res)
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_public_error',errorMessage:'خطایی رخ داد. دوباره تلاش کنید.'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_public_error',
+          errorMessage: 'خطایی رخ داد. دوباره تلاش کنید.'
+        });
         return err;
       })
   };
@@ -715,7 +756,7 @@ module.exports = function(Model) {
 
     return Model.updateOrCreate(entity)
       .then(res=>{
-        console.log('oldProfileImage',oldProfileImage);
+
         if(oldProfileImage){
           Model.app.models.container.removeFile('member',oldProfileImage);
         }
@@ -745,7 +786,7 @@ module.exports = function(Model) {
         setProfileImage(userId,data,res.profileImage,callback);
       })
       .catch((err)=>{
-        console.log(err);
+
         callback(null,{errorCode:1,errorKey:'server_public_error',errorMessage:'خطایی رخ داد، دوباره تلاش کنید.'});
       })
 
@@ -784,7 +825,13 @@ module.exports = function(Model) {
         callback(null,entity);
       }).catch(err=>{
 
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_update_profileImage',message:'Error update profileImage',errorMessage:'خطا در ذخیره تصویر پروفایل'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_member_error_update_profileImage',
+          message: 'Error update profileImage',
+          errorMessage: 'خطا در ذخیره تصویر پروفایل'
+        });
         return err;
       })
   };
@@ -844,7 +891,13 @@ module.exports = function(Model) {
       .then(res=>{
         callback(null,res)
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_error_on_send_ivitation_code',message:'Error on send ivitation errorCode',errorMessage:'خطا در ارسال کد دعوت'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_member_error_on_send_ivitation_code',
+          message: 'Error on send ivitation errorCode',
+          errorMessage: 'خطا در ارسال کد دعوت'
+        });
         return err;
       });
   };
@@ -1216,8 +1269,90 @@ module.exports = function(Model) {
     }
   );
 
-  Model.searchByKeyword =  (data, callback)=> {
-    if(!data.userId){
+
+  Model.getUserStore = function (data, callback) {
+    console.log(data);
+    const userId = data.userId;
+    if (!userId) {
+      callback(new Error('token expier'));
+      return
+    }
+    let params = {};
+
+    params.include = [{
+      relation: 'memberproducts',
+      scope: {
+        //fields: ['id','memberId','productId'],
+        order: 'id DESC',
+        include:{
+            relation: 'product',
+            scope: {
+              fields: ['id', 'memberId', 'title', 'text', 'file', 'fileType', 'price', 'commission'],
+              //where: {orderId: 5}
+              include: {
+                  relation: 'member',
+                  scope: {
+                    fields: ['id','firstName', 'lastName','userKey','profileImage','displayName'],
+                    //where: {orderId: 5}
+                  }
+                }
+            }
+        }
+
+      }
+    },
+    ]
+
+    params.where= {userKey: data.userKey};
+    params.fields= ['id','firstName', 'lastName','userKey','profileImage','displayName'];
+    Model.find(params)
+      .then(res => {
+        if(res && res[0]){
+          callback(null,res[0]);
+        }else{
+          callback(null, {
+            errorCode: 17,
+            lbError: err,
+            errorKey: 'خطا در بارگذاری کالاها',
+            errorMessage: 'خطا در بارگذاری کالاها'
+          });
+        }
+      })
+      .catch(err => {
+
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'خطا در بارگذاری کالاها',
+          errorMessage: 'خطا در بارگذاری کالاها'
+        });
+
+      });
+
+  };
+  Model.remoteMethod(
+    'getUserStore',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: {source: 'body'}
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getUserStore',
+        verb: 'POST',
+      },
+    }
+  );
+
+
+  Model.searchByKeyword = (data, callback) => {
+    if (!data.userId) {
       callback(new Error('token is require'));
       return
     }
@@ -1248,7 +1383,13 @@ module.exports = function(Model) {
 
           callback(null,res);
       }).catch(err=>{
-        callback(null,{errorCode:7, lbError:error, errorKey:'server_member_search_tryAgain',message:'Error,Pleas try again.',errorMessage:'خطایی رخ داد. دوباره تلاش کنید'});
+        callback(null, {
+          errorCode: 7,
+          lbError: err,
+          errorKey: 'server_member_search_tryAgain',
+          message: 'Error,Pleas try again.',
+          errorMessage: 'خطایی رخ داد. دوباره تلاش کنید'
+        });
         return err;
       })
   };

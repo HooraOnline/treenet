@@ -55,10 +55,10 @@ module.exports = function(Model) {
     }else{
       entity.cdate=new Date();
     }
-    console.log(entity);
+
     return Model.updateOrCreate(entity, function(err, res) {
       if(err){
-        callback(null,{errorCode:17, lbError:error, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
       }else{
         callback(null,res);
       }
@@ -192,7 +192,7 @@ module.exports = function(Model) {
   );
 
   Model.removeProduct =  (data, callback)=> {
-    console.log(data);
+
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -214,7 +214,7 @@ module.exports = function(Model) {
         callback(null,entity);
       })
       .catch(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_product_error_remove_product',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'server_product_error_remove_product',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
         return err;
       });
   };

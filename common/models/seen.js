@@ -44,7 +44,7 @@ module.exports = function(Model) {
       .then(res=>{
         callback(null,entity);
       }).then(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_like',errorMessage:'خطا در لایک کردن. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'server_post_error_add_like',errorMessage:'خطا در لایک کردن. دوباره سعی کنید.'});
         return err;
       });
   };

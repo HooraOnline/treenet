@@ -56,7 +56,7 @@ module.exports = function(Model) {
       }else{
         Model.updateOrCreate(entity, function(err, res) {
           if(err){
-            callback(null,{errorCode:17, lbError:error, errorKey:'خطا در انتخاب کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
+            callback(null,{errorCode:17, lbError:err, errorKey:'خطا در انتخاب کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
           }else{
             callback(null,res);
           }
@@ -86,7 +86,7 @@ module.exports = function(Model) {
 
 
   Model.unSelectFromSelivery =  (data, callback)=> {
-    console.log(data);
+
     const userId=data.userId;
     if(!userId ){
       callback(new Error('token expier'));
@@ -153,10 +153,10 @@ module.exports = function(Model) {
       memberId:userId,
     };
     params.order='id DESC';
-    console.log(1111111111);
+
     return Model.find(params)
       .then(res => {
-        console.log(res);
+
         callback(null, res);
       })
       .catch(err => {
@@ -188,6 +188,8 @@ module.exports = function(Model) {
       },
     }
   );
+
+
 
 
   Model.removeProductAndSelivery = function (data, callback) {

@@ -198,7 +198,7 @@ module.exports = function(Model) {
     params.fields=['number'];
     return Model.find(params)
       .then(res => {
-        console.log(res,data.number);
+
         let white=res.find(item=>item.number===data.number.trim())
 
         if(white)
@@ -207,7 +207,7 @@ module.exports = function(Model) {
           callback(null, false);
       })
       .catch(err => {
-        console.log(err);
+
         callback(null, {
           errorCode: 17,
           lbError: err,

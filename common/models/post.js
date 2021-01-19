@@ -48,7 +48,7 @@ module.exports = function(Model) {
 
     return Model.updateOrCreate(entity, function(err, res) {
       if(err){
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_add_post',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'server_post_error_add_post',errorMessage:'خطا در ارسال پست. دوباره سعی کنید.'});
       }else{
         callback(null,res);
       }
@@ -98,10 +98,10 @@ module.exports = function(Model) {
     }else{
       entity.cdate=new Date();
     }
-    console.log(entity);
+
     return Model.updateOrCreate(entity, function(err, res) {
       if(err){
-        callback(null,{errorCode:17, lbError:error, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
       }else{
         let memberProduct={memberId:userId,productId:res.id,cdate:new Date(), };
         app.models.Memberproduct.create(memberProduct);
@@ -237,7 +237,7 @@ module.exports = function(Model) {
   );
 
   Model.removePost =  (data, callback)=> {
-    console.log(data);
+
     const userId=data.userId;
     if(!userId){
       callback(new Error('token expier'));
@@ -248,20 +248,37 @@ module.exports = function(Model) {
       return
     }
     let postId=data.postId;
+    Model.findById(postId)
+      .then(post=>{
+        if(post.memberId.toString()!==userId.toString()){
+          callback(null,{errorCode:502,errorKey:'عدم دسترسی',errorMessage:'عدم دسترسی.'});
+          return;
+        }
+        return Model.destroyById(postId)
+          .then(res=>{
+            if(post.postType!=='special_selivery'){
+              const folder=data.fileType.toLocaleLowerCase()==='video/mp4'?'post_video':'post_image';
+              Model.app.models.container.removeFile(folder,data.file);
+            }
 
-    const where={id:postId,memberId:userId};
-    const entity={isDeleted:true,delteDate:new Date()};
-    return Model.deleteAll({and:[{id:postId},{memberId:userId},{file:data.file}]})
-      .then(res=>{
-        const folder=data.fileType.toLocaleLowerCase()==='video/mp4'?'post_video':'post_image';
-        Model.app.models.container.removeFile(folder,data.file);
-        Model.app.models.container.removeFile(folder,data.file);
-        callback(null,entity);
+            callback(null,entity);
+          })
+          .catch(err=>{
+            callback(null,{errorCode:17, lbError:err, errorKey:'server_post_error_remove_post',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
+            return err;
+          });
       })
       .catch(err=>{
-        callback(null,{errorCode:17, lbError:error, errorKey:'server_post_error_remove_post',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'خطا در حذف پست. دوباره سعی کنید.',errorMessage:'خطا در حذف پست. دوباره سعی کنید.'});
         return err;
       });
+
+
+
+
+
+    const entity={isDeleted:true,delteDate:new Date()};
+
   };
 
   Model.remoteMethod(

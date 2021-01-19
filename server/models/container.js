@@ -106,7 +106,7 @@ module.exports = function(Files) {
 
       if(!options) options = {};
         let fileSize=Number(ctx.req.headers['content-length']);
-        console.log('fileSize',fileSize);
+
 
       if(fileSize>500000)
             return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم فایل شما نباید بیشتر از 500 کیلو بایت باشد.',errorMessage:'حجم فایل شما نباید بیشتر از 500 کیلو بایت باشد.'});
@@ -127,16 +127,16 @@ module.exports = function(Files) {
             };
 
             if(err) {
-                 console.log('err',err);
+
                  app.models.Bug.create({err:err}); callback(err);
             } else {
-              console.log('fileObj',fileObj);
-             // var fileInfo = fileObj.files.content[0];//.file[0];
-               const fileName=userId+'_'+fileObj.fields.name[0];
+
+              // var fileInfo = fileObj.files.content[0];//.file[0];
+              const fileName=userId+'_'+fileObj.fields.name[0];
                 let fileMime=fileName.split('.');
                 fileMime=fileMime[fileMime.length-1];
                 if(fileMime=='png' || fileMime=='jpeg' || fileMime=='jpg'){
-                  console.log(fileMime);
+
                   callback(null, fileObj);
                 }
                 else {
@@ -180,7 +180,7 @@ module.exports = function(Files) {
     }
     if(!options) options = {};
     let fileSize=Number(ctx.req.headers['content-length']);
-    console.log('fileSize',fileSize);
+
 
     if(fileSize>300000)
       return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم فایل شما نباید بیشتر از 300 کیلو بایت باشد.',errorMessage:'حجم فایل شما نباید بیشتر از 300 کیلو بایت باشد.'});
@@ -199,16 +199,16 @@ module.exports = function(Files) {
       };
 
       if(err) {
-        console.log('err',err);
+
         app.models.Bug.create({err:err}); callback(err);
       } else {
-        console.log('fileObj',fileObj);
+
         // var fileInfo = fileObj.files.content[0];//.file[0];
         const fileName=fileObj.fields.name[0];
         let fileMime=fileName.split('.');
         fileMime=fileMime[fileMime.length-1];
         if(fileMime.toLocaleLowerCase()==='png' || fileMime.toLocaleLowerCase()==='jpeg' || fileMime.toLocaleLowerCase()==='jpg'){
-          console.log(fileMime);
+
           callback(null, fileObj);
         }
         else {
@@ -250,7 +250,7 @@ module.exports = function(Files) {
     }
     if(!options) options = {};
     let fileSize=Number(ctx.req.headers['content-length']);
-    console.log('fileSize',fileSize);
+
 
     if(fileSize>300000)
       return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم فایل شما نباید بیشتر از 300 کیلو بایت باشد.',errorMessage:'حجم فایل شما نباید بیشتر از 300 کیلو بایت باشد.'});
@@ -269,16 +269,16 @@ module.exports = function(Files) {
       };
 
       if(err) {
-        console.log('err',err);
+
         app.models.Bug.create({err:err}); callback(err);
       } else {
-        console.log('fileObj',fileObj);
+
         // var fileInfo = fileObj.files.content[0];//.file[0];
         const fileName=fileObj.fields.name[0];
         let fileMime=fileName.split('.');
         fileMime=fileMime[fileMime.length-1];
         if(fileMime.toLocaleLowerCase()==='png' || fileMime.toLocaleLowerCase()==='jpeg' || fileMime.toLocaleLowerCase()==='jpg'){
-          console.log(fileMime);
+
           callback(null, fileObj);
         }
         else {
@@ -316,7 +316,7 @@ module.exports = function(Files) {
     }
     if(!options) options = {};
     let fileSize=Number(ctx.req.headers['content-length']);
-    console.log('fileSize',fileSize);
+
 
     if(fileSize>20000000)
       return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم ویدئوی شما نباید بیشتر از 20 مگا بایت باشد.',errorMessage:'حجم ویدئوی شما نباید بیشتر از  10 مگا بایت باشد.'});
@@ -335,16 +335,16 @@ module.exports = function(Files) {
       };
 
       if(err) {
-        console.log('err',err);
+
         app.models.Bug.create({err:err}); callback(err);
       } else {
-        console.log('fileObj',fileObj);
+
         // var fileInfo = fileObj.files.content[0];//.file[0];
         const fileName=fileObj.fields.name[0];
         let fileMime=fileName.split('.');
         fileMime=fileMime[fileMime.length-1];
         if(fileMime.toLocaleLowerCase()==='mp4'){
-          console.log(fileMime);
+
           callback(null, fileObj);
         }
         else {
@@ -386,7 +386,7 @@ module.exports = function(Files) {
       .then(res=>{
         callback(null,res)
       }).then(err=>{
-      //callback(null,{errorCode:7, lbError:error, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در ارسال کد دعوت'});
+      //callback(null,{errorCode:7, lbError:err, errorKey:'server_file_error_on_delete',message:'Error on delete file',errorMessage:'خطا در ارسال کد دعوت'});
       callback(err);
       return err;
     });

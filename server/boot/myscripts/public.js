@@ -2,7 +2,7 @@
 // var es = require('event-stream');
 module.exports = function (app) {
     let modelNames = Object.keys(app.models);
-  console.log(modelNames);
+
   modelNames.forEach(function (m) {
         let Model = app.models[m];
         Model.beforeRemote('*', function (context, user, next) {
@@ -50,7 +50,7 @@ module.exports = function (app) {
         Model.disableRemoteMethod('__updateById__accessTokens', true);*/
 
         // if(m=="News"){
-        //      console.log(Model)
+
         // }
 
         // Model.observe('after save', function beforeSave(ctx, next) {
