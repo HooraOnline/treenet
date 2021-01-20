@@ -1,5 +1,5 @@
 {
-  "name": "Basket",
+  "name": "Payment",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -9,8 +9,11 @@
     "memberId": {
       "type": "string"
     },
-    "productId": {
+    "status": {
       "type": "string"
+    },
+    "products": {
+      "type": "array"
     },
     "cdate": {
       "type": "date",
@@ -19,17 +22,11 @@
   },
   "validations": [],
   "relations": {
-    "buyer": {
+    "member": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "buyerId"
-    },
-    "marketerproduct": {
-      "type": "belongsTo",
-      "model": "Marketerproduct",
-      "foreignKey": "marketerProductId"
+      "foreignKey": "memberId"
     }
-
   },
   "acls": [],
   "methods": {}

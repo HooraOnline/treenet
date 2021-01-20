@@ -111,12 +111,12 @@
     "basketProducts": {
       "type": "hasMany",
       "model": "Basket",
-      "foreignKey": "memberId"
+      "foreignKey": "buyerId"
     },
-    "memberproducts": {
+    "marketerproducts": {
       "type": "hasMany",
-      "model": "Memberproduct",
-      "foreignKey": "memberId"
+      "model": "Marketerproduct",
+      "foreignKey": "marketerId"
     }
   },
   "acls": [],

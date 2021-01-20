@@ -100,7 +100,7 @@ module.exports = function(Files) {
       const req=ctx.req;
       const userId=req.userId ;
       if(!userId){
-        callback(new Error('token expier'));
+        callback(new Error('An error occurred'));
         return
       }
 
@@ -175,7 +175,7 @@ module.exports = function(Files) {
     const req=ctx.req;
     const userId=req.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     if(!options) options = {};
@@ -245,7 +245,7 @@ module.exports = function(Files) {
     const req=ctx.req;
     const userId=req.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     if(!options) options = {};
@@ -311,7 +311,7 @@ module.exports = function(Files) {
     const req=ctx.req;
     const userId=req.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     if(!options) options = {};
@@ -378,7 +378,7 @@ module.exports = function(Files) {
   Files.removeProfileImage = async (data, callback)=> {
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     const folder=('member');

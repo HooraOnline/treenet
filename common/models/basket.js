@@ -30,14 +30,10 @@ module.exports = function(Model) {
   Model.addPToBasket =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
-    Model.find({where:{memberId:userId,productId:data.productId }})
-      .then(()=>{
-
-      })
-    let entity={id:data.id,memberId:userId,productId:data.productId,number:(data.number || 1),cdate:new Date(),udate:new Date()};
+    let entity={id:data.id,buyerId:userId,marketerProductId:data.marketerProductId,number:(data.number || 1),cdate:new Date(),udate:new Date()};
     Model.updateOrCreate(entity, function(err, res) {
       if(err){
         callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در اضافه کردن . دوباره سعی کنید.'});
@@ -66,11 +62,11 @@ module.exports = function(Model) {
   Model.getUserBasket = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
-    params.where={memberId:userId};
+    params.where={buyerId:userId};
     params.order='cdate DESC';
     return Model.find(params)
       .then(res => {
@@ -110,23 +106,44 @@ module.exports = function(Model) {
   Model.getUserBasketProduct = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
-    params.where={memberId:userId};
+    params.where={buyerId:userId};
     //params.order='cdate DESC';
-    params.include=  {
-      relation: 'product',
+    params.include=  [{
+      relation: 'marketerproduct',
       scope: {
         //fields: ['id', 'title','text',],
+        include:[
+          {
+            relation: 'product',
+            scope: {
+              //fields: ['id', 'title','text',],
+              relation: 'member',
+              scope: {
+                fields: ['id', 'firstName','lastName','userKey','storeName','avatar'],
+              }
+            },
+          },
+          {
+            relation: 'marketer',
+            scope: {
+              fields: ['id', 'firstName','lastName','userKey','storeName'],
+            }
+          }
+        ]
       }
-    }
+    }]
     return Model.find(params)
       .then(res => {
+        console.log(res);
+        console.log(222222222222);
         callback(null, res);
       })
       .catch(err => {
+
         callback(null, {
           errorCode: 17,
           lbError: err,
@@ -159,7 +176,7 @@ module.exports = function(Model) {
   Model.removeFromBasket =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 

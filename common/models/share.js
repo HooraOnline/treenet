@@ -31,7 +31,7 @@ module.exports = function(Model) {
     const receiverList=data.receiverList;
     const userId=data.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     if(!postId){
@@ -89,7 +89,7 @@ module.exports = function(Model) {
 
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     params.include=  {

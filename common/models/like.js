@@ -29,7 +29,7 @@ module.exports = function(Model) {
   Model.likePost = (data, callback) => {
     const userId = data.userId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
     if (!data.postId) {
@@ -81,7 +81,7 @@ module.exports = function(Model) {
   Model.unlikePost = (data, callback) => {
     const userId = data.userId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
     if (!data.postId) {
@@ -125,7 +125,7 @@ module.exports = function(Model) {
     const userId = params.userId;
     const memberId = params.memberId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 

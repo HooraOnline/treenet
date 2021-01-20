@@ -30,7 +30,7 @@ module.exports = function(Model) {
   Model.addNumber =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     let entity={name:data.name,memberId:userId,invitationCode:data.invitationCode,number:data.number,type:'mobile',cdate:new Date(),udate:new Date()};
@@ -64,7 +64,7 @@ module.exports = function(Model) {
   Model.removeNumber =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
@@ -97,7 +97,7 @@ module.exports = function(Model) {
   Model.getUserWhiteNumbers = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 

@@ -33,12 +33,12 @@ module.exports = function(Model) {
   Model.addPost =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     let entity={type:'post',postType:data.postType,memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
-    if(data.productId){
-      entity.productId=data.productId;
+    if(data.marketerProductId){
+      entity.marketerProductId=data.marketerProductId;
     }
     if(entity.id){
       entity.udate=new Date();
@@ -76,7 +76,7 @@ module.exports = function(Model) {
   Model.addProduct =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     let entity={
@@ -103,8 +103,8 @@ module.exports = function(Model) {
       if(err){
         callback(null,{errorCode:17, lbError:err, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
       }else{
-        let memberProduct={memberId:userId,productId:res.id,cdate:new Date(), };
-        app.models.Memberproduct.create(memberProduct);
+        let marketerProduct={memberId:userId,productId:res.id,cdate:new Date(), };
+        app.models.Marketerproduct.create(marketerProduct);
         callback(null,res);
       }
     });
@@ -130,13 +130,13 @@ module.exports = function(Model) {
   Model.getById = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
     const postId=params.postId ;
     if(!postId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
@@ -240,7 +240,7 @@ module.exports = function(Model) {
 
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     if(!data.postId){
@@ -300,7 +300,7 @@ module.exports = function(Model) {
   Model.getMyPosts = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     params.include=  {
@@ -360,7 +360,7 @@ module.exports = function(Model) {
   Model.getStoreProducts = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     params.include=  {
@@ -416,7 +416,7 @@ module.exports = function(Model) {
   Model.getParticipatoryProduct = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     params.include=  {
@@ -595,7 +595,7 @@ module.exports = function(Model) {
 
 
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     app.models.Member.findById(userId,{fields:["parentsList"]},function(error, parent) {
@@ -651,7 +651,7 @@ module.exports = function(Model) {
   Model.getSpecializedPostIn24h = function (data, callback) {
     const userId=data.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
     let nowtime=new Date();
@@ -700,7 +700,7 @@ module.exports = function(Model) {
   Model.getLastSpecializedPost = function (data, callback) {
     const userId=data.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
@@ -888,7 +888,7 @@ module.exports = function(Model) {
 
     const userId = params.userId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
 

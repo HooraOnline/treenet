@@ -1,5 +1,5 @@
 {
-  "name": "Memberproduct",
+  "name": "Marketerproduct",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -38,16 +38,18 @@
   },
   "validations": [],
   "relations": {
-    "member": {
+    "marketer": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "memberId"
+      "foreignKey": "marketerId"
     },
     "product": {
       "type": "belongsTo",
       "model": "Post",
       "foreignKey": "productId"
     },
+
+
     "firstComment": {
       "type": "hasMany",
       "model": "Comment",

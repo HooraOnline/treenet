@@ -29,7 +29,7 @@ module.exports = function (Model) {
   Model.getUserAnnounce = function (params, callback) {
     const userId = params.userId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
     params.where = {receiverId: '_' + userId};
@@ -185,7 +185,7 @@ module.exports = function (Model) {
   Model.getNewAnnounceCount = function (params, callback) {
     const userId = params.userId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
     params.where = {receiverId: '_' + userId, isSeen: {neq: true}};

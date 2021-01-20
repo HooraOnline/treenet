@@ -88,11 +88,15 @@
     "dataSource": "treenetds",
     "public": true
   },
-  "Memberproduct": {
+  "Marketerproduct": {
     "dataSource": "treenetds",
     "public": true
   },
   "Contactus": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "Payment": {
     "dataSource": "treenetds",
     "public": true
   }

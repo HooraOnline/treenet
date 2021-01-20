@@ -219,6 +219,7 @@ module.exports = function(Model) {
       user.mobile=data.mobile || '';
       user.username =username.toLowerCase();
       user.userKey=userKey;
+      user.storeName=data.firstName;
       const userPassword =data.password || Math.random().toString().substring(2,8);
       user.password =userPassword;
       //user.tempPassword = userPassword;
@@ -463,7 +464,7 @@ module.exports = function(Model) {
     const memberId = data.memberId;
 
     if (!userId || !memberId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
 
@@ -772,7 +773,7 @@ module.exports = function(Model) {
   Model.setProfileImage =  (data, callback)=> {
     const userId=data.userId;
       if(!userId){
-        callback(new Error('token expier'));
+        callback(new Error('An error occurred'));
       return
     }
 
@@ -810,7 +811,7 @@ module.exports = function(Model) {
 
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
@@ -853,7 +854,7 @@ module.exports = function(Model) {
   Model.editProfile =  (data, callback)=> {
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
@@ -1008,7 +1009,7 @@ module.exports = function(Model) {
     const userId=cUser.userId;
     //return callback(null,{isError:true,errorCode:5,errorKey:'server_lockSite',errorMessage:'به دلیل تغییرات ساختاری فعلا امکان ورود وجود ندارد، لطفا چند روز دیگر مراجعه فرمایید.'});
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     params.include=  [
@@ -1100,7 +1101,7 @@ module.exports = function(Model) {
 
     let userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     userId=params.memberId || userId;
@@ -1138,7 +1139,7 @@ module.exports = function(Model) {
   Model.getUnconfirmSubsetList = function (params, callback) {
     let userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     userId=params.memberId || userId;
@@ -1175,16 +1176,16 @@ module.exports = function(Model) {
   Model.getUserPage = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     let userKey=params.userKey ;
     if(!userKey){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     userKey=userKey.toLowerCase();
-    params.where={userKey:userKey};
+    params.where={userKey:userKey,};
     params.fields=['id','fullName','userKey','profileImage','avatar','displayName'];
     params.order='id DESC';
     params.include=  [{
@@ -1192,7 +1193,8 @@ module.exports = function(Model) {
 
       scope: {
         fields: ['id','message','file','fileType','type'],
-        where:{isDeleted:{neq: true }},
+        where:{isDeleted:{neq: true },type:'post'},
+        order:'id DESC',
         include: {//for like by me
           relation: 'myLike',
             scope: {
@@ -1270,17 +1272,17 @@ module.exports = function(Model) {
   );
 
 
-  Model.getUserStore = function (data, callback) {
+  Model.getMarketerProducts = function (data, callback) {
     console.log(data);
     const userId = data.userId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     let params = {};
 
     params.include = [{
-      relation: 'memberproducts',
+      relation: 'marketerproducts',
       scope: {
         //fields: ['id','memberId','productId'],
         order: 'id DESC',
@@ -1331,7 +1333,7 @@ module.exports = function(Model) {
 
   };
   Model.remoteMethod(
-    'getUserStore',
+    'getMarketerProducts',
     {
       accepts: {
         arg: 'data',
@@ -1344,7 +1346,7 @@ module.exports = function(Model) {
         root: true
       },
       http: {
-        path: '/getUserStore',
+        path: '/getMarketerProducts',
         verb: 'POST',
       },
     }
@@ -1430,7 +1432,7 @@ module.exports = function(Model) {
     const memberId = data.memberId;
 
     if (!userId || !memberId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
 

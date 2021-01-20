@@ -35,7 +35,7 @@ module.exports = function(Model) {
   Model.addProduct =  (data, callback)=>{
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     let entity={
@@ -85,13 +85,13 @@ module.exports = function(Model) {
   Model.getById = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
     const productId=params.productId ;
     if(!productId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
@@ -195,7 +195,7 @@ module.exports = function(Model) {
 
     const userId=data.userId;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     if(!data.productId){
@@ -238,7 +238,7 @@ module.exports = function(Model) {
   Model.getMyProducts = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     params.include=  {
@@ -298,7 +298,7 @@ module.exports = function(Model) {
   Model.getStoreProducts = function (params, callback) {
     const userId=params.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     params.include=  {
@@ -476,7 +476,7 @@ module.exports = function(Model) {
 
 
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
     app.models.Member.findById(userId,{fields:["parentsList"]},function(error, parent) {
@@ -532,7 +532,7 @@ module.exports = function(Model) {
   Model.getSpecializedProductIn24h = function (data, callback) {
     const userId=data.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
     let nowtime=new Date();
@@ -581,7 +581,7 @@ module.exports = function(Model) {
   Model.getLastSpecializedProduct = function (data, callback) {
     const userId=data.userId ;
     if(!userId){
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return
     }
 
@@ -769,7 +769,7 @@ module.exports = function(Model) {
 
     const userId = params.userId;
     if (!userId) {
-      callback(new Error('token expier'));
+      callback(new Error('An error occurred'));
       return;
     }
 
