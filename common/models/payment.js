@@ -27,31 +27,99 @@ module.exports = function(Model) {
   Model.disableRemoteMethod('__get__accessTokens', true);
   Model.disableRemoteMethod('__updateById__accessTokens', true);
 
-  Model.save =  (data, callback)=>{
-    const userId=data.userId;
-    if(!userId){
+  Model.add =  (data, callback)=> {
+    const userId = data.userId;
+    if (!userId) {
       callback(new Error('An error occurred'));
       return
     }
-    app.models.Basket.find({where:{buyerId:userId}})
-      .then((products)=>{
-        let entity={id:data.id,memberId:userId,orderList:[],cdate:new Date(),udate:new Date()};
+    const params={};
+    params.where={buyerId:userId};
+    //params.order='cdate DESC';
+    params.include=  {
+      relation: 'marketerproduct',
+      scope: {
+        //fields: ['id', 'title','text',],
+        include:[{
+            relation: 'product',
+            scope: {
+              //fields: ['id','memberId', 'title','text','file','fileType','price','commission','userKey'],
+              include: [{
+                relation: 'member',
+                scope: {
+                  fields: ['id','mobile', 'fullName','userKey','storeName'],
+
+                }
+              }]
+            }
+          },
+          {
+            relation: 'marketer',
+            scope: {
+              fields: ['id','mobile', 'firstName','lastName','userKey','storeName'],
+            }
+          }
+        ]
+      }
+    }
+    app.models.Basket.find(params)
+      .then((basket) => {
+
+        const orders=[];
+        basket.map(o=>{
+
+          let product=o['__data'].marketerproduct['__data'].product['__data'];
+          let marketer=o['__data'].marketerproduct['__data'].marketer['__data'];
+          let seller=product.member['__data'];
+          delete product.member;
+
+          let order={
+             marketerProductId:o.marketerProductId,
+             number:o.number,
+             cdate:o.cdate,
+             marketerproductId:o.marketerproduct.id,
+             product:product,
+             marketer:marketer,
+             seller:seller,
+           }
+          orders.push(order);
+        })
+
+        let entity={
+            id:data.id,
+            buyerId:userId,
+            basket:orders,
+            paymentFor:'buy_product',
+            totalPrice:data.totalPrice,
+            bankReference:0,
+            status:0,
+            description:data.description || 'بدون توضیح',
+            paymentType:'online',
+            cardNumber:0,
+            cdate:new Date(),
+            udate:new Date()
+        };
         Model.updateOrCreate(entity, function(err, res) {
           if(err){
             callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در ثبت پرداخت . دوباره سعی کنید.'});
           }else{
-            callback(null,res);
+            callback(null, {paymentId:res.id});
           }
         })
-
       })
-      .catch(err=>{
-        callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در ثبت پرداخت . دوباره سعی کنید.'});
-      })
+      .catch(err => {
 
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_public_error',
+          errorMessage: 'خطا در ثبت پرداخت . دوباره سعی کنید.'
+        });
+      })
+  }
 
   Model.remoteMethod(
-    'save',
+    'add',
     {
       accepts: [{
         arg: 'data',
@@ -60,17 +128,105 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/save',
+        path: '/add',
         verb: 'POST',
       },
     }
   );
 
 
+  Model.edit =  (data, callback)=> {
+    const userId = data.userId;
+    if (!userId) {
+      callback(new Error('An error occurred'));
+      return
+    }
+    data.status=1;
+    let entity={
+      id:data.id,
+      bankReference:data.bankReference,
+      status:data.status,
+      cardNumber:data. cardNumber,
+      udate:new Date()
+    };
+    Model.updateOrCreate(entity, function(err, res) {
+      if(err){
+        callback(null,{errorCode:17, lbError:err, errorKey:'خطا در ثبت پرداخت ',errorMessage:'خطا در ثبت پرداخت .'});
+      }else{
+        if(data.status===1){
+          app.models.Basket.destroyAll({buyerId:userId});
+          app.models.Commission.addPaymentCommission(res)
+
+        }
+
+        callback(null,{paymentId:res.id});
+      }
+    })
+
+  }
 
 
+  Model.remoteMethod(
+    'edit',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/edit',
+        verb: 'POST',
+      },
+    }
+  );
 
 
+  Model.getUserOrders = function (params, callback) {
+
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('An error occurred'));
+      return
+    }
+
+    params.where={buyerId:userId};
+    params.order='id DESC';
+
+    return Model.find(params)
+      .then(res => {
+        callback(null, res);
+      })
+      .catch(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_public_error',
+          errorMessage: 'خطا در بارگذاری سفارشات'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'getUserOrders',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getUserOrders',
+        verb: 'POST',
+      },
+    }
+  );
 
 };
 

@@ -99,6 +99,10 @@
   "Payment": {
     "dataSource": "treenetds",
     "public": true
+  },
+  "Commission": {
+    "dataSource": "treenetds",
+    "public": true
   }
 
 }

@@ -1,19 +1,25 @@
 {
-  "name": "Payment",
+  "name": "Commission",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "memberId": {
+    "commissionType": {
       "type": "string"
     },
-    "status": {
+    "marketerProductId": {
       "type": "string"
     },
-    "products": {
-      "type": "array"
+    "paymentId": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "double"
+    },
+    "isPaid": {
+      "type": "boolean"
     },
     "cdate": {
       "type": "date",
@@ -25,12 +31,7 @@
     "member": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "buyerId"
-    },
-    "commissions": {
-      "type": "hasMany",
-      "model": "Commission",
-      "foreignKey": "paymentId"
+      "foreignKey": "memberId"
     }
   },
   "acls": [],
