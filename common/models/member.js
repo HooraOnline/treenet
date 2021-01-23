@@ -1273,7 +1273,7 @@ module.exports = function(Model) {
 
 
   Model.getMarketerProducts = function (data, callback) {
-    console.log(data);
+
     const userId = data.userId;
     if (!userId) {
       callback(new Error('An error occurred'));

@@ -28,24 +28,31 @@ module.exports = function(Model) {
   Model.disableRemoteMethod('__updateById__accessTokens', true);
 
   Model.addPaymentCommission =  (payment)=>{
-    console.log(payment);
-    const sellPercent=[0,50,25,12.5,6.5,3,1.5,1,0.25];
+    //console.log(payment);
+    const sellPercent=[50,25,12.5,6.5,3,1.5,1,0.25];
     let commissionList=[];
+
     payment.basket.map(order=>{
       const product=order.product;
+      const marketer=order.marketer;
       const productCommisstion=product.price*order.number*product.commission/100;
       const marketerCommission=productCommisstion/2;
-      const parrentsCommission=productCommisstion/2;
-      const parrent1_commission=parrentsCommission*sellPercent[1];
-      const parrent2_commission=parrentsCommission*sellPercent[2];
-      const parrent3_commission=parrentsCommission*sellPercent[3];
-      const parrent4_commission=parrentsCommission*sellPercent[4];
-      const parrent5_commission=parrentsCommission*sellPercent[5];
-      const parrent6_commission=parrentsCommission*sellPercent[6];
-      const parrent7_commission=parrentsCommission*sellPercent[7];
-      const parrent8_commission=parrentsCommission*sellPercent[8];
+      const parentsCommission=productCommisstion/2;
+      const parrent1_commission=parentsCommission*sellPercent[1];
+      const parrent2_commission=parentsCommission*sellPercent[2];
+      const parrent3_commission=parentsCommission*sellPercent[3];
+      const parrent4_commission=parentsCommission*sellPercent[4];
+      const parrent5_commission=parentsCommission*sellPercent[5];
+      const parrent6_commission=parentsCommission*sellPercent[6];
+      const parrent7_commission=parentsCommission*sellPercent[7];
+      const parrent8_commission=parentsCommission*sellPercent[8];
+
       let marketingCommission={
           paymentId:payment.id,
+          marketerId: marketer.id,
+          productId:order.product.id,
+          buyerId:payment.buyerId,
+          sellerId:order.seller.id,
           marketerProductId:order.marketerProductId,
           amount:marketerCommission,
           commissionType:'marketing',
@@ -53,16 +60,43 @@ module.exports = function(Model) {
           number:order.number,
           cdate:new Date(),
       };
-      Model.updateOrCreate(marketingCommission);
+
+      console.log(marketingCommission);
       commissionList.push(marketingCommission);
 
+
+      let netWorkCommission={
+        paymentId:payment.id,
+        marketerId: marketer.id,
+        productId:order.product.id,
+        buyerId:payment.buyerId,
+        sellerId:order.seller.id,
+        marketerProductId:order.marketerProductId,
+        //amount:marketerCommission,
+        commissionType:'network',
+        isPaid:false,
+        number:order.number,
+        cdate:new Date(),
+      };
+      app.models.Member.findById(payment.buyerId,{fields:['parentsList']})
+        .then((res)=>{
+
+          res.parentsList.map((parentId,index)=>{
+            netWorkCommission.amount=Math.round(parentsCommission*sellPercent[index]/100);
+            netWorkCommission.marketerId=parentId;
+            netWorkCommission.level=index+1;
+            netWorkCommission.levelCommision=sellPercent[index];
+            Model.create(netWorkCommission)
+          })
+        })
+        .catch(()=>{
+
+        })
+
     })
-    console.log(commissionList);
-    //Model.create(commissionList)
+
+    Model.create(commissionList);
   };
-
-
-
 
 
   Model.getUserCommissions = function (params, callback) {
@@ -71,8 +105,46 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
+    params.include=  [
+      {
+        relation: 'payment',
+        scope: {
+          //fields: ['id', 'title','text',],
+        }
+      },
+      {
+        relation: 'product',
+        scope: {
+          //fields: ['id', 'title','text',],
 
-    params.where={memberId:userId};
+        }
+      },
+      {
+        relation: 'buyer',
+        scope: {
+          fields: ['id','mobile', 'fullName','userKey','storeName','profileImage'],
+
+        }
+      },
+      {
+        relation: 'seller',
+        scope: {
+          fields: ['id','mobile', 'fullName','userKey','storeName','profileImage'],
+
+        }
+      },
+      {
+        relation: 'marketer',
+        scope: {
+          fields: ['id','mobile', 'fullName','userKey','storeName','profileImage'],
+
+        }
+      }
+    ]
+
+
+
+    params.where={marketerId:userId};
     params.order='id DESC';
     return Model.find(params)
       .then(res => {

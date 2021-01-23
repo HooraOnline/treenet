@@ -9,15 +9,10 @@
     "commissionType": {
       "type": "string"
     },
-    "marketerProductId": {
-      "type": "string"
-    },
     "paymentId": {
       "type": "string"
     },
-    "amount": {
-      "type": "double"
-    },
+
     "isPaid": {
       "type": "boolean"
     },
@@ -28,11 +23,32 @@
   },
   "validations": [],
   "relations": {
-    "member": {
+    "payment": {
+      "type": "belongsTo",
+      "model": "Payment",
+      "foreignKey": "paymentId"
+    },
+    "marketer": {
       "type": "belongsTo",
       "model": "Member",
-      "foreignKey": "memberId"
+      "foreignKey": "marketerId"
+    },
+    "seller": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "sellerId"
+    },
+    "buyer": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "buyerId"
+    },
+    "product": {
+      "type": "belongsTo",
+      "model": "Post",
+      "foreignKey": "productId"
     }
+
   },
   "acls": [],
   "methods": {}

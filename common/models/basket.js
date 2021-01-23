@@ -138,8 +138,7 @@ module.exports = function(Model) {
     }]
     return Model.find(params)
       .then(res => {
-        console.log(res);
-        console.log(222222222222);
+
         callback(null, res);
       })
       .catch(err => {

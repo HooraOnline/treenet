@@ -6,7 +6,7 @@
     "validateUpsert": true
   },
   "properties": {
-    "memberId": {
+    "buyerId": {
       "type": "string"
     },
     "status": {
@@ -22,7 +22,7 @@
   },
   "validations": [],
   "relations": {
-    "member": {
+    "buyer": {
       "type": "belongsTo",
       "model": "Member",
       "foreignKey": "buyerId"
