@@ -13,7 +13,7 @@
       "type": "string"
     },
 
-    "isPaid": {
+    "isClear": {
       "type": "boolean"
     },
     "cdate": {

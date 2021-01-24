@@ -56,7 +56,7 @@ module.exports = function(Model) {
           marketerProductId:order.marketerProductId,
           amount:marketerCommission,
           commissionType:'marketing',
-          isPaid:false,
+          isClear:false,
           number:order.number,
           cdate:new Date(),
       };
@@ -74,7 +74,7 @@ module.exports = function(Model) {
         marketerProductId:order.marketerProductId,
         //amount:marketerCommission,
         commissionType:'network',
-        isPaid:false,
+        isClear:false,
         number:order.number,
         cdate:new Date(),
       };

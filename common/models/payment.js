@@ -81,6 +81,7 @@ module.exports = function(Model) {
              product:product,
              marketer:marketer,
              seller:seller,
+             isClearBySeller:false,
            }
           orders.push(order);
         })
@@ -183,7 +184,7 @@ module.exports = function(Model) {
   );
 
 
-  Model.getUserOrders = function (params, callback) {
+  Model.getUserPayments = function (params, callback) {
 
     const userId=params.userId ;
     if(!userId){
@@ -197,6 +198,72 @@ module.exports = function(Model) {
     return Model.find(params)
       .then(res => {
         callback(null, res);
+      })
+      .catch(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_public_error',
+          errorMessage: 'خطا در بارگذاری سفارشات'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'getUserPayments',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getUserPayments',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.getUserOrders = function (params, callback) {
+
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('An error occurred'));
+      return
+    }
+
+    //params.where={'basket.1.product.memberId':userId};
+    params.where= { "basket.product.memberId":  userId} ;
+    params.order='id DESC';
+
+    return Model.find(params)
+      .then(payment => {
+        payment.map(paymentItem=>{
+          paymentItem.basket=paymentItem.basket.filter(item=>item.product.memberId.toString()===userId.toString());
+          let totalPrice=0;
+          let unClearPrice=0;
+          let totalCommission=0;
+          let unClearCommission=0;
+          paymentItem.basket.map(o=> {
+            totalPrice = totalPrice + o.product.price;
+            totalCommission=Math.round(totalCommission + o.product.price*o.product.commission/100);
+            if(!o.isClearBySeller){
+              unClearPrice = unClearPrice + o.product.price;
+              unClearCommission=Math.round(unClearCommission + o.product.price*o.product.commission/100);
+            }
+
+          });
+          paymentItem.totalPrice=totalPrice;
+          paymentItem.unClearPrice=unClearPrice;
+          paymentItem.totalCommission=totalCommission;
+          paymentItem.unClearCommission=unClearCommission;
+        })
+        callback(null, payment);
       })
       .catch(err => {
         callback(null, {
@@ -223,6 +290,61 @@ module.exports = function(Model) {
       },
       http: {
         path: '/getUserOrders',
+        verb: 'POST',
+      },
+    }
+  );
+
+//جهت تسویه با فروشنده
+  Model.clearSellPrice = function (params, callback) {
+
+    const userId=params.userId ;
+    if(!userId){
+      callback(new Error('An error occurred'));
+      return
+    }
+
+    //params.where={'basket.1.product.memberId':userId};
+    params.where= { "basket.product.memberId":  userId} ;
+    params.order='id DESC';
+
+    return Model.find(params)
+      .then(payment => {
+        payment.map(paymentItem=>{
+          paymentItem.basket=paymentItem.basket.filter(item=>item.product.memberId.toString()===userId.toString());
+          paymentItem.basket.map(basketItem=>{
+            basketItem.isClearBySeller=true;
+            Model.update(paymentItem);
+          })
+
+        })
+        callback(null, payment);
+      })
+      .catch(err => {
+        callback(null, {
+          errorCode: 17,
+          lbError: err,
+          errorKey: 'server_public_error',
+          errorMessage: 'خطا در بارگذاری سفارشات'
+        });
+        return err;
+      });
+  };
+  Model.remoteMethod(
+    'clearSellPrice',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/clearSellPrice',
         verb: 'POST',
       },
     }
