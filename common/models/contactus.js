@@ -33,11 +33,11 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
-    let entity={title:data.title,memberId:userId,text:data.text,type:'sellContact',cdate:new Date()};
+    let entity={title:data.title,memberId:userId,text:data.text,type:data.type,cdate:new Date()};
 
     return Model.updateOrCreate(entity, function(err, res) {
       if(err){
-        callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در اضافه کردن درخواست. دوباره سعی کنید.'});
+        callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در ارسال پیام. دوباره سعی کنید.'});
       }else{
         callback(null,res);
       }

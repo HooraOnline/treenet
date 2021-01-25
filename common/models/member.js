@@ -179,7 +179,7 @@ module.exports = function(Model) {
 
   const getUniqId =(mask)=> {
     //return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
-    return Date.now().toString().replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l').replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l');
+    return Date.now()//.toString().replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l').replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l');
   }
   const checkMobileExist =async (mobile)=> {
     const res= await Model.find({where: {mobile: mobile}})
@@ -235,7 +235,7 @@ module.exports = function(Model) {
       user.invitationCode=  getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
       user.profileImage = 'defaultProfileImage.png';
       user.inviteProfileImage= 'defaultProfileImage.png';
-      user.avatar='متخصص شبکه سازی مجازی';
+      user.avatar='نماینده فروش در ترینتگرام';
       user.loginDate="";
       user.logOutDate="";
       user.beforloginDate="";
@@ -1066,7 +1066,7 @@ module.exports = function(Model) {
 
         let user=res;
         let birthYear=user.birthDate?new Date(user.birthDate).getFullYear():'';
-        user. invitationLink=`https://treenetgram.com/?invitationCode=${res.invitationCode}`;
+        user.invitationLink=`https://treenetgram.com/?invitationCode=${res.invitationCode}`;
         user.age=user.birthDate?(new Date()).getFullYear()-birthYear:'';
         user.shortMobile=user.mobile?user.mobile.split('-')[1]:'';
         callback(err, user);

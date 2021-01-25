@@ -322,6 +322,8 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
+    console.log('userId======',userId);
+    console.log('data======',data);
     if(userId!==data.marketerId){
       callback(null,{errorCode:17,  errorKey:'شما نمی توانید این کالا را حذف کنید.',errorMessage:'خطا در حذف، دوباره سعی کنید.'});
       return;
