@@ -179,7 +179,11 @@ module.exports = function(Model) {
 
   const getUniqId =(mask)=> {
     //return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
-    return Date.now()//.toString().replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l').replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l');
+    return Date.now().toString().replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l').replace('0','a').replace('1','b').replace('2','c').replace('3','d').replace('4','e').replace('5','f').replace('6','g').replace('7','h').replace('8','k').replace('9','l');
+  }
+  const getUnikNumber =(mask)=> {
+    //return mask.replace(/[x]/gi, () => { return Math.random().toString(26)[5]; });
+    return Date.now().toString();
   }
   const checkMobileExist =async (mobile)=> {
     const res= await Model.find({where: {mobile: mobile}})
@@ -204,10 +208,8 @@ module.exports = function(Model) {
   };
 
     const initNewUser =  (data,regent)=> {
-
       const countryCode=data.countryCode || '98';
       const user={geo:data.geo,geoInfo:data.geoInfo};
-
       let userKey=getUniqId('xxxxxxxxxxxxxxxx');
       userKey=userKey.toLowerCase();
       const username=countryCode+data.mobile || userKey;
@@ -220,19 +222,15 @@ module.exports = function(Model) {
       user.username =username.toLowerCase();
       user.userKey=userKey;
       user.storeName=data.firstName;
-      const userPassword =data.password || Math.random().toString().substring(2,8);
-      user.password =userPassword;
-      //user.tempPassword = userPassword;
-
+      user.password =data.password || Math.random().toString().substring(2, 8);
       user.state = 'register';
       user.regentCode=regent.invitationCode;
       user.regentId=regent.id;
-
       let parentsList=regent.parentsList;
       parentsList.push(regent.id);
       user.parentsList=parentsList;
 
-      user.invitationCode=  getUniqId('xxxxxxxxxxxxxxxxxxxxxxxx');
+      user.invitationCode=  getUnikNumber();
       user.profileImage = 'defaultProfileImage.png';
       user.inviteProfileImage= 'defaultProfileImage.png';
       user.avatar='نماینده فروش در ترینتگرام';
@@ -360,11 +358,8 @@ module.exports = function(Model) {
       callback(null,{errorCode:3,errorKey:'server_member_invalid_invitation_link',errorMessage:'این لینک دعوت معتبر نیست'});
       return ;
     }
-
     const regent=regentList[0];
-
     let user=initNewUser(data,regent);
-
     // user.forTest=1
     user.host=data.host;
     return Model.updateOrCreate(user)
@@ -1192,7 +1187,7 @@ module.exports = function(Model) {
       relation: 'posts',
 
       scope: {
-        fields: ['id','message','file','fileType','type'],
+        fields: ['id','message','file','fileType','fileExtention','type'],
         where:{isDeleted:{neq: true },type:'post'},
         order:'id DESC',
         include: {//for like by me
@@ -1289,7 +1284,7 @@ module.exports = function(Model) {
         include:{
             relation: 'product',
             scope: {
-              fields: ['id', 'memberId', 'title', 'text', 'file', 'fileType', 'price', 'commission'],
+              fields: ['id', 'memberId', 'title', 'text', 'file', 'fileType','fileExtention', 'price', 'commission'],
               //where: {orderId: 5}
               include: {
                   relation: 'member',

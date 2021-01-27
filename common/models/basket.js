@@ -33,6 +33,13 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
+    // Model.find({where:{buyerId:userId,marketerProductId:data.marketerProductId}})
+    //   .then((res)=>{
+    //
+    //   })
+    //   .catch(()=>{
+    //
+    //   })
     let entity={id:data.id,buyerId:userId,marketerProductId:data.marketerProductId,number:(data.number || 1),cdate:new Date(),udate:new Date()};
     Model.updateOrCreate(entity, function(err, res) {
       if(err){

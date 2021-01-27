@@ -43,7 +43,7 @@ module.exports = function(Model) {
         include:[{
             relation: 'product',
             scope: {
-              //fields: ['id','memberId', 'title','text','file','fileType','price','commission','userKey'],
+              //fields: ['id','memberId', 'title','text','file','fileType','fileExtention',price','commission','userKey'],
               include: [{
                 relation: 'member',
                 scope: {

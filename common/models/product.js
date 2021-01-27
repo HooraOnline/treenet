@@ -42,7 +42,8 @@ module.exports = function(Model) {
       type:'product',
       memberId:userId,
       file:data.file,
-      fileType:data.fileType,
+      fileExtention:data.fileExtention,
+      fileType:data.fileExtention.split('/')[0].toLocaleLowerCase(),
       text:data.text,
       price:data.price,
       title:data.title,
@@ -208,7 +209,7 @@ module.exports = function(Model) {
     const entity={isDeleted:true,delteDate:new Date()};
     return Model.deleteAll({and:[{id:productId},{memberId:userId},{file:data.file}]})
       .then(res=>{
-        const folder=data.fileType.toLocaleLowerCase()==='video/mp4'?'product_video':'product_image';
+        const folder=data.fileType.toLocaleLowerCase()==='video'?'product_video':'product_image';
         Model.app.models.container.removeFile(folder,data.file);
         Model.app.models.container.removeFile(folder,data.file);
         callback(null,entity);

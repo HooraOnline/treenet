@@ -139,7 +139,7 @@ module.exports = function(Model) {
     params.include=  {
       relation: 'product',
       scope: {
-        fields: ['id','memberId', 'title','text','file','fileType','price','commission'],
+        fields: ['id','memberId', 'title','text','file','fileType','fileExtention','price','commission'],
         /*include: {
           relation: 'orders',
             scope: {
@@ -199,7 +199,7 @@ module.exports = function(Model) {
     params.include=  [{
       relation: 'product',
       scope: {
-        //fields: ['id','memberId', 'title','text','file','fileType','price','commission','userKey'],
+        //fields: ['id','memberId', 'title','text','file','fileType','fileExtention','price','commission','userKey'],
         include: [{
           relation: 'member',
           scope: {

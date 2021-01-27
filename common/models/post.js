@@ -36,7 +36,16 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
-    let entity={type:'post',postType:data.postType,memberId:userId,file:data.file,fileType:data.fileType,text:data.text,isSpecial:data.isSpecial,cdate:new Date(),udate:new Date()};
+    let entity={type:'post',
+      postType:data.postType,
+      memberId:userId,
+      file:data.file,
+      fileExtention:data.fileExtention.toLowerCase(),
+      fileType:data.fileExtention.split('/')[0].toLocaleLowerCase(),
+      text:data.text,
+      isSpecial:data.isSpecial,
+      cdate:new Date(),udate:new Date()
+    };
     if(data.marketerProductId){
       entity.marketerProductId=data.marketerProductId;
     }
@@ -83,12 +92,13 @@ module.exports = function(Model) {
       type:'product',
       memberId:userId,
       file:data.file,
-      fileType:data.fileType,
+      fileExtention:data.fileExtention.toLowerCase(),
+      fileType:data.fileExtention.split('/')[0].toLocaleLowerCase(),
       text:data.text,
       price:data.price,
       title:data.title,
-      commission:30 || data.commission,
-      isParticipatory:true,
+      commission:data.commission || 0,
+      isSelivery:data.isSelivery,
       isSpecial:data.isSpecial,//مشارکت در فروش
       cdate:new Date(),
       udate:new Date()
@@ -103,7 +113,7 @@ module.exports = function(Model) {
       if(err){
         callback(null,{errorCode:17, lbError:err, errorKey:'خطا در اضافه کردن کالا',errorMessage:'خطا در اضافه کردن کالا. دوباره سعی کنید.'});
       }else{
-        let marketerProduct={memberId:userId,productId:res.id,cdate:new Date(), };
+        let marketerProduct={marketerId:userId,productId:res.id,cdate:new Date(), };
         app.models.Marketerproduct.create(marketerProduct);
         callback(null,res);
       }
@@ -257,7 +267,7 @@ module.exports = function(Model) {
         return Model.destroyById(postId)
           .then(res=>{
             if(post.postType!=='special_selivery'){
-              const folder=data.fileType.toLocaleLowerCase()==='video/mp4'?'post_video':'post_image';
+              const folder=data.fileType.toLocaleLowerCase()==='video'?'post_video':'post_image';
               Model.app.models.container.removeFile(folder,data.file);
             }
 
@@ -433,7 +443,7 @@ module.exports = function(Model) {
     }
 
 
-    params.where={isParticipatory:true,type:'product'};
+    params.where={isSelivery:true,type:'product'};
     params.order='id DESC';
     return Model.find(params)
       .then(res => {
