@@ -182,8 +182,8 @@ module.exports = function(Files) {
     let fileSize=Number(ctx.req.headers['content-length']);
 
 
-    if(fileSize>300000)
-      return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم فایل شما نباید بیشتر از 300 کیلو بایت باشد.',errorMessage:'حجم فایل شما نباید بیشتر از 300 کیلو بایت باشد.'});
+    if(fileSize>3000000)
+      return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم فایل شما نباید بیشتر از 3 مگابایت باشد.',errorMessage:'حجم فایل شما نباید بیشتر از 3 بایت باشد.'});
 
     ctx.req.params.container = 'member';
 

@@ -11,6 +11,14 @@
     "name": "treenetds",
     "connector": "mongodb"
   },
+  "uniquds": {
+    "host": "localhost",
+    "port": 27017,
+    "url": "",
+    "database": "uniqudb",
+    "name": "uniquds",
+    "connector": "mongodb"
+  },
   "storage": {
     "name": "storage",
     "connector": "loopback-component-storage",

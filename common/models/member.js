@@ -74,7 +74,7 @@ const subsetinclude=[
     }
   }
 ]
-const includeFields=['id','cdate','displayName','profileImage','gender','userKey','avatar'];
+const includeFields=['id','cdate','displayName','fullName','profileImage','gender','userKey','avatar'];
 const subsetincludeFull=[
   {
     relation: 'subsets',
