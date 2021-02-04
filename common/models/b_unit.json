@@ -1,0 +1,37 @@
+{
+  "name": "b_unit",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "memberId": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "building": {
+      "type": "belongsTo",
+      "model": "u_building",
+      "foreignKey": "buildingId"
+    }
+
+  },
+  "acls": [],
+  "methods": {}
+}

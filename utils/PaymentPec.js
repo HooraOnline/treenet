@@ -2,7 +2,7 @@ var soap = require('soap');
 const config = require('config');
 const pecPardakht = config.get('TREENET.payPecConfig');
 const logger = require('./winstonLogger');
-const payment = require("../controllers/payment");
+const payment = {};
 
 module.exports = {
     createPaymentRequest: (params, callBackUrl = 'https://treenetgram/api/pay/result') => {

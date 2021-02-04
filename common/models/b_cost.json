@@ -1,0 +1,42 @@
+{
+  "name": "b_cost",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "memberId": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "heading": {
+      "type": "belongsTo",
+      "model": "b_heading",
+      "foreignKey": "headingId"
+    },
+    "member": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "memberId"
+    }
+
+  },
+  "acls": [],
+  "methods": {}
+}

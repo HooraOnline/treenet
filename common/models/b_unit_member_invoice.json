@@ -1,5 +1,5 @@
 {
-  "name": "uniqu_cost",
+  "name": "b_unit_member_invoice",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {

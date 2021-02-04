@@ -1,5 +1,6 @@
 'use strict';
 var app = require('../../server/server');
+const PaymentFactory = require("../../utils/PaymentFactory");
 var ObjectId = require('mongodb').ObjectId;
 module.exports = function(Model) {
   Model.disableRemoteMethod("create", true);
@@ -26,6 +27,74 @@ module.exports = function(Model) {
   Model.disableRemoteMethod('__findById__accessTokens', true);
   Model.disableRemoteMethod('__get__accessTokens', true);
   Model.disableRemoteMethod('__updateById__accessTokens', true);
+
+  Model.createPaymentRequest = (data, callback)=> {
+    console.log(11111111111);
+    const userId = data.userId;
+    if (!userId) {
+      callback(new Error('An error occurred'));
+      return
+    }
+    console.log(222222222222);
+    var paymentFactory = PaymentFactory.getInstance('pec');
+    const pecPayment = paymentFactory.getPecPayment();
+    const payRequest = pecPayment.createPaymentRequest({
+      amount: data.amount,
+      orderId: data.orderId
+    });
+    console.log(333333333333);
+    pecPayment.requestPayment(payRequest, result => {
+      console.log(444444444444444);
+      console.log("%%%%%%%%%%%%%%%%%%paymentInsert requestPayment result: ", result);
+      console.log(55555555555);
+      if(!result.SalePaymentRequestResult){
+        callback(null,{errorCode:204, lbError:{
+            errMessage: result,
+            enErrMessage: 'payment Err'
+          }, errorKey:result,errorMessage:result});
+
+        return;
+      }
+      const token = Number(result.SalePaymentRequestResult.Token);
+      console.log(66666666666666);
+      const status = Number(result.SalePaymentRequestResult.Status);
+      console.log('token===',token);
+      console.log('status===',status);
+
+      if (token > 0 && status === 0) {
+        console.log(777777777777777777777);
+        const resultObj = {
+          tokenPay: token,
+          urlPay: result.urlPayment
+        };
+        callback(null,resultObj);
+
+      } else {
+        console.log(888888888888888888);
+        console.log('SalePaymentRequestResult',SalePaymentRequestResult);
+        callback(null,{errorCode:204, lbError:{
+            errMessage: toUnicode(result.SalePaymentRequestResult.Message),
+            enErrMessage: 'payment Err'
+          }, errorKey:'خطا در درخواست پرداخت . دوباره سعی کنید.',errorMessage:'خطا در درخواست پرداخت . دوباره سعی کنید.'});
+
+      }
+    });
+  };
+  Model.remoteMethod(
+    'createPaymentRequest',
+    {
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      }],
+      returns: {arg: 'result', type: 'object',root:true },
+      http: {
+        path: '/createPaymentRequest',
+        verb: 'POST',
+      },
+    }
+  );
 
   Model.add =  (data, callback)=> {
     const userId = data.userId;

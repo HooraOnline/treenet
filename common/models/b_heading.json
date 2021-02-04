@@ -1,0 +1,37 @@
+{
+  "name": "b_heading",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "memberId": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "costs": {
+      "type": "hasMany",
+      "model": "b_cost",
+      "foreignKey": "headingId"
+    }
+
+  },
+  "acls": [],
+  "methods": {}
+}

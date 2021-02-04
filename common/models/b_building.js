@@ -78,12 +78,16 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
-
+    params.include=  [{
+      relation: 'heading',
+      scope: {
+        //fields: ['id', 'title','text',],
+      }
+    }]
     params.where={buildingId:1};
     //params.order='title DESC';
     return Model.find(params)
       .then(res => {
-
         callback(null, res);
       })
       .catch(err => {
