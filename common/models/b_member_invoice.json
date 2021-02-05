@@ -1,5 +1,5 @@
 {
-  "name": "b_unit_member_invoice",
+  "name": "b_member_invoice",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -27,8 +27,13 @@
   "relations": {
     "member": {
       "type": "belongsTo",
-      "model": "Member",
+      "model": "member",
       "foreignKey": "memberId"
+    },
+    "invoice": {
+      "type": "belongsTo",
+      "model": "b_invoice",
+      "foreignKey": "invoiceId"
     }
 
   },

@@ -27,50 +27,7 @@ module.exports = function(Model) {
   Model.disableRemoteMethod('__get__accessTokens', true);
   Model.disableRemoteMethod('__updateById__accessTokens', true);
 
-  Model.add =  (data, callback)=>{
-    const userId=data.userId;
-    if(!userId){
-      callback(new Error('An error occurred'));
-      return
-    }
-    console.log(data);
-    let entity={
-      id:data.id,
-      buildingId: 1,
-      headingId:data.headingId,
-      date:data.date,
-      price:data.price,
-      description:data.description,
 
-      cdate:new Date(),
-      udate:new Date()
-    };
-
-    return Model.updateOrCreate(entity, function(err, res) {
-      if(err){
-        callback(null,{errorCode:17, lbError:err, errorKey:'خطا، دوباره سعی کنید.',errorMessage:'خطا، دوباره سعی کنید.'});
-      }else{
-        callback(null,res);
-      }
-    })
-
-  };
-
-  Model.remoteMethod(
-    'add',
-    {
-      accepts: [{
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      }],
-      returns: {arg: 'result', type: 'object',root:true },
-      http: {
-        path: '/add',
-        verb: 'POST',
-      },
-    }
-  );
 
   Model.getList = function (params, callback) {
     const userId=params.userId ;
@@ -79,12 +36,12 @@ module.exports = function(Model) {
       return
     }
     params.include=  [{
-      relation: 'heading',
+      relation: 'invoice',
       scope: {
-        //fields: ['id', 'title','text',],
+        fields: ['title', 'deadlineDate','description','cdate'],
       }
     }]
-    params.where={buildingId:1};
+    //params.where={memberId:userId};
     //params.order='title DESC';
     return Model.find(params)
       .then(res => {
@@ -95,7 +52,7 @@ module.exports = function(Model) {
           errorCode: 17,
           lbError: err,
           errorKey: 'server_public_error',
-          errorMessage: 'خطا در بارگذاری لیست سفید'
+          errorMessage: 'خطا در بارگذاری لیست اعلانات '
         });
         return err;
       });

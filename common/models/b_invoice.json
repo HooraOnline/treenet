@@ -25,10 +25,10 @@
   },
   "validations": [],
   "relations": {
-    "member": {
-      "type": "belongsTo",
-      "model": "Member",
-      "foreignKey": "memberId"
+    "memberInvoices": {
+      "type": "hasMany",
+      "model": "b_member_invoice",
+      "foreignKey": "invoiceId"
     }
 
   },

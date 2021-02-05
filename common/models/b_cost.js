@@ -39,7 +39,7 @@ module.exports = function(Model) {
       buildingId: 1,
       headingId:data.headingId,
       date:data.date,
-      price:data.price,
+      amount:data.amount,
       description:data.description,
 
       cdate:new Date(),

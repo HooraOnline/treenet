@@ -124,14 +124,12 @@
     "dataSource": "uniquds",
     "public": true
   },
-  "b_unit_member_invoice": {
-    "dataSource": "uniquds",
-    "public": true
-  },
   "b_unit_member": {
     "dataSource": "uniquds",
     "public": true
+  },
+    "b_member_invoice": {
+    "dataSource": "uniquds",
+    "public": true
   }
-
-
 }

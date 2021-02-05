@@ -25,6 +25,11 @@
   },
   "validations": [],
   "relations": {
+    "unit": {
+      "type": "belongsTo",
+      "model": "b_unit",
+      "foreignKey": "unitId"
+    },
     "member": {
       "type": "belongsTo",
       "model": "Member",
