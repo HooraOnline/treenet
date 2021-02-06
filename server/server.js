@@ -28,6 +28,7 @@ app.get('/file/member', function (req, res) {
 });
 
 
+
 app.use('/', verifyToken);
 app.start = function() {
   // start the web server
@@ -78,4 +79,5 @@ boot(app, { "appRootDir": __dirname, "bootScripts" : [ "./boot/myscripts/public.
 app.use(`api/acssesses`, (req, res, next)=> {
   console.log(4444);
 });
+
 

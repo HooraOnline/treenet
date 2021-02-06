@@ -17,6 +17,7 @@ function verifyToken(req, res, next) {
       '/pay/result',
       '/members/me/checkusernameexist',
       '/whiteNumbers/isWhite',
+      '/payments/bankresoult',
     ];
     let memberPermission=[
       '/members/checkMobileExist',
@@ -52,7 +53,7 @@ function verifyToken(req, res, next) {
   let apiPath=req._parsedUrl.pathname.toLowerCase().replace('/api','');
   console.log('apiPath=',apiPath);
   let openPath=openApiList.find(path=>path.toLowerCase()===apiPath);
-    if (openPath ||  apiPath.search('explorer')>-1) {
+    if (openPath ||  apiPath.search('explorer')>-1 || apiPath.search('client')>-1) {
         next();
     }else {
       jwtRun.tokenValidation(req, (state, tokenObj) => {
@@ -69,6 +70,7 @@ function verifyToken(req, res, next) {
               if(tokenObj.userId){
                  req.params.userId=tokenObj.userId;
                  req.userId = tokenObj.userId;
+
                }
                next();
             }else {

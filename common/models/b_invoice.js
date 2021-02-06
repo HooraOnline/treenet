@@ -129,7 +129,7 @@ module.exports = function(Model) {
               unitmemberId: unit_owner.id,
               role:'owner',
               cost:cost,
-              amount:ownerShare,
+              amount:Math.round(ownerShare) ,
             });
 
           }

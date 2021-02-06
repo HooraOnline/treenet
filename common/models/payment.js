@@ -1,6 +1,7 @@
 'use strict';
 var app = require('../../server/server');
 const PaymentFactory = require("../../utils/PaymentFactory");
+const logger = require("../../utils/winstonLogger");
 var ObjectId = require('mongodb').ObjectId;
 module.exports = function(Model) {
   Model.disableRemoteMethod("create", true);
@@ -27,61 +28,129 @@ module.exports = function(Model) {
   Model.disableRemoteMethod('__findById__accessTokens', true);
   Model.disableRemoteMethod('__get__accessTokens', true);
   Model.disableRemoteMethod('__updateById__accessTokens', true);
-
-  Model.createPaymentRequest = (data, callback)=> {
-    console.log(11111111111);
-    const userId = data.userId;
-    if (!userId) {
-      callback(new Error('An error occurred'));
-      return
-    }
-    console.log(222222222222);
-    var paymentFactory = PaymentFactory.getInstance('pec');
-    const pecPayment = paymentFactory.getPecPayment();
-    const payRequest = pecPayment.createPaymentRequest({
-      amount: data.amount,
-      orderId: data.orderId
+  app.get('/client1', function(req, res) {
+    console.log(__dirname);
+    res.sendFile(__dirname + "/html/cancel.html");
+    /*  res.render("views/apamanWeb/bankPaymentSucsess", {
+        payResult:{} ,
+      });*/
+  });
+  const gatewayConfirmPayment=(updatePaymentData, params, gatewayType, callBack)=> {
+    logger.info('**** gatewayConfirmPayment %j', {params, gatewayType});
+    console.log('ppppppp');
+    const pecConfirm = PaymentFactory.getInstance('pec').getPecPayment();
+    console.log('yyyyyyyyyy');
+    const confirmRequest = pecConfirm.createConfirmReverseRequest(params.tokenPay);
+    pecConfirm.requestConfirmPayment(updatePaymentData, confirmRequest, (err, result) => {
+      logger.info('**** gatewayConfirmPayment result %j', result);
+      if (err) return callBack(err);
+      return callBack(null, result);
     });
-    console.log(333333333333);
-    pecPayment.requestPayment(payRequest, result => {
-      console.log(444444444444444);
-      console.log("%%%%%%%%%%%%%%%%%%paymentInsert requestPayment result: ", result);
-      console.log(55555555555);
-      if(!result.SalePaymentRequestResult){
-        callback(null,{errorCode:204, lbError:{
-            errMessage: result,
-            enErrMessage: 'payment Err'
-          }, errorKey:result,errorMessage:result});
+  }
+  const confirmPayment=(bankPaymentData,callback)=>{
+    logger.info('API: Payment/Update CallBackUrl Resul: %j', {code: 200, Response: bankPaymentData});
+    console.log(555555555);
+    if (bankPaymentData.status === 0 && bankPaymentData.token > 0) {
+      console.log(6666666666);
+      gatewayConfirmPayment({ID: bankPaymentData.orderId}, {tokenPay: bankPaymentData.token}, 'pec', (err, confirmRequestResult) => {
+        if (err) {
+          console.log(777777777777);
+          logger.error("API: Payment/Confirm gatewayConfirmPayment Error: %s", err);
+          callback({errorCode:197, lbError:err, errorKey:'خطا در تایید پرداخت.  .',errorMessage:'خطا در تایید پرداخت.  .'});
+        } else {
+          console.log(88888888888);
+          const bankData = Object.assign(bankPaymentData, {confirmResult: confirmRequestResult.ConfirmPaymentResult});
+          logger.info('API: Payment/result bankData3333333 %j', {bankData: bankData, });
+          console.log(999999999999);
+          callback(null,bankData);
+        }
+      });
+    }else{
+      callback(null,bankPaymentData);
+    }
+  }
 
-        return;
+  const updatePaymentAfterBankReturn=async function(bankResultBody,callback){
+    /*   body=== {
+      Token: '115985982491618',
+      OrderId: '1612612734200',
+      TerminalNo: '44481453',
+      RRN: '723753131045',شماره پیگیری
+      status: '0',
+      TspToken: '00000000-0000-0000-0000-000000000000',
+      HashCardNumber: '0102C833A86E2EA299639DEA3288B2E10383938AD95B84400BEBE77AD3099865',
+      Amount: '1,000',
+      SwAmount: '1,000',
+      STraceNo: '269675'
+    }*/
+    console.log(1111111);
+    logger.info('API: Payment/result Post %j', {bankResultBody: bankResultBody});
+
+
+    const status = Number(bankResultBody.status);
+    const token = Number(bankResultBody.Token);
+    const orderId = bankResultBody.OrderId;
+    const terminalNo = Number(bankResultBody.TerminalNo);
+
+    const bankPaymentData = {
+      orderId: orderId,
+      Status: (status === 0 && token > 0) ? 0 : -1,
+      PayGateID: 1,
+      CallBackStatusID: status,
+      PaymentRequestToken: token,
+      TerminalNo: terminalNo
+    };
+    bankResultBody.success=(status === 0 && token > 0);
+    console.log(2222222222);
+    const where={orderId:Number(bankResultBody.OrderId)};
+    console.log(where);
+    Model.updateAll(where,{bankPayment:bankResultBody}, function(err, upResult) {
+      if(err){
+        console.log(3333333333);
+        callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در ثبت پرداخت .'});
+      }else{
+        console.log(44444444);
+        console.log(upResult);
+        confirmPayment(bankPaymentData,callback);
       }
-      const token = Number(result.SalePaymentRequestResult.Token);
-      console.log(66666666666666);
-      const status = Number(result.SalePaymentRequestResult.Status);
-      console.log('token===',token);
-      console.log('status===',status);
+    })
+  };
 
-      if (token > 0 && status === 0) {
-        console.log(777777777777777777777);
-        const resultObj = {
-          tokenPay: token,
-          urlPay: result.urlPayment
-        };
-        callback(null,resultObj);
+  Model.bankResoult = (data,calback)=> {
+    console.log('bankResoult===',data);
+/*    bankResoult888888888=== {
+      Token: '115985982491618',
+      OrderId: '1612612734200',
+      TerminalNo: '44481453',
+      RRN: '723753131045',شماره پیگیری
+      status: '0',
+      TspToken: '00000000-0000-0000-0000-000000000000',
+      HashCardNumber: '0102C833A86E2EA299639DEA3288B2E10383938AD95B84400BEBE77AD3099865',
+      Amount: '1,000',
+      SwAmount: '1,000',
+      STraceNo: '269675'
+    }*/
+    console.log('aaaaaaaaaaaaaaaaaaaa');
+    updatePaymentAfterBankReturn(data,(err,resoult)=>{
+      console.log('aaaaaaaaaaaaaaaaaaaa',resoult);
+      console.log('bbbbbbbbbbbbbb',err);
 
-      } else {
-        console.log(888888888888888888);
-        console.log('SalePaymentRequestResult',SalePaymentRequestResult);
-        callback(null,{errorCode:204, lbError:{
-            errMessage: toUnicode(result.SalePaymentRequestResult.Message),
-            enErrMessage: 'payment Err'
-          }, errorKey:'خطا در درخواست پرداخت . دوباره سعی کنید.',errorMessage:'خطا در درخواست پرداخت . دوباره سعی کنید.'});
-
+      if(data.status==='-138'){
+        console.log('انصراف از پرداخت')
+        //res.sendFile(__dirname + "/html/cancel.html");
+      }else if(data.status==='0'){
+        if(Number(data.RRN)>0){
+          console.log('تراکنش موفق');
+        }else{
+          console.log('تراکنش ناموفق')
+        }
+      }else{
+        console.log('تراکنش ناموفق2')
       }
     });
   };
   Model.remoteMethod(
-    'createPaymentRequest',
+    'bankResoult',
     {
       accepts: [{
         arg: 'data',
@@ -90,11 +159,38 @@ module.exports = function(Model) {
       }],
       returns: {arg: 'result', type: 'object',root:true },
       http: {
-        path: '/createPaymentRequest',
+        path: '/bankResoult',
         verb: 'POST',
       },
     }
   );
+
+
+
+  const createBankPaymentRequest = (paymentId,amount,orderId ,callback)=> {
+
+    var paymentFactory = PaymentFactory.getInstance('pec');
+    const pecPayment = paymentFactory.getPecPayment();
+    amount=1000 //temp code
+    const payRequest = pecPayment.createPaymentRequest({
+      amount: amount,
+      orderId: orderId,
+    });
+
+    pecPayment.requestPayment(payRequest,(errorMsg)=>{
+      console.log('errorMsg=',errorMsg);
+      callback(null,{errorCode:204, lbError:{
+          errMessage: errorMsg,
+          enErrMessage: 'payment Err'
+        }, errorKey:errorMsg,errorMessage:'خطا در اتصال به بانک . دوباره سعی کنید.'});
+    },(resultObj)=>{
+      console.log('resultObj44444444=',resultObj);
+      const token=resultObj.token;
+      const urlPayment=resultObj.urlPayment;
+      callback(null,resultObj);
+    })
+  };
+
 
   Model.add =  (data, callback)=> {
     const userId = data.userId;
@@ -166,6 +262,8 @@ module.exports = function(Model) {
             description:data.description || 'بدون توضیح',
             paymentType:'online',
             cardNumber:0,
+            orderId:Date.now(),
+            bankPayment:{},
             cdate:new Date(),
             udate:new Date()
         };
@@ -173,7 +271,8 @@ module.exports = function(Model) {
           if(err){
             callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در ثبت پرداخت . دوباره سعی کنید.'});
           }else{
-            callback(null, {paymentId:res.id});
+            createBankPaymentRequest(res.id,res.totalPrice,res.orderId,callback)
+
           }
         })
       })

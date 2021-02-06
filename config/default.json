@@ -17,7 +17,7 @@
       "stream": false,
       "parseJSON": true
     },
-   
+
     "serverConfig": {
       "testPort": 5000,
       "productPort": 4000,
@@ -54,7 +54,7 @@
       "URL_PAYMENT": "https://pec.shaparak.ir/NewIPG/?Token=",
       "URL_CONFIRM": "https://pec.shaparak.ir/NewIPGServices/Confirm/ConfirmService.asmx?wsdl",
       "URL_MULTI_SERVICE": "https://pec.shaparak.ir/NewIPGServices/MultiplexedSale/OnlineMultiplexedSalePaymentService.asmx?wsdl",
-      "LOGIN_ACCOUNT": "q438IX62h5hjSU6112g7",
+      "LOGIN_ACCOUNT": "4MuVGr1FaB6P7S43Ggh5",
       "TERMINAL_CODE": 44692590
     }
   }

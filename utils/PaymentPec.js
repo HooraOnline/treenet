@@ -5,7 +5,7 @@ const logger = require('./winstonLogger');
 const payment = {};
 
 module.exports = {
-    createPaymentRequest: (params, callBackUrl = 'https://treenetgram/api/pay/result') => {
+    createPaymentRequest: (params, callBackUrl = 'https://localy.ir/api/Payments/bankResoult') => {
         return {
             requestData: {
                 LoginAccount: pecPardakht.LOGIN_ACCOUNT,
@@ -36,27 +36,34 @@ module.exports = {
            }
         ]*/
     },
-    requestPayment: (requestParams, callBack) => {
+    requestPayment: (requestParams,erroreCallback ,successCallBack) => {
         logger.info("************PaymentPec requestPayment Start %j: ", requestParams);
         soap.createClient(pecPardakht.URL_SERVICE, function (err, client) {
-            if (err) logger.error("************PaymentPec createClient ERR %s: ", err);
+            if (err) {
+
+              logger.error("************PaymentPec createClient ERR %s: ", err)
+              return erroreCallback('خطای اتصال به بانک');
+            }
             else {
                 client.SalePaymentRequest(requestParams, function (err, response) {
-                    if (err) logger.error("************PaymentPec SalePaymentRequest ERR %s: ", err);
+                    if (err) {
+                      logger.error("************PaymentPec SalePaymentRequest ERR %s: ", err);
+                      return erroreCallback('خطای اتصال به بانک')
+                    }
                     else {
                         logger.info("************PaymentPec SalePaymentRequest response: %j: ", response);
                         response = Object.assign(response, {urlPayment: pecPardakht.URL_PAYMENT});
-
-                        const token = Number(response.SalePaymentRequestResult.Token);
+                      const token = Number(response.SalePaymentRequestResult.Token);
                         const status = Number(response.SalePaymentRequestResult.Status);
-                        if (token > 0 && status === 0) {
-                            return callBack(false, {
+                      if (token > 0 && status === 0) {
+                        return successCallBack({
                                 tokenPay: token,
-                                urlPay: pecPardakht.URL_PAYMENT
+                                urlPay: pecPardakht.URL_PAYMENT+token
                             });
                         } else {
-                            // if (status === -112) this.requestReversePayment(this.createConfirmReverseRequest())
-                            return callBack(" درگاه پرداخت: " + response.SalePaymentRequestResult.Message);
+
+                        // if (status === -112) this.requestReversePayment(this.createConfirmReverseRequest())
+                            return erroreCallback(" خطای درگاه بانکی: " + response.SalePaymentRequestResult.Message);
                         }
                     }
                 });
