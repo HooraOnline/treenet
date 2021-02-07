@@ -27,7 +27,7 @@ app.get('/file/member', function (req, res) {
   res.sendFile(__dirname + "/storage/member/"+req.query.f);
 });
 
-
+app.set('view engine', 'ejs');
 
 app.use('/', verifyToken);
 app.start = function() {

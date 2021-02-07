@@ -3,9 +3,9 @@ const config = require('config');
 const pecPardakht = config.get('TREENET.payPecConfig');
 const logger = require('./winstonLogger');
 const payment = {};
-
+var app = require('../server/server');
 module.exports = {
-    createPaymentRequest: (params, callBackUrl = 'https://localy.ir/api/Payments/bankResoult') => {
+    createPaymentRequest: (params, callBackUrl = 'https://localy.ir/parsianbankdata') => {
         return {
             requestData: {
                 LoginAccount: pecPardakht.LOGIN_ACCOUNT,
@@ -131,39 +131,58 @@ module.exports = {
     requestConfirmPayment: (updatePaymentData, requestParams, callBack) => {
         logger.info("************PaymentPec requestConfirmPayment Start %j: ", requestParams);
         soap.createClient(pecPardakht.URL_CONFIRM, function (err, client) {
-            if (err) logger.error("************PaymentPec createClient ERR %s: ", err);
-            else {
-                client.ConfirmPayment(requestParams, function (err, response) {
-                    if (err) logger.error("************PaymentPec ConfirmPayment ERR %s: ", err);
-                    else {
+          if (err) {
+              logger.error("************PaymentPec createClient ERR %s: ", err);
+              callBack({errorCode:100, lbError:err, errorKey:'خطا در ارتباط با بانک جهت تایید',errorMessage:'خطا در ارتباط با بانک جهت تایید .'});
+          } else {
+            client.ConfirmPayment(requestParams, function (err, response) {
+              if (err) {
+                      logger.error("************PaymentPec ConfirmPayment ERR %s: ", err);
+                      callBack({errorCode:100, lbError:err, errorKey:'خطا در ارتباط با بانک جهت تایید',errorMessage:'خطا در ارتباط با بانک جهت تایید .'});
+                    }else {
                         logger.info("************PaymentPec ConfirmPayment response: %j: ", response);
                         const status = Number(response.ConfirmPaymentResult.Status);
                         const token = Number(response.ConfirmPaymentResult.Token);
                         const RRN = Number(response.ConfirmPaymentResult.RRN);
                         const CardNumberMasked = response.ConfirmPaymentResult.CardNumberMasked;
-
+                        const orderId = Number(updatePaymentData.orderId);
                         let upBody = Object.assign(updatePaymentData, {
-                            Status: 1,
-                            PaymentRequestToken: token,
-                            ConfirmStatusID: status,
-                            BankReference: RRN,
-                            CardNo: CardNumberMasked
+                          Status: status,
+                          PaymentRequestToken: token,
+                          ConfirmStatusID: status,
+                          BankReference: RRN,
+                          CardNo: CardNumberMasked,
+                          OrderId:orderId,
+                          successConfirm:false,
                         });
-                        payment.updatePayment(upBody)
-                            .then(upResult => {
-                                logger.info('>>>requestConfirmPayment Payment/Update Resul: %j', {code: 200, Response: upResult});
-                            })
-                            .catch(e => {
-                                logger.error(">>>requestConfirmPayment Payment/Update Error: %s", e);
-                            });
-
-
-                        if (token > 0 && status === 0) {
-                            return callBack(false, response)
+                        const where={orderId:orderId};
+                        if (token > 0 && status === 0 || status === -1533) {
+                          upBody.successConfirm=true;
+                          if(status === -1533){
+                            console.log('تراکنش قبلا تایید شده است');
+                            upBody.confirmBefore=true;
+                          }
+                          app.models.Payment.updateAll(where,{bankPaymentConfirm:upBody,bankPaymentConfirmSuccess:true,}, function(err, upResult) {
+                            if(err){
+                              callBack({errorCode:147, lbError:err, errorKey:'خطا در به روزآوری تایید پرداخت',errorMessage:'خطا در به روزآوری تایید پرداخت .'});
+                            }else{
+                              console.log('aaaaaaaaaaa');
+                              callBack(null,upBody);
+                            }
+                          })
                         } else {
-                            let errMessage = status === -1533 ? "تراکنش قبلاً تایید شده است." : "خطا در ثبت نهایی تراکنش";
-                            return callBack(" درگاه پرداخت: " + errMessage);
+                            upBody.successConfirm=false;
+                            app.models.Payment.updateAll(where,{bankPaymentConfirm:upBody,bankPaymentConfirmSuccess:false,});
+                            callBack({errorCode:100, lbError:err, errorKey:'خطا در تایید نهایی تراکنش.',errorMessage:'خطا در تایید نهایی تراکنش.'});
                         }
+
+
+
+
+
+
+
+
                     }
                 });
             }

@@ -37,32 +37,37 @@ module.exports = function(Model) {
   });
   const gatewayConfirmPayment=(updatePaymentData, params, gatewayType, callBack)=> {
     logger.info('**** gatewayConfirmPayment %j', {params, gatewayType});
-    console.log('ppppppp');
     const pecConfirm = PaymentFactory.getInstance('pec').getPecPayment();
-    console.log('yyyyyyyyyy');
     const confirmRequest = pecConfirm.createConfirmReverseRequest(params.tokenPay);
     pecConfirm.requestConfirmPayment(updatePaymentData, confirmRequest, (err, result) => {
       logger.info('**** gatewayConfirmPayment result %j', result);
-      if (err) return callBack(err);
+
+      if (err) {
+        if(err.errorCode===100){
+          //عدم موفقیت در تایید در این حالت بهتر است سرویس تایید یک بار دیگر  صدا زده شود در غیر اینصورت پول بعد از نهایتا ۷۲ ساعت به حساب کاربر برمی گردد
+        }
+        return callBack(err)
+      }
       return callBack(null, result);
     });
   }
   const confirmPayment=(bankPaymentData,callback)=>{
     logger.info('API: Payment/Update CallBackUrl Resul: %j', {code: 200, Response: bankPaymentData});
-    console.log(555555555);
-    if (bankPaymentData.status === 0 && bankPaymentData.token > 0) {
-      console.log(6666666666);
-      gatewayConfirmPayment({ID: bankPaymentData.orderId}, {tokenPay: bankPaymentData.token}, 'pec', (err, confirmRequestResult) => {
+    if (bankPaymentData.status === 0 && Number(bankPaymentData.token) > 0) {
+      gatewayConfirmPayment({orderId: bankPaymentData.orderId}, {tokenPay: bankPaymentData.token}, 'pec', (err, confirmRequestResult) => {
         if (err) {
-          console.log(777777777777);
           logger.error("API: Payment/Confirm gatewayConfirmPayment Error: %s", err);
-          callback({errorCode:197, lbError:err, errorKey:'خطا در تایید پرداخت.  .',errorMessage:'خطا در تایید پرداخت.  .'});
+          if(err.errorCode===100){
+            callback({errorCode:100, lbError:err, errorKey:'خطا در تایید پرداخت. در صورتی که بعد از ۷۲ ساعت پول به حساب شما باز نگشت با شماره ۰۹۸۷ بانک پارسیان تماس بگیرید.',errorMessage:'خطا در تایید پرداخت.  .'});
+          }else{
+            Model.updateAll({orderId:bankPaymentData.orderId},{bankPaymentRegisterConfirmError:'تراکنش موفق و تایید آن نیز موفق است و فقط ثبت نشده..'});
+            callback(null,confirmRequestResult);
+          }
         } else {
-          console.log(88888888888);
-          const bankData = Object.assign(bankPaymentData, {confirmResult: confirmRequestResult.ConfirmPaymentResult});
-          logger.info('API: Payment/result bankData3333333 %j', {bankData: bankData, });
-          console.log(999999999999);
-          callback(null,bankData);
+          const confirmRequest = Object.assign(bankPaymentData, {confirmResult: confirmRequestResult});
+          logger.info('API: Payment/result bankData3333333 %j', {confirmRequest: confirmRequest, });
+          console.log(confirmRequestResult);
+          callback(null,confirmRequest);
         }
       });
     }else{
@@ -83,10 +88,7 @@ module.exports = function(Model) {
       SwAmount: '1,000',
       STraceNo: '269675'
     }*/
-    console.log(1111111);
     logger.info('API: Payment/result Post %j', {bankResultBody: bankResultBody});
-
-
     const status = Number(bankResultBody.status);
     const token = Number(bankResultBody.Token);
     const orderId = bankResultBody.OrderId;
@@ -94,76 +96,69 @@ module.exports = function(Model) {
 
     const bankPaymentData = {
       orderId: orderId,
-      Status: (status === 0 && token > 0) ? 0 : -1,
-      PayGateID: 1,
-      CallBackStatusID: status,
-      PaymentRequestToken: token,
-      TerminalNo: terminalNo
+      status: (status === 0 && token > 0) ? 0 : -1,
+      payGateID: 1,
+      callBackStatusID: status,
+      token: token,
+      terminalNo: terminalNo
     };
     bankResultBody.success=(status === 0 && token > 0);
-    console.log(2222222222);
+    bankResultBody.PayGateID='parsian';
     const where={orderId:Number(bankResultBody.OrderId)};
     console.log(where);
     Model.updateAll(where,{bankPayment:bankResultBody}, function(err, upResult) {
       if(err){
-        console.log(3333333333);
         callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در ثبت پرداخت .'});
       }else{
-        console.log(44444444);
-        console.log(upResult);
         confirmPayment(bankPaymentData,callback);
       }
     })
   };
-
-  Model.bankResoult = (data,calback)=> {
-    console.log('bankResoult===',data);
-/*    bankResoult888888888=== {
-      Token: '115985982491618',
-      OrderId: '1612612734200',
+  app.post('/parsianbankdata', function (req, res) {
+    const bankTransactionData=req.body;
+    console.log('bankTransactionData===',req.body);
+    /* data= {
+      Token: '116169842459799',
+      OrderId: '1612685110872',
       TerminalNo: '44481453',
-      RRN: '723753131045',شماره پیگیری
+      RRN: '723765411985',
       status: '0',
       TspToken: '00000000-0000-0000-0000-000000000000',
       HashCardNumber: '0102C833A86E2EA299639DEA3288B2E10383938AD95B84400BEBE77AD3099865',
       Amount: '1,000',
       SwAmount: '1,000',
-      STraceNo: '269675'
-    }*/
-    console.log('aaaaaaaaaaaaaaaaaaaa');
-    updatePaymentAfterBankReturn(data,(err,resoult)=>{
-      console.log('aaaaaaaaaaaaaaaaaaaa',resoult);
-      console.log('bbbbbbbbbbbbbb',err);
+      STraceNo: '42851'
+    }
+    */
 
-      if(data.status==='-138'){
+
+    updatePaymentAfterBankReturn(bankTransactionData,function (confirmError,transactionConfirm){
+      console.log('transactionConfirm',transactionConfirm);
+      console.log('confirmError',confirmError);
+      if(bankTransactionData.status==='-138'){
         console.log('انصراف از پرداخت')
-        //res.sendFile(__dirname + "/html/cancel.html");
-      }else if(data.status==='0'){
-        if(Number(data.RRN)>0){
-          console.log('تراکنش موفق');
+        //res.send('شما از پرداخت انصراف دادید');
+        res.render("bank/treenet/bankCancel", {
+          payResult:bankTransactionData ,
+        });
+      }else if(Number(bankTransactionData.status)===0 && Number(bankTransactionData.RRN)>0){
+        if(confirmError && confirmError.errorCode===100){
+          res.send('خطا در تایید تراکنش. درصورتی که بعد از ۷۲ ساعت پول به حساب شما بازنگشت لطفا با شماره پیگیری بالا با بانک پارسیان تماس بگیرید.');
         }else{
-          console.log('تراکنش ناموفق')
+          //res.send('تراکنش موفق');
+          res.render("bank/treenet/bankSucsess", {
+            payResult:bankTransactionData ,
+          });
         }
       }else{
-        console.log('تراکنش ناموفق2')
+        //res.send('تراکنش ناموفق');
+        res.render("bank/treenet/bankError", {
+          payResult:bankTransactionData ,
+        });
       }
     });
-  };
-  Model.remoteMethod(
-    'bankResoult',
-    {
-      accepts: [{
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      }],
-      returns: {arg: 'result', type: 'object',root:true },
-      http: {
-        path: '/bankResoult',
-        verb: 'POST',
-      },
-    }
-  );
+  });
+
 
 
 
@@ -178,13 +173,11 @@ module.exports = function(Model) {
     });
 
     pecPayment.requestPayment(payRequest,(errorMsg)=>{
-      console.log('errorMsg=',errorMsg);
       callback(null,{errorCode:204, lbError:{
           errMessage: errorMsg,
           enErrMessage: 'payment Err'
         }, errorKey:errorMsg,errorMessage:'خطا در اتصال به بانک . دوباره سعی کنید.'});
     },(resultObj)=>{
-      console.log('resultObj44444444=',resultObj);
       const token=resultObj.token;
       const urlPayment=resultObj.urlPayment;
       callback(null,resultObj);
