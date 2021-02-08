@@ -17,7 +17,8 @@ function verifyToken(req, res, next) {
       '/pay/result',
       '/members/me/checkusernameexist',
       '/whiteNumbers/isWhite',
-      '/parsianbankdata',
+      '/treenetparsianbankdata',
+      '/uniquparsianbankdata',
     ];
     let memberPermission=[
       '/members/checkMobileExist',

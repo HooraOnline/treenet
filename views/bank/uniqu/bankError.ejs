@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
         <meta content="width=device-width, initial-scale=1.0" name="viewport">
             <link href="https://www.monta.ir/apaman/global.css" rel="stylesheet" type="text/css">
-                <title>پرداخت موفق</title>
+                <title>پرداخت ناموفق</title>
 </head>
-<body style="   background: #fff 0% 0% no-repeat padding-box;">
+<body style="background: #fff 0% 0% no-repeat padding-box;">
 
 
 <div style="
@@ -41,115 +41,115 @@
           flex-direction: column;
           text-align: center;
            display: inline-block;
-          margin-top: 16px;
+          margin-top: 36px;
          ">
             <img alt="IOS Download"
-                 src="https://www.monta.ir/apaman/images/ok.png"
+                 src="https://www.monta.ir/apaman/images/error.png"
                  style="
-                 margin-top: 60px;
-                text-align: center;
-                display: inline-block;
-                width: 50px;
-                height: 50px;"
+                                 margin-top: 55px;
+                                text-align: center;
+                                display: inline-block;
+                                width: 55px;
+                                height: 55px;"
 
-            >
-                <div>
-                    <p style="
-                  margin-top: 0px;
+            />
+            <div>
+                <p style="
+                  margin-top: 10px;
                   text-align: center;
                   font: Bold 18px/41px IRANSansWeb_Bold;
 
-                  color: #333;
+                  color: #444;
                   opacity: 1;
                 "
-                    >پرداخت موفق</p>
+                >خطای پرداخت</p>
 
-                </div>
-                <div>
-                    <p style="
+            </div>
+            <div>
+                <p style="
                   margin-top: -20px;
                   text-align: center;
 
                   color: #999;
                   opacity: 1;
                 "
-                    >تراکنش بانکی با موفقیت انجام شد.</p>
+                >تراکنش بانکی انجام نشد.</p>
 
-                </div>
+            </div>
 
-                <div style="margin-left: 15px; margin-right: 15px; margin-top: 45px;">
-                    <div style="
-                   flex-direction: row;
-                    display: flex;
+            <div style="margin-left: 15px; margin-right: 15px; margin-top: 45px;">
+                <div style="
+       flex-direction: row;
+        display: flex;
 
-                    justify-content: space-between;
+        justify-content: space-between;
 
-                    height: 40px;
-
-                 ">
-                        <p style="
-                  text-align: center;
-                  color: #444;
-                  opacity: 1;
-                  font-size: 14px;
-                "
-                        >شماره فاکتور </p>
-
-                        <p style="
-                  text-align: center;
-                  color: #444;
-                  opacity: 1;
-                   font-size: 14px;
-                "
-                        ><%= payResult.OrderId %></p>
-
-
-                    </div>
-                    <div style="
-           width: 100%;
-           height: 1px;
-           background-color: #ccc;
-           margin-top: 5px;
-       "></div>
-
-                    <div style="
-            flex-direction: row;
-            display: flex;
-             margin-top: 0px;
-            justify-content: space-between;
-            margin-left: 5px;
-            margin-right: 5px;
-            height: 40px;
+        height: 40px;
 
      ">
-                        <p style="
+                    <p style="
                   text-align: center;
                   color: #444;
                   opacity: 1;
                   font-size: 14px;
                 "
-                        >شماره پیگیری </p>
+                    >شماره فاکتور </p>
 
-                        <p
-                            style="
+                    <p style="
                   text-align: center;
-                  color: #444;
+                  color: #999;
                   opacity: 1;
                    font-size: 14px;
                 "
-                        ><%= payResult.RRN %></p>
+                    ><%= payResult.OrderId %></p>
 
 
-                    </div>
-                    <div style="
+                </div>
+                <div style="
+                   width: 100%;
+                   height: 1px;
+                   background-color: #eee;
+                   margin-top: 5px;
+               "></div>
+
+                <div style="
+                    flex-direction: row;
+                    display: flex;
+                     margin-top: 0px;
+                    justify-content: space-between;
+                    margin-left: 5px;
+                    margin-right: 5px;
+                    height: 40px;
+
+             ">
+                    <p style="
+                  text-align: center;
+                  color: #666;
+                  opacity: 1;
+                  font-size: 14px;
+                "
+                    >شماره پیگیری </p>
+
+                    <p
+                        style="
+                  text-align: center;
+                  color: #666;
+                  opacity: 1;
+                   font-size: 14px;
+                "
+                    ><%= payResult.RRN %></p>
+
+
+                </div>
+                <div style="
            width: 100%;
            height: 1px;
-           background-color: #ccc;
+           background-color: #eee;
             margin-top: 5px;
        "></div>
 
 
-                    <div style="
+                <div style="
            flex-direction: row;
             display: flex;
              margin-top: 0px;
@@ -159,33 +159,33 @@
             height: 40px;
 
      ">
-                        <p
-                            style="
+                    <p
+                        style="
                   text-align: center;
-                  color: #444;
+                  color: #666;
                   opacity: 1;
                   font-size: 14px;
                 "
-                        >مبلغ تراکنش </p>
+                    >مبلغ تراکنش </p>
 
-                        <p
-                            style="
+                    <p
+                        style="
                   text-align: center;
-                  color: #444;
+                  color: #666;
                   opacity: 1;
                    font-size: 14px;
                 "
-                        ><%= payResult.Amount %> ریال</p>
+                    ><%= payResult.Amount %> ریال</p>
 
 
-                    </div>
-                    <div style="
+                </div>
+                <div style="
            width: 100%;
            height: 1px;
-           background-color: #ccc;
+           background-color: #eee;
             margin-top: 5px;
        "></div>
-                </div>
+            </div>
 
 
         </div>
@@ -195,10 +195,10 @@
           width: 100%;
 
        ">
-            <a style="text-decoration:none"   href="https://treenetgram.com/store/payments?OrderId=<%= payResult.OrderId%>&Token=<%=payResult.Token%>&status=<%=payResult.status%>">
+            <a style="text-decoration:none"   href="https://uniqu.ir/myInvoices?OrderId=<%= payResult.OrderId%>&Token=<%=payResult.Token%>&status=<%=payResult.status%>">
                 <div style="
                     margin-top: 1px;
-                    background: #b00b7d 0% 0% no-repeat padding-box;
+                    background:#b00b7d 0% 0% no-repeat padding-box;
                     border-radius: 10px;
                     opacity: 1;
                     padding:10px;

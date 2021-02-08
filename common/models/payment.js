@@ -39,7 +39,7 @@ module.exports = function(Model) {
     logger.info('**** gatewayConfirmPayment %j', {params, gatewayType});
     const pecConfirm = PaymentFactory.getInstance('pec').getPecPayment();
     const confirmRequest = pecConfirm.createConfirmReverseRequest(params.tokenPay);
-    pecConfirm.requestConfirmPayment(updatePaymentData, confirmRequest, (err, result) => {
+    pecConfirm.requestConfirmPayment(updatePaymentData, confirmRequest,Model, (err, result) => {
       logger.info('**** gatewayConfirmPayment result %j', result);
 
       if (err) {
@@ -114,7 +114,7 @@ module.exports = function(Model) {
       }
     })
   };
-  app.post('/parsianbankdata', function (req, res) {
+  app.post('/treenetparsianbankdata', function (req, res) {
     const bankTransactionData=req.body;
     console.log('bankTransactionData===',req.body);
     /* data= {
@@ -170,7 +170,7 @@ module.exports = function(Model) {
     const payRequest = pecPayment.createPaymentRequest({
       amount: amount,
       orderId: orderId,
-    });
+    },'https://localy.ir/treenetparsianbankdata');
 
     pecPayment.requestPayment(payRequest,(errorMsg)=>{
       callback(null,{errorCode:204, lbError:{

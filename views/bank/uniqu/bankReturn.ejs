@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://www.monta.ir/apaman/global.css" rel="stylesheet" type="text/css">
+    <title>انصراف از پرداخت</title>
+    <script>
+
+        function goToApaman() {
+           window.location='http://192.168.1.161:3001/BankReturn?OrderId=<%= payResult.OrderId%>&Token=<%=payResult.Token%>&status=<%=payResult.status%>'
+        }
+
+    </script>
+<!--     <script> -->
+<!--         function mamagebackBtn() { -->
+<!--            window.location='http://192.168.1.161:3001/BankReturn?OrderId=<%= payResult.OrderId%>&Token=<%=payResult.Token%>&status=<%=payResult.status%>' -->
+<!--            history.pushState(null, null, window.location.pathname); -->
+<!--            setTimeout(()=>{ -->
+<!--              window.addEventListener('popstate', ()=>{ -->
+<!--                             history.pushState(null, null, window.location.pathname); -->
+<!--                            window.location='https://uniqu.ir' -->
+<!--                         } , false); -->
+<!--            },500) -->
+<!--         } -->
+<!--     </script> -->
+
+</head>
+<body onload="goToApaman()" style="background: #fff 0% 0% no-repeat padding-box;">
+
+</body>
+</html>

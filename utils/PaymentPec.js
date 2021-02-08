@@ -5,7 +5,7 @@ const logger = require('./winstonLogger');
 const payment = {};
 var app = require('../server/server');
 module.exports = {
-    createPaymentRequest: (params, callBackUrl = 'https://localy.ir/parsianbankdata') => {
+    createPaymentRequest: (params, callBackUrl = 'https://localy.ir/treenetparsianbankdata') => {
         return {
             requestData: {
                 LoginAccount: pecPardakht.LOGIN_ACCOUNT,
@@ -18,8 +18,10 @@ module.exports = {
         }
     },
 
-    createMultiplexRequest: (params, multiplex, callBackUrl = 'https://treenetgram/api/pay/result') => {
-        return {
+    createMultiplexRequest: (params, multiplex, callBackUrl = 'https://localy.ir/treenetparsianbankdata') => {
+      console.log(params);
+      console.log(multiplex);
+      return {
             requestData: {
                 LoginAccount: pecPardakht.LOGIN_ACCOUNT,
                 Amount: Number(params.amount),
@@ -36,11 +38,13 @@ module.exports = {
            }
         ]*/
     },
+
+
     requestPayment: (requestParams,erroreCallback ,successCallBack) => {
-        logger.info("************PaymentPec requestPayment Start %j: ", requestParams);
+      console.log(requestParams,erroreCallback,successCallBack);
+      logger.info("************PaymentPec requestPayment Start %j: ", requestParams);
         soap.createClient(pecPardakht.URL_SERVICE, function (err, client) {
             if (err) {
-
               logger.error("************PaymentPec createClient ERR %s: ", err)
               return erroreCallback('خطای اتصال به بانک');
             }
@@ -51,6 +55,7 @@ module.exports = {
                       return erroreCallback('خطای اتصال به بانک')
                     }
                     else {
+
                         logger.info("************PaymentPec SalePaymentRequest response: %j: ", response);
                         response = Object.assign(response, {urlPayment: pecPardakht.URL_PAYMENT});
                       const token = Number(response.SalePaymentRequestResult.Token);
@@ -73,7 +78,7 @@ module.exports = {
 
     },
 
-    requestMultiplexPayment: (updatePaymentData, requestParams, callBack) => {
+    requestMultiplexPayment: (requestParams, callBack) => {
         logger.info("************PaymentPec requestMultiplexPayment Start %j: ", requestParams);
         soap.createClient(pecPardakht.URL_MULTIPLEX, function (err, client) {
             if (err) logger.error("!!!!!!!!!!!!!!PaymentPec createClient ERR %s: ", err);
@@ -90,27 +95,14 @@ module.exports = {
                         const status = Number(response.MultiplexedSaleWithIBANPaymentRequestResult.Status);
                         const message = response.MultiplexedSaleWithIBANPaymentRequestResult.Message;
 
-
-                        let upBody = Object.assign(updatePaymentData, {
-                            PaymentRequestToken: token,
-                            PaymentRequestStatusID: status,
-                        });
-                        payment.updatePayment(upBody)
-                            .then(upResult => {
-                                logger.info('>>>requestMultiplexPayment Payment/Update Resul: %j', {code: 200, Response: upResult});
-                            })
-                            .catch(e => {
-                                logger.error(">>>requestMultiplexPayment Payment/Update Error: %s", e);
-                            });
-
                         if (token > 0 && status === 0) {
                             return callBack(false, {
                                 tokenPay: token,
-                                urlPay: pecPardakht.URL_PAYMENT
-                            });
+                                urlPay: pecPardakht.URL_PAYMENT+token
+                            },response.MultiplexedSaleWithIBANPaymentRequestResult);
                         } else {
                             // if (status === -112) this.requestReversePayment(this.createConfirmReverseRequest())
-                            return callBack(" درگاه پرداخت: " + message);
+                            return callBack(" درگاه پرداخت: " + message,response.MultiplexedSaleWithIBANPaymentRequestResult);
                         }
                     }
                 });
@@ -128,8 +120,8 @@ module.exports = {
             }
         }
     },
-    requestConfirmPayment: (updatePaymentData, requestParams, callBack) => {
-        logger.info("************PaymentPec requestConfirmPayment Start %j: ", requestParams);
+    requestConfirmPayment: (updatePaymentData, requestParams,Model, callBack) => {
+      logger.info("************PaymentPec requestConfirmPayment Start %j: ", requestParams);
         soap.createClient(pecPardakht.URL_CONFIRM, function (err, client) {
           if (err) {
               logger.error("************PaymentPec createClient ERR %s: ", err);
@@ -137,15 +129,18 @@ module.exports = {
           } else {
             client.ConfirmPayment(requestParams, function (err, response) {
               if (err) {
+                      console.log(22222222222222);
                       logger.error("************PaymentPec ConfirmPayment ERR %s: ", err);
                       callBack({errorCode:100, lbError:err, errorKey:'خطا در ارتباط با بانک جهت تایید',errorMessage:'خطا در ارتباط با بانک جهت تایید .'});
                     }else {
+                        console.log(333333333333333);
                         logger.info("************PaymentPec ConfirmPayment response: %j: ", response);
                         const status = Number(response.ConfirmPaymentResult.Status);
                         const token = Number(response.ConfirmPaymentResult.Token);
                         const RRN = Number(response.ConfirmPaymentResult.RRN);
                         const CardNumberMasked = response.ConfirmPaymentResult.CardNumberMasked;
                         const orderId = Number(updatePaymentData.orderId);
+                        console.log(44444444444444444);
                         let upBody = Object.assign(updatePaymentData, {
                           Status: status,
                           PaymentRequestToken: token,
@@ -155,39 +150,35 @@ module.exports = {
                           OrderId:orderId,
                           successConfirm:false,
                         });
+
                         const where={orderId:orderId};
+                        console.log(where);
                         if (token > 0 && status === 0 || status === -1533) {
                           upBody.successConfirm=true;
                           if(status === -1533){
                             console.log('تراکنش قبلا تایید شده است');
                             upBody.confirmBefore=true;
                           }
-                          app.models.Payment.updateAll(where,{bankPaymentConfirm:upBody,bankPaymentConfirmSuccess:true,}, function(err, upResult) {
+                          Model.updateAll(where,{bankPaymentConfirm:upBody,bankPaymentConfirmSuccess:true,}, function(err, upResult) {
                             if(err){
                               callBack({errorCode:147, lbError:err, errorKey:'خطا در به روزآوری تایید پرداخت',errorMessage:'خطا در به روزآوری تایید پرداخت .'});
                             }else{
-                              console.log('aaaaaaaaaaa');
                               callBack(null,upBody);
                             }
                           })
                         } else {
                             upBody.successConfirm=false;
-                            app.models.Payment.updateAll(where,{bankPaymentConfirm:upBody,bankPaymentConfirmSuccess:false,});
+                            Model.updateAll(where,{bankPaymentConfirm:upBody,bankPaymentConfirmSuccess:false,});
                             callBack({errorCode:100, lbError:err, errorKey:'خطا در تایید نهایی تراکنش.',errorMessage:'خطا در تایید نهایی تراکنش.'});
                         }
-
-
-
-
-
-
-
 
                     }
                 });
             }
         });
     },
+
+
 
     requestReversePayment: (requestParams, callBack) => {
         logger.info("************PaymentPec request ReversePayment Start %j: ", requestParams);

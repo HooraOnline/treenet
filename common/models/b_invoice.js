@@ -89,6 +89,7 @@ module.exports = function(Model) {
                 invoiceId:invoice.id ,
                 memberId:unit_resident.memberId,
                 details:[],
+                orderId:Date.now(),
                 cdate:new Date(),
               };
               memberInvoiceList.push(memberInvoice);
