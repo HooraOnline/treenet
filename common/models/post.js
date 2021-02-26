@@ -36,15 +36,23 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
-    let entity={type:'post',
-      postType:data.postType,
+    let expireDay=data.expireDay ||10;
+    let date=new Date();
+    let expireDate = new Date(date.setDate(date.getDate() + expireDay));
+    console.log(expireDate);
+    let entity={
+      type:data.postType ||'post',
+      postType:data.postType ||'post',
       memberId:userId,
       file:data.file,
       fileExtention:data.fileExtention.toLowerCase(),
       fileType:data.fileExtention.split('/')[0].toLocaleLowerCase(),
       text:data.text,
       isSpecial:data.isSpecial,
-      cdate:new Date(),udate:new Date()
+      externalLink:data.externalLink,
+      cdate:new Date(),
+      udate:new Date(),
+      expireDate:expireDate,
     };
     if(data.marketerProductId){
       entity.marketerProductId=data.marketerProductId;
@@ -266,7 +274,7 @@ module.exports = function(Model) {
         }
         return Model.destroyById(postId)
           .then(res=>{
-            if(post.postType!=='special_selivery'){
+            if(post.postType!=='selivery'){
               const folder=data.fileType.toLocaleLowerCase()==='video'?'post_video':'post_image';
               Model.app.models.container.removeFile(folder,data.file);
             }
@@ -910,7 +918,18 @@ module.exports = function(Model) {
           errorKey: 'server_post_error_get_my_posts',
           errorMessage: 'خطا در بارگذاری تعداد پستها'
         });
-      }else{
+      }else if(!member){
+        callback(null, {
+          errorCode: 17,
+          lbError: error,
+          errorKey: 'fa_server_member_user_notExist',
+          errorMessage: 'کاربر وجود ندارد'
+        });
+        return;
+      }
+      else{
+        console.log(1111111111);
+        console.log(member);
 
         const parentsList=member.parentsList;
         const followerParam={};

@@ -19,6 +19,7 @@ function verifyToken(req, res, next) {
       '/whiteNumbers/isWhite',
       '/treenetparsianbankdata',
       '/uniquparsianbankdata',
+      '/aff_landings/add',
     ];
     let memberPermission=[
       '/members/checkMobileExist',

@@ -10,7 +10,7 @@ const boot = require('loopback-boot');
 const verifyToken = require('../utils/VerifyToken');
 const mongoose=require('mongoose')
 const MongoClient = require('mongodb').MongoClient;
-
+const errorHandler = require('strong-error-handler');
 
 const app = module.exports = loopback();
 
@@ -30,6 +30,12 @@ app.get('/file/member', function (req, res) {
 app.set('view engine', 'ejs');
 
 app.use('/', verifyToken);
+
+
+/*app.use(errorHandler({
+  debug: app.get('env') === 'development',
+  log: true,
+}));*/
 app.start = function() {
   // start the web server
   return app.listen(function() {

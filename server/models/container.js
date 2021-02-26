@@ -318,8 +318,8 @@ module.exports = function(Files) {
     let fileSize=Number(ctx.req.headers['content-length']);
 
 
-    if(fileSize>20000000)
-      return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم ویدئوی شما نباید بیشتر از 20 مگا بایت باشد.',errorMessage:'حجم ویدئوی شما نباید بیشتر از  10 مگا بایت باشد.'});
+    if(fileSize>30000000)
+      return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم ویدئوی شما نباید بیشتر از 30 مگا بایت باشد.',errorMessage:'حجم ویدئوی شما نباید بیشتر از  10 مگا بایت باشد.'});
 
     ctx.req.params.container = 'post_video';
 

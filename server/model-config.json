@@ -80,6 +80,7 @@
     "dataSource": "treenetds",
     "public": true
   },
+
   "Basket": {
     "dataSource": "treenetds",
     "public": true
@@ -104,6 +105,22 @@
     "dataSource": "treenetds",
     "public": true
   },
+  "bugreport": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "aff_landing": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+  "contact": {
+    "dataSource": "treenetds",
+    "public": true
+  },
+
+
+
+
   "b_building": {
     "dataSource": "uniquds",
     "public": true

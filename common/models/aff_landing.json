@@ -1,0 +1,42 @@
+{
+  "name": "aff_landing",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "memberId": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "member": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "memberId"
+    },
+    "clicker": {
+      "type": "belongsTo",
+      "model": "Member",
+      "foreignKey": "clickerId"
+    }
+
+  },
+  "acls": [],
+  "methods": {}
+}

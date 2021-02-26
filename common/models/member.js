@@ -233,7 +233,7 @@ module.exports = function(Model) {
       user.invitationCode=  getUnikNumber();
       user.profileImage = 'defaultProfileImage.png';
       user.inviteProfileImage= 'defaultProfileImage.png';
-      user.avatar='نماینده فروش در ترینتگرام';
+      user.avatar='عضو فعال ترینتگرام';
       user.loginDate="";
       user.logOutDate="";
       user.beforloginDate="";
@@ -1089,8 +1089,146 @@ module.exports = function(Model) {
     }
   );
 
+  Model.getMemberProfile = function (params, callback) {
+    const userId=params.userId;
 
+    //return callback(null,{isError:true,errorCode:5,errorKey:'server_lockSite',errorMessage:'به دلیل تغییرات ساختاری فعلا امکان ورود وجود ندارد، لطفا چند روز دیگر مراجعه فرمایید.'});
+    if(!userId){
+      callback(new Error('An error occurred'));
+      return
+    }
+    let memberId=params.memberId || userId;
+    const userKey=params.userKey;
+   // params.where={userKey:userKey};
+    params.include=  [
+      {
+        relation: 'unConfirmSubsets',
+        scope: {
+          fields: ['id','fullName','userKey','profileImage','avatar','displayName'],
 
+          /*include: {
+            relation: 'comments',
+              scope: {
+              where: {orderId: 5}
+            }
+          }*/
+        }
+      },
+      {
+        relation: 'followers',
+        scope: {
+          fields: ['id','followedId','followerId','isFollowing'],
+          where: {isFollowing: true},
+          /*include: {
+            relation: 'comments',
+              scope: {
+              where: {orderId: 5}
+            }
+          }*/
+        }
+      },
+      {
+        relation: 'followeds',
+        scope: {
+          fields: ['id','followedId','followerId','isFollowing'],
+          where: {isFollowing: true},
+          /*include: {
+            relation: 'comments',
+              scope: {
+              where: {orderId: 5}
+            }
+          }*/
+        }
+      }
+    ]
+    return Model.findById(memberId,params, function (err, res) {
+      if (err) {
+
+        callback(err);
+      }
+      else if(!res) {
+
+        callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
+      }
+      else {
+
+        let user=res;
+        let birthYear=user.birthDate?new Date(user.birthDate).getFullYear():'';
+        user.invitationLink=`https://treenetgram.com/?invitationCode=${res.invitationCode}`;
+        user.age=user.birthDate?(new Date()).getFullYear()-birthYear:'';
+        user.shortMobile=user.mobile?user.mobile.split('-')[1]:'';
+        callback(err, user);
+      }
+    });
+  };
+  Model.remoteMethod(
+    'getMemberProfile',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getMemberProfile',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Model.getMemberContacts = function (params, callback) {
+    const userKey=params.userKey;
+    params.where={userKey:userKey};
+    params.fields=['id','fullName','userKey','profileImage','avatar','displayName','cdate',]
+    params.include=  [
+      {
+        relation: 'contacts',
+        scope: {
+        }
+      },
+
+    ]
+    return Model.find(params, function (err, res) {
+      console.log(err);
+      console.log(res);
+      if (err) {
+        console.log(1111111111);
+        callback(err);
+      }
+      else if(!res[0]) {
+        console.log(22222222222222);
+        callback(null,{errorCode:434,errorKey:'کارت ویزیت وجود ندارد',errorMessage:'کارت ویزیت وجود ندارد'});
+      }
+      else {
+        console.log(333333333333);
+        callback(err, res[0]);
+      }
+    });
+  };
+  Model.remoteMethod(
+    'getMemberContacts',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getMemberContacts',
+        verb: 'POST',
+      },
+    }
+  );
 
   Model.getSubsetList = function (params, callback) {
 

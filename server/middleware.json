@@ -4,7 +4,7 @@
   },
   "initial": {
     "compression": {},
-    "helmet#xssFilter": {},
+    "helmet#xssFilter": {"enabled": true},
     "helmet#frameguard": {
       "params": {
         "action": "deny"
@@ -22,10 +22,11 @@
     "helmet#noCache": {
       "enabled": false
     },
+
     "cors": {
       "params": {
-        "origin": true,
-        "credentials": true,
+        "origin": ["https://treenetgram.com","https://vercel.app","https://treenetgram.vercel.app","https://uniqu.ir","https://uniqu.vercel.app","http://localhost:3300","http://192.168.100.2:3300"],
+        "credentials": false,
         "maxAge": 86400
       }
     }
@@ -55,7 +56,7 @@
     "strong-error-handler": {
       "params": {
         "debug": false,
-        "log": false
+        "log": true
       }
     }
   }
