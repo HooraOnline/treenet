@@ -122,12 +122,8 @@
       "type": "hasMany",
       "model": "Payment",
       "foreignKey": "buyerId"
-    },
-    "contacts": {
-      "type": "hasMany",
-      "model": "contact",
-      "foreignKey": "memberId"
     }
+
   },
   "acls": [],
   "methods": {}

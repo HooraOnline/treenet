@@ -22,11 +22,16 @@ app.get('/file/post_video', function (req, res) {
 
   res.sendFile(__dirname + "/storage/post_video/"+req.query.f);
 });
+
+app.get('/file/card', function (req, res) {
+
+  res.sendFile(__dirname + "/storage/card/"+req.query.f);
+});
+
 app.get('/file/member', function (req, res) {
 
   res.sendFile(__dirname + "/storage/member/"+req.query.f);
 });
-
 app.set('view engine', 'ejs');
 
 app.use('/', verifyToken);

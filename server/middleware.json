@@ -25,7 +25,7 @@
 
     "cors": {
       "params": {
-        "origin": ["https://treenetgram.com","https://vercel.app","https://treenetgram.vercel.app","https://uniqu.ir","https://uniqu.vercel.app","http://localhost:3300","http://192.168.100.2:3300"],
+        "origin": ["https://treenetgram.com","https://vercel.app","https://treenetgram.vercel.app","https://uniqu.ir","https://verkel.ir","https://uniqu.vercel.app","http://localhost:3300","http://192.168.100.2:3300"],
         "credentials": false,
         "maxAge": 86400
       }

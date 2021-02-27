@@ -33,8 +33,8 @@ module.exports = function(Model) {
       callback(new Error('An error occurred'));
       return
     }
-    let entity={memberId:userId,address:data.address,caption:data.caption, type:data.type,icon:data.icon,isSocial:data.isSocial, sort:(data.sort || 1),cdate:new Date(),udate:new Date()};
 
+    let entity={id:data.id,cardId:data.cardId,address:data.address,caption:data.caption, type:data.type,icon:data.icon,isSocial:data.isSocial, sort:(data.sort || 1),cdate:new Date(),udate:new Date()};
     return Model.updateOrCreate(entity, function(err, res) {
       if(err){
         callback(null,{errorCode:17, lbError:err, errorKey:'server_public_error',errorMessage:'خطا در اضافه کردن . دوباره سعی کنید.'});
@@ -42,7 +42,6 @@ module.exports = function(Model) {
         callback(null,res);
       }
     })
-
   };
 
   Model.remoteMethod(

@@ -113,6 +113,10 @@
     "dataSource": "treenetds",
     "public": true
   },
+  "visitcard": {
+    "dataSource": "treenetds",
+    "public": true
+  },
   "contact": {
     "dataSource": "treenetds",
     "public": true

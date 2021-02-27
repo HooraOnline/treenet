@@ -1,5 +1,5 @@
 {
-  "name": "contact",
+  "name": "visitcard",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -27,7 +27,12 @@
   "relations": {
     "member": {
       "type": "belongsTo",
-      "model": "visitcard",
+      "model": "Member",
+      "foreignKey": "memberId"
+    },
+    "contacts": {
+      "type": "hasMany",
+      "model": "contact",
       "foreignKey": "cardId"
     }
 

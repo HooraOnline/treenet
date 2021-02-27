@@ -1049,11 +1049,13 @@ module.exports = function(Model) {
     }
   ]
     return Model.findById(userId,params, function (err, res) {
+      console.log(res);
       if (err) {
 
          callback(err);
       }
-      else if(!res || !res.username) {
+
+    else if(!res || !res.username) {
 
         callback(null,{errorCode:4,errorKey:'fa_server_member_user_notExist',errorMessage:'اکانت قبلی شما به دلیل عدم تغییر رمز موقت به مدت طولانی توسط سیستم حذف شده است. لطفا با لینک دعوت وارد شده و تا اکانت جدید بگیرید.  .'});
       }
@@ -1181,54 +1183,7 @@ module.exports = function(Model) {
     }
   );
 
-  Model.getMemberContacts = function (params, callback) {
-    const userKey=params.userKey;
-    params.where={userKey:userKey};
-    params.fields=['id','fullName','userKey','profileImage','avatar','displayName','cdate',]
-    params.include=  [
-      {
-        relation: 'contacts',
-        scope: {
-        }
-      },
 
-    ]
-    return Model.find(params, function (err, res) {
-      console.log(err);
-      console.log(res);
-      if (err) {
-        console.log(1111111111);
-        callback(err);
-      }
-      else if(!res[0]) {
-        console.log(22222222222222);
-        callback(null,{errorCode:434,errorKey:'کارت ویزیت وجود ندارد',errorMessage:'کارت ویزیت وجود ندارد'});
-      }
-      else {
-        console.log(333333333333);
-        callback(err, res[0]);
-      }
-    });
-  };
-  Model.remoteMethod(
-    'getMemberContacts',
-    {
-      accepts: {
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' }
-      },
-      returns: {
-        arg: 'result',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/getMemberContacts',
-        verb: 'POST',
-      },
-    }
-  );
 
   Model.getSubsetList = function (params, callback) {
 

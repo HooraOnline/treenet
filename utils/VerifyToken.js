@@ -16,6 +16,7 @@ function verifyToken(req, res, next) {
       '/members/me/login',
       '/pay/result',
       '/members/me/checkusernameexist',
+      '/visitcards/getone',
       '/whiteNumbers/isWhite',
       '/treenetparsianbankdata',
       '/uniquparsianbankdata',
@@ -34,6 +35,7 @@ function verifyToken(req, res, next) {
       '/activities/getNewAnnounceCount',
       '/members/getUserPage',
       '/members/searchByKeyword',
+
     ].map(m=>m.toLowerCase());
   let postPermission=[
     '/posts/me/addPost',

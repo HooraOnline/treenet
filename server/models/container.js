@@ -1,4 +1,4 @@
-
+var app = require('../server');
 module.exports = function(Files) {
     Files.beforeRemote('upload22', function(context, comment, next) {
 
@@ -333,10 +333,11 @@ module.exports = function(Files) {
           return 'video-' + fileInfo.name;
         }
       };
-
+      console.log(1111111);
+      console.log(err);
       if(err) {
 
-        app.models.Bug.create({err:err}); callback(err);
+         callback(err);
       } else {
 
         // var fileInfo = fileObj.files.content[0];//.file[0];
@@ -381,7 +382,7 @@ module.exports = function(Files) {
       callback(new Error('An error occurred'));
       return
     }
-    const folder=('member');
+    const folder=(data.folder || 'member');
     Files.app.models.container.removeFile(folder,data.file)
       .then(res=>{
         callback(null,res)
@@ -391,6 +392,94 @@ module.exports = function(Files) {
       return err;
     });
   };
+  Files.remoteMethod(
+    'removeProfileImage',
+    {
+      accepts: {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' }
+      },
+      returns: {
+        arg: 'result',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/removeProfileImage',
+        verb: 'POST',
+      },
+    }
+  );
+
+  Files.uploadCardLogo = function (ctx,options,callback) {
+
+    const req=ctx.req;
+    const userId=req.userId ;
+    if(!userId){
+      callback(new Error('An error occurred'));
+      return
+    }
+    if(!options) options = {};
+    let fileSize=Number(ctx.req.headers['content-length']);
+    if(fileSize>3000000)
+      return  callback(null,{errorCode:17, lbError:{}, errorKey:'حجم فایل شما نباید بیشتر از 3 مگابایت باشد.',errorMessage:'حجم فایل شما نباید بیشتر از 3 بایت باشد.'});
+
+    ctx.req.params.container = 'card';
+    Files.app.models.container.upload(ctx.req,ctx.result,options,function (err,fileObj) {
+      options={
+        container: 'card',
+        maxFileSize: 10 * 1024 * 1024,
+        allowedContentTypes: ['image/png'],
+        acl: 'public-read',
+        getFilename: function(fileInfo) {
+          return 'image-' + fileInfo.name;
+        }
+      };
+      if(err) {
+        console.log(err);
+        callback(err);
+      } else {
+        // var fileInfo = fileObj.files.content[0];//.file[0];
+        console.log(555555555);
+        const fileName=fileObj.fields.name[0];
+        let fileMime=fileName.split('.');
+        fileMime=fileMime[fileMime.length-1];
+        if(fileMime.toLocaleLowerCase()==='png' || fileMime.toLocaleLowerCase()==='jpeg' || fileMime.toLocaleLowerCase()==='jpg'){
+          console.log(666666666666);
+          callback(null, fileObj);
+        }
+        else {
+
+          Files.app.models.container.removeFile( ctx.req.params.container,fileName,function (err,res) {
+
+          });
+
+          callback(null,{errorCode:17, lbError:{}, errorKey:'فقط فایل های تصویری jpeg و png قابل آپلود است.',errorMessage:'فقط فایل های تصویری jpeg و png قابل آپلود است.'});
+          //return فرمت_قابل_آپلود_نیست();
+        }
+      }
+    });
+  };
+
+  Files.remoteMethod(
+    'uploadCardLogo',
+    {
+      description: 'Uploads a file',
+      accepts: [
+        { arg: 'ctx', type: 'object', http: { source:'context' } },
+        { arg: 'options', type: 'object', http:{ source: 'query'} }
+      ],
+      returns: {
+        arg: 'fileObject', type: 'object', root: true
+      },
+      http: {verb: 'post'}
+    }
+  );
+
+
+
+
  /* Files.remoteMethod(
     'removeProfileImage',
     {
